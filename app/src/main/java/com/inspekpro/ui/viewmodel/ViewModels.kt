@@ -2,6 +2,8 @@ package com.inspekpro.ui.viewmodel
 
 import androidx.lifecycle.*
 import com.inspekpro.data.local.entity.*
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import com.inspekpro.data.remote.model.WeatherInfo
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
@@ -15,8 +17,10 @@ import java.util.*
 // Screen: Dashboard (Image 1) – cuaca, stat cards, inspeksi aktif
 // ─────────────────────────────────────────────────────────────────────────────
 
-class DashboardViewModel(
-    private val sessionRepo: InspectionSessionRepository
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    private val sessionRepo: InspectionSessionRepository,
+    private val findingRepo: FindingRepository
 ) : ViewModel() {
 
     // Weather state
@@ -27,14 +31,145 @@ class DashboardViewModel(
     val totalSessions = sessionRepo.getTotalSessionCount()
     val completedSessions = sessionRepo.getCompletedCount()
 
-    // Inspeksi Aktif (In Progress)
-    val activeSessions = sessionRepo.getActiveSessions()
+    // Inspeksi Aktif (In Progress & All others to display on dashboard list)
+    val activeSessions = sessionRepo.getAllSessions()
+
+    // Recent Findings
+    val recentFindings = findingRepo.getRecentFindings(10)
+
+    init {
+        viewModelScope.launch {
+            try {
+                val sessions = sessionRepo.getAllSessions().first()
+                if (sessions.isEmpty()) {
+                    populateMockData()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun populateMockData() {
+        try {
+            val s1Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 1,
+                    sessionCode = "INS-2026-001",
+                    title = "Turbine Generator Unit 2",
+                    locationName = "Plant A - Section 3",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.IN_PROGRESS,
+                    scheduledDate = System.currentTimeMillis() - 86400000,
+                    totalItems = 4,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s2Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 2,
+                    sessionCode = "INS-2026-002",
+                    title = "Pressure Vessel Tank B-301",
+                    locationName = "Plant B - Section 1",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.DRAFT,
+                    scheduledDate = System.currentTimeMillis(),
+                    totalItems = 10,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s3Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 3,
+                    sessionCode = "INS-2026-003",
+                    title = "Cooling Tower System",
+                    locationName = "Plant A - Section 5",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.COMPLETED,
+                    scheduledDate = System.currentTimeMillis() - 172800000,
+                    totalItems = 5,
+                    passedItems = 5,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 1,
+                    sessionId = s1Id,
+                    findingCode = "F-001",
+                    category = "Mechanical",
+                    title = "Kebocoran Minor pada Seal Turbine",
+                    description = "Kebocoran oli pelumas pada seal turbine unit 2.",
+                    severity = FindingSeverity.MINOR,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 3600000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 2,
+                    sessionId = s1Id,
+                    findingCode = "F-002",
+                    category = "Corrosion",
+                    title = "Korosi pada Flange Connection",
+                    description = "Korosi permukaan pada flange pipa kondensor.",
+                    severity = FindingSeverity.MAJOR,
+                    status = FindingStatus.IN_PROGRESS,
+                    createdAt = System.currentTimeMillis() - 7200000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 3,
+                    sessionId = s1Id,
+                    findingCode = "F-003",
+                    category = "Vibration",
+                    title = "Getaran Berlebih pada Motor Pump",
+                    description = "Amplitudo getaran melebihi batas toleransi pada motor pompa utama.",
+                    severity = FindingSeverity.CRITICAL,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 10800000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 4,
+                    sessionId = s3Id,
+                    findingCode = "F-004",
+                    category = "Structural",
+                    title = "Deformasi Ringan pada Support Beam",
+                    description = "Deformasi kecil terdeteksi pada kaki penyangga tower.",
+                    severity = FindingSeverity.OBSERVATION,
+                    status = FindingStatus.RESOLVED,
+                    createdAt = System.currentTimeMillis() - 14400000
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     fun loadWeather(lat: Double, lon: Double) {
         viewModelScope.launch {
             _weather.value = WeatherUiState.Loading
-            // Fetch cuaca tanpa sessionId (hanya untuk display di dashboard)
-            val result = sessionRepo.fetchWeatherByCity("Jakarta") // fallback
+            val result = sessionRepo.fetchWeatherByCity("Jakarta")
             result.fold(
                 onSuccess = { _weather.value = WeatherUiState.Success(it) },
                 onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
@@ -45,7 +180,6 @@ class DashboardViewModel(
     fun loadWeatherByCoords(lat: Double, lon: Double) {
         viewModelScope.launch {
             _weather.value = WeatherUiState.Loading
-            // Dummy sessionId = -1 karena hanya untuk display
             val result = sessionRepo.fetchAndAttachWeather(-1L, lat, lon)
             result.fold(
                 onSuccess = { _weather.value = WeatherUiState.Success(it) },
@@ -66,7 +200,8 @@ sealed class WeatherUiState {
 // Screen: Inspeksi (Image 2) – ringkasan + list aktif
 // ─────────────────────────────────────────────────────────────────────────────
 
-class SessionListViewModel(
+@HiltViewModel
+class SessionListViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository
 ) : ViewModel() {
 
@@ -116,7 +251,8 @@ enum class DateFilter { TODAY, THIS_WEEK, THIS_MONTH, ALL }
 // Screen: Jadwal Baru (Image 3) – form buat sesi
 // ─────────────────────────────────────────────────────────────────────────────
 
-class CreateSessionViewModel(
+@HiltViewModel
+class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository
 ) : ViewModel() {
 
@@ -201,11 +337,14 @@ sealed class CreateSessionResult {
 // Screen: Detail Sesi & Ringkasan Temuan
 // ─────────────────────────────────────────────────────────────────────────────
 
-class SessionDetailViewModel(
+@HiltViewModel
+class SessionDetailViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val findingRepo: FindingRepository,
-    private val sessionId: Long
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val sessionId: Long = savedStateHandle.get<Long>("sessionId") ?: -1L
 
     val session = sessionRepo.getSessionById(sessionId)
     val summary = sessionRepo.getSessionSummary(sessionId)

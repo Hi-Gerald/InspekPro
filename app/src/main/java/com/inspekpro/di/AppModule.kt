@@ -6,6 +6,7 @@ import com.inspekpro.data.remote.api.RetrofitClient
 import com.inspekpro.data.remote.api.WeatherApiService
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
+import com.inspekpro.data.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,6 +45,10 @@ object AppModule {
     @Provides
     fun provideSummaryDao(db: InspekProDatabase) = db.sessionSummaryDao()
 
+    @Singleton
+    @Provides
+    fun provideUserDao(db: InspekProDatabase) = db.userDao()
+
     // ─── NETWORK ──────────────────────────────────────────────────────────────
 
     @Singleton
@@ -73,5 +78,11 @@ object AppModule {
         findingDao       = db.inspectionFindingDao(),
         photoDao         = db.findingPhotoDao(),
         sessionRepository = sessionRepo
+    )
+
+    @Singleton
+    @Provides
+    fun provideAuthRepository(db: InspekProDatabase): AuthRepository = AuthRepository(
+        userDao = db.userDao()
     )
 }

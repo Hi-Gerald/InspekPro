@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/fragment_login.xml",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_login.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/item_photo_form.xml",
+        "source": "com.inspekpro.app-main-60:/layout/item_photo_form.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/fragment_dashboard.xml",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/fragment_register.xml",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_register.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/item_active_inspection.xml",
+        "source": "com.inspekpro.app-main-60:/layout/item_active_inspection.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/item_new_finding.xml",
+        "source": "com.inspekpro.app-main-60:/layout/item_new_finding.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/activity_main.xml",
+        "source": "com.inspekpro.app-main-60:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/fragment_add_inspection.xml",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_add_inspection.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-mergeDebugResources-57:/layout/item_checklist_form.xml",
+        "source": "com.inspekpro.app-main-60:/layout/item_checklist_form.xml"
+    }
+]

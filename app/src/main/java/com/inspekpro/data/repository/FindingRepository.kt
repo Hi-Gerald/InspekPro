@@ -74,4 +74,7 @@ class FindingRepository(
 
     fun getCategoriesBySession(sessionId: Long): Flow<List<String>> =
         findingDao.getCategoriesBySession(sessionId)
+
+    fun getRecentFindings(limit: Int): Flow<List<InspectionFindingEntity>> =
+        findingDao.getRecentFindings(limit)
 }

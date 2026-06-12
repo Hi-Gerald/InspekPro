@@ -1,0 +1,61 @@
+com.inspekpro.app-navigation-runtime-2.7.7-0 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\06fa4586d8321280dc8302941629b875\transformed\navigation-runtime-2.7.7\res
+com.inspekpro.app-play-services-base-18.3.0-1 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\0790e4a86e86aba7574f969080bad729\transformed\play-services-base-18.3.0\res
+com.inspekpro.app-fragment-ktx-1.6.2-2 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\0b3d96f5fc4a849d08ce71101fdba555\transformed\fragment-ktx-1.6.2\res
+com.inspekpro.app-room-runtime-2.6.1-3 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\0da26a4e298a6c7e8018d3fff5531efb\transformed\room-runtime-2.6.1\res
+com.inspekpro.app-recyclerview-1.1.0-4 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\0e9a61dd0c7968b9d93450794e123fe4\transformed\recyclerview-1.1.0\res
+com.inspekpro.app-activity-ktx-1.8.0-5 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\0f351ff0835d938ea21f0f5e4b675fec\transformed\activity-ktx-1.8.0\res
+com.inspekpro.app-lifecycle-viewmodel-ktx-2.7.0-6 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\202ea0fa77019b20ed2b6a8896f7d51c\transformed\lifecycle-viewmodel-ktx-2.7.0\res
+com.inspekpro.app-savedstate-ktx-1.2.1-7 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\20bb6b31372d67ee5af5ac17775cb066\transformed\savedstate-ktx-1.2.1\res
+com.inspekpro.app-hilt-navigation-1.2.0-8 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\25d9094d690b1a4fbc567c2e278884ef\transformed\hilt-navigation-1.2.0\res
+com.inspekpro.app-viewpager2-1.0.0-9 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\27c3744c097e4b5b7216657be4fe0390\transformed\viewpager2-1.0.0\res
+com.inspekpro.app-navigation-ui-2.7.7-10 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\31d911df4fea334e59c3b61b92ffdbe3\transformed\navigation-ui-2.7.7\res
+com.inspekpro.app-fragment-1.6.2-11 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\361576c91a52dd38e23989eda65ab825\transformed\fragment-1.6.2\res
+com.inspekpro.app-coordinatorlayout-1.1.0-12 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\42b31ea0e43926445b614130f7fa24a4\transformed\coordinatorlayout-1.1.0\res
+com.inspekpro.app-lifecycle-runtime-2.7.0-13 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\499ca83a68acd75c8d6badccb7b36b31\transformed\lifecycle-runtime-2.7.0\res
+com.inspekpro.app-slidingpanelayout-1.2.0-14 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\4c306e0c8dc62c906fa10147ef0d33d3\transformed\slidingpanelayout-1.2.0\res
+com.inspekpro.app-core-1.12.0-15 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\4ef2cba1dc3850cacf830bd81e3e6469\transformed\core-1.12.0\res
+com.inspekpro.app-cardview-1.0.0-16 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\5844af49fc87cffd14a2aec0adb52e9a\transformed\cardview-1.0.0\res
+com.inspekpro.app-core-ktx-1.12.0-17 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\5a46973801e6bac0ab4ab6b6fc03ca97\transformed\core-ktx-1.12.0\res
+com.inspekpro.app-material-1.11.0-18 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\5c2096747345e0261b8ba9e6fd3dc5d6\transformed\material-1.11.0\res
+com.inspekpro.app-lifecycle-viewmodel-savedstate-2.7.0-19 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\5e6a63b17d50f08b09f3750caf9b1592\transformed\lifecycle-viewmodel-savedstate-2.7.0\res
+com.inspekpro.app-lifecycle-livedata-ktx-2.7.0-20 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\62819296f9fe859bd4e3bdc18c06b021\transformed\lifecycle-livedata-ktx-2.7.0\res
+com.inspekpro.app-navigation-common-2.7.7-21 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\63ef36f717a9f8e9cff2a6e1ed1c96b5\transformed\navigation-common-2.7.7\res
+com.inspekpro.app-lifecycle-livedata-core-2.7.0-22 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\64df6be43813a65ad8c7dc4ba23b4fbb\transformed\lifecycle-livedata-core-2.7.0\res
+com.inspekpro.app-navigation-ui-ktx-2.7.7-23 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\6a8230ae38b4215a82adcaa1c5fe5908\transformed\navigation-ui-ktx-2.7.7\res
+com.inspekpro.app-transition-1.4.1-24 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\6c587cf7e7782c120388262951e02762\transformed\transition-1.4.1\res
+com.inspekpro.app-navigation-runtime-ktx-2.7.7-25 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\6fbee626d5f1d704d297c14cfeebbf0d\transformed\navigation-runtime-ktx-2.7.7\res
+com.inspekpro.app-emoji2-1.2.0-26 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\700eeb16a131fc81269a0b642c29ac4f\transformed\emoji2-1.2.0\res
+com.inspekpro.app-savedstate-1.2.1-27 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\70d6d43244d22cf4bbc327a37b16b09a\transformed\savedstate-1.2.1\res
+com.inspekpro.app-emoji2-views-helper-1.2.0-28 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\7fc694cc2568cce37b87a1c999160a4b\transformed\emoji2-views-helper-1.2.0\res
+com.inspekpro.app-annotation-experimental-1.3.1-29 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\88813a8d37c96f70c3fabff1b2958aad\transformed\annotation-experimental-1.3.1\res
+com.inspekpro.app-lifecycle-livedata-core-ktx-2.7.0-30 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\97774ec71850809a1823992c4515a375\transformed\lifecycle-livedata-core-ktx-2.7.0\res
+com.inspekpro.app-appcompat-resources-1.6.1-31 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\980d013c1dfbcdf54771987f6443f173\transformed\appcompat-resources-1.6.1\res
+com.inspekpro.app-sqlite-framework-2.4.0-32 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\99d773445f8141cf2eacb177439d6668\transformed\sqlite-framework-2.4.0\res
+com.inspekpro.app-lifecycle-process-2.7.0-33 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\9f7ca58c31c235da88e44ec761be20c0\transformed\lifecycle-process-2.7.0\res
+com.inspekpro.app-lifecycle-viewmodel-2.7.0-34 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\a24030ac1b3ed0a1faa8967d7d023ea0\transformed\lifecycle-viewmodel-2.7.0\res
+com.inspekpro.app-navigation-fragment-ktx-2.7.7-35 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\a5ba59a47830aa359127dbc4dd407457\transformed\navigation-fragment-ktx-2.7.7\res
+com.inspekpro.app-play-services-basement-18.3.0-36 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\a68746980180cc1b429a84b1e2703d0c\transformed\play-services-basement-18.3.0\res
+com.inspekpro.app-window-1.0.0-37 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\ab66fdeb90a6b3677b167e4e164784bb\transformed\window-1.0.0\res
+com.inspekpro.app-constraintlayout-2.1.4-38 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\b4ef1cca494a4842b056a0f2310344d1\transformed\constraintlayout-2.1.4\res
+com.inspekpro.app-sqlite-2.4.0-39 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\b9c03868a54b666a415401cfc2d3f58e\transformed\sqlite-2.4.0\res
+com.inspekpro.app-appcompat-1.6.1-40 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\c4fab6a0e768d054cd3e34c14aa3aaaf\transformed\appcompat-1.6.1\res
+com.inspekpro.app-profileinstaller-1.3.0-41 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\ca30b8258313926eacb849c6160cae1f\transformed\profileinstaller-1.3.0\res
+com.inspekpro.app-lifecycle-livedata-2.7.0-42 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\d2cb49aa0883f7ccfbfad41e1cc02ee7\transformed\lifecycle-livedata-2.7.0\res
+com.inspekpro.app-activity-1.8.0-43 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\d4f811fa7d983843cab245934fae5071\transformed\activity-1.8.0\res
+com.inspekpro.app-drawerlayout-1.1.1-44 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\dab55d3f9c66a93c1c9c73ae7e32d702\transformed\drawerlayout-1.1.1\res
+com.inspekpro.app-hilt-navigation-fragment-1.2.0-45 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\dccdab76dbf2caecff831e311bbaea68\transformed\hilt-navigation-fragment-1.2.0\res
+com.inspekpro.app-room-ktx-2.6.1-46 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\dce868b664584c9729cb23181d559a10\transformed\room-ktx-2.6.1\res
+com.inspekpro.app-navigation-common-ktx-2.7.7-47 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\eb4efa79914e09a9e30812e477ecf1b5\transformed\navigation-common-ktx-2.7.7\res
+com.inspekpro.app-glide-4.16.0-48 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\eb98a9f6459f5999e152c863a8a1c08b\transformed\glide-4.16.0\res
+com.inspekpro.app-startup-runtime-1.1.1-49 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\ecc9f6fc9afb37dc5b7083972dd52122\transformed\startup-runtime-1.1.1\res
+com.inspekpro.app-swiperefreshlayout-1.1.0-50 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\f25fa7c4410f82aa70c3321866d84333\transformed\swiperefreshlayout-1.1.0\res
+com.inspekpro.app-lifecycle-runtime-ktx-2.7.0-51 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\f406ecd8f2bd5087944725ee5f3e9e5a\transformed\lifecycle-runtime-ktx-2.7.0\res
+com.inspekpro.app-core-runtime-2.2.0-52 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\f4e711d1407a3718d2ef9569d00ac913\transformed\core-runtime-2.2.0\res
+com.inspekpro.app-navigation-fragment-2.7.7-53 C:\Users\Gerald Eberhard\.gradle\caches\transforms-3\f8e2a89c4b3c05aec87ffa54612826b8\transformed\navigation-fragment-2.7.7\res
+com.inspekpro.app-pngs-54 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\build\generated\res\pngs\debug
+com.inspekpro.app-resValues-55 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\build\generated\res\resValues\debug
+com.inspekpro.app-packageDebugResources-56 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.inspekpro.app-packageDebugResources-57 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.inspekpro.app-merged_res-58 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\build\intermediates\merged_res\debug
+com.inspekpro.app-debug-59 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\src\debug\res
+com.inspekpro.app-main-60 D:\KULIAH_UPER\Semester 6\Mobile Programming\Tugas Besar\InspekPro\app\src\main\res

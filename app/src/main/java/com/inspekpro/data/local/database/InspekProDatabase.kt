@@ -22,6 +22,9 @@ import com.inspekpro.data.local.entity.InspectionSessionEntity
 import com.inspekpro.data.local.entity.SessionStatus
 import com.inspekpro.data.local.entity.SessionSummaryEntity
 
+import com.inspekpro.data.local.entity.UserEntity
+import com.inspekpro.data.local.dao.UserDao
+
 @Database(
     entities = [
         InspectionSessionEntity::class,
@@ -29,7 +32,8 @@ import com.inspekpro.data.local.entity.SessionSummaryEntity
         ChecklistTemplateEntity::class,
         ChecklistItemEntity::class,
         FindingPhotoEntity::class,
-        SessionSummaryEntity::class
+        SessionSummaryEntity::class,
+        UserEntity::class
     ],
     version = 1,
     exportSchema = true
@@ -42,6 +46,7 @@ abstract class InspekProDatabase : RoomDatabase() {
     abstract fun checklistDao(): ChecklistDao
     abstract fun findingPhotoDao(): FindingPhotoDao
     abstract fun sessionSummaryDao(): SessionSummaryDao
+    abstract fun userDao(): UserDao
 
     companion object {
         private const val DATABASE_NAME = "inspekpro.db"

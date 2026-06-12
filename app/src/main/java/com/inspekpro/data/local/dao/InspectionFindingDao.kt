@@ -56,6 +56,9 @@ interface InspectionFindingDao {
     """)
     fun getFindingsByCategory(sessionId: Long, category: String): Flow<List<InspectionFindingEntity>>
 
+    @Query("SELECT * FROM inspection_findings ORDER BY created_at DESC LIMIT :limit")
+    fun getRecentFindings(limit: Int): Flow<List<InspectionFindingEntity>>
+
     // ─── STATUS UPDATE ─────────────────────────────────────────────────────────
 
     @Query("""

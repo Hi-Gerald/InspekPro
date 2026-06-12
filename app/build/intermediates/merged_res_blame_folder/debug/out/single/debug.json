@@ -1,0 +1,150 @@
+[
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_bg_curved_header.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/bg_curved_header.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_item_active_inspection.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/item_active_inspection.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_clock.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_clock.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_home.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_home.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_fragment_register.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_register.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_warning.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_warning.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_cloud_rain.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_cloud_rain.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_item_photo_form.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/item_photo_form.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_drag.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_drag.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_company.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_company.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_item_checklist_form.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/item_checklist_form.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_visibility_off.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_visibility_off.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_lock.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_lock.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_location.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_location.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_inspection.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_inspection.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_calendar.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_calendar.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_bell.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_bell.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_fragment_login.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_login.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_fragment_add_inspection.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_add_inspection.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_activity_main.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_bg_edittext.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/bg_edittext.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_add.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_add.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_gear.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_gear.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_person.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_person.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_bg_badge_rounded.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/bg_badge_rounded.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_bg_dashed_border.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/bg_dashed_border.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_check.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_check.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_arrow_forward.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_arrow_forward.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/navigation_nav_graph.xml.flat",
+        "source": "com.inspekpro.app-main-60:/navigation/nav_graph.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_report.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_report.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_mail.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_mail.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_fragment_dashboard.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/layout_item_new_finding.xml.flat",
+        "source": "com.inspekpro.app-main-60:/layout/item_new_finding.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_bg_google_btn.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/bg_google_btn.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_visibility.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_visibility.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_google.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_google.xml"
+    },
+    {
+        "merged": "com.inspekpro.app-merged_res-58:/drawable_ic_logo.xml.flat",
+        "source": "com.inspekpro.app-main-60:/drawable/ic_logo.xml"
+    }
+]
