@@ -54,7 +54,7 @@ public final class InspekProDatabase_Impl extends InspekProDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `inspection_sessions` (`session_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `session_code` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `location_name` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `inspector_name` TEXT NOT NULL, `inspector_id` TEXT NOT NULL, `status` TEXT NOT NULL, `scheduled_date` INTEGER NOT NULL, `start_time` INTEGER, `end_time` INTEGER, `weather_condition` TEXT, `weather_temp_celsius` REAL, `weather_humidity` INTEGER, `weather_wind_speed` REAL, `weather_icon` TEXT, `total_items` INTEGER NOT NULL, `passed_items` INTEGER NOT NULL, `failed_items` INTEGER NOT NULL, `notes` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `is_synced` INTEGER NOT NULL)");

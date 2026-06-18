@@ -116,7 +116,9 @@ class DashboardFragment : Fragment() {
                 launch {
                     authViewModel.activeUser.collectLatest { user ->
                         if (user == null) {
-                            findNavController().navigate(R.id.action_dashboardFragment_to_loginFragment)
+                            if (findNavController().currentDestination?.id == R.id.dashboardFragment) {
+                                findNavController().navigate(R.id.action_dashboardFragment_to_loginFragment)
+                            }
                         } else {
                             binding.tvUserGreeting.text = "Selamat Pagi, ${user.fullName}"
                         }

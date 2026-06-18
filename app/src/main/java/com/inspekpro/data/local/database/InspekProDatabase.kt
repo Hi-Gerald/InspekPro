@@ -35,7 +35,7 @@ import com.inspekpro.data.local.dao.UserDao
         SessionSummaryEntity::class,
         UserEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(InspekProConverters::class)

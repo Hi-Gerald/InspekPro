@@ -96,7 +96,7 @@ public final class UserDao_Impl implements UserDao {
   }
 
   @Override
-  public Object insertUser(final UserEntity user, final Continuation<? super Long> $completion) {
+  public Object insertUser(final UserEntity user, final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -110,12 +110,12 @@ public final class UserDao_Impl implements UserDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateLoginStatus(final long userId, final boolean isLoggedIn,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -139,11 +139,11 @@ public final class UserDao_Impl implements UserDao {
           __preparedStmtOfUpdateLoginStatus.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
-  public Object clearAllLogins(final Continuation<? super Unit> $completion) {
+  public Object clearAllLogins(final Continuation<? super Unit> arg0) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -162,12 +162,11 @@ public final class UserDao_Impl implements UserDao {
           __preparedStmtOfClearAllLogins.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override
-  public Object getUserByEmail(final String email,
-      final Continuation<? super UserEntity> $completion) {
+  public Object getUserByEmail(final String email, final Continuation<? super UserEntity> arg1) {
     final String _sql = "SELECT * FROM users WHERE email = ? LIMIT 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -234,7 +233,7 @@ public final class UserDao_Impl implements UserDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override

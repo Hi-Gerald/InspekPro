@@ -274,7 +274,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
 
   @Override
   public Object insertFinding(final InspectionFindingEntity finding,
-      final Continuation<? super Long> $completion) {
+      final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -288,12 +288,12 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object insertFindings(final List<InspectionFindingEntity> findings,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -307,12 +307,12 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteFinding(final InspectionFindingEntity finding,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -326,12 +326,12 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateFinding(final InspectionFindingEntity finding,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -345,12 +345,11 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteFindingById(final long findingId,
-      final Continuation<? super Unit> $completion) {
+  public Object deleteFindingById(final long findingId, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -371,12 +370,12 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __preparedStmtOfDeleteFindingById.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateFindingResult(final long findingId, final FindingResult result,
-      final long now, final Continuation<? super Unit> $completion) {
+      final long now, final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -406,12 +405,12 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __preparedStmtOfUpdateFindingResult.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
   public Object updateFindingStatus(final long findingId, final FindingStatus status,
-      final long now, final Continuation<? super Unit> $completion) {
+      final long now, final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -441,7 +440,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           __preparedStmtOfUpdateFindingStatus.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
@@ -726,7 +725,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
 
   @Override
   public Object getFindingByIdOnce(final long findingId,
-      final Continuation<? super InspectionFindingEntity> $completion) {
+      final Continuation<? super InspectionFindingEntity> arg1) {
     final String _sql = "SELECT * FROM inspection_findings WHERE finding_id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -859,7 +858,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -1716,7 +1715,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
 
   @Override
   public Object getFindingSummaryRaw(final long sessionId,
-      final Continuation<? super InspectionFindingDao.FindingSummaryRaw> $completion) {
+      final Continuation<? super InspectionFindingDao.FindingSummaryRaw> arg1) {
     final String _sql = "\n"
             + "        SELECT \n"
             + "            COUNT(*) as totalFindings,\n"
@@ -1776,7 +1775,7 @@ public final class InspectionFindingDao_Impl implements InspectionFindingDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @NonNull

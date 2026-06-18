@@ -83,7 +83,7 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
 
   @Override
   public Object insertOrUpdateSummary(final SessionSummaryEntity summary,
-      final Continuation<? super Long> $completion) {
+      final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -97,12 +97,12 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteSummaryBySession(final long sessionId,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -123,7 +123,7 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
           __preparedStmtOfDeleteSummaryBySession.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -211,7 +211,7 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
 
   @Override
   public Object getSummaryBySessionOnce(final long sessionId,
-      final Continuation<? super SessionSummaryEntity> $completion) {
+      final Continuation<? super SessionSummaryEntity> arg1) {
     final String _sql = "SELECT * FROM session_summaries WHERE session_id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -287,12 +287,12 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object getDashboardStats(
-      final Continuation<? super SessionSummaryDao.DashboardStats> $completion) {
+      final Continuation<? super SessionSummaryDao.DashboardStats> arg0) {
     final String _sql = "\n"
             + "        SELECT \n"
             + "            COUNT(DISTINCT s.session_id) as totalSessions,\n"
@@ -334,7 +334,7 @@ public final class SessionSummaryDao_Impl implements SessionSummaryDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @NonNull

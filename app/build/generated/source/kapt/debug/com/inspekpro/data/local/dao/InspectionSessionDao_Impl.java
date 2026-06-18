@@ -350,7 +350,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
 
   @Override
   public Object insertSession(final InspectionSessionEntity session,
-      final Continuation<? super Long> $completion) {
+      final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -364,12 +364,12 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteSession(final InspectionSessionEntity session,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -383,12 +383,12 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateSession(final InspectionSessionEntity session,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -402,12 +402,11 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteSessionById(final long sessionId,
-      final Continuation<? super Unit> $completion) {
+  public Object deleteSessionById(final long sessionId, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -428,12 +427,12 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfDeleteSessionById.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateSessionStatus(final long sessionId, final SessionStatus status,
-      final long updatedAt, final Continuation<? super Unit> $completion) {
+      final long updatedAt, final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -463,12 +462,12 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfUpdateSessionStatus.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
   public Object startSession(final long sessionId, final long startTime, final long now,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -493,12 +492,12 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfStartSession.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
   public Object completeSession(final long sessionId, final long endTime, final long now,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg3) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -523,13 +522,13 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfCompleteSession.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg3);
   }
 
   @Override
   public Object updateWeather(final long sessionId, final String condition, final double tempC,
       final int humidity, final double windSpeed, final String icon, final long now,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg7) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -570,11 +569,11 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfUpdateWeather.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg7);
   }
 
   @Override
-  public Object markAsSynced(final long sessionId, final Continuation<? super Unit> $completion) {
+  public Object markAsSynced(final long sessionId, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -595,7 +594,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           __preparedStmtOfMarkAsSynced.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -954,7 +953,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
 
   @Override
   public Object getSessionByIdOnce(final long sessionId,
-      final Continuation<? super InspectionSessionEntity> $completion) {
+      final Continuation<? super InspectionSessionEntity> arg1) {
     final String _sql = "SELECT * FROM inspection_sessions WHERE session_id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -1125,7 +1124,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -1957,7 +1956,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
 
   @Override
   public Object getUnsyncedSessions(
-      final Continuation<? super List<InspectionSessionEntity>> $completion) {
+      final Continuation<? super List<InspectionSessionEntity>> arg0) {
     final String _sql = "SELECT * FROM inspection_sessions WHERE is_synced = 0";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -2126,7 +2125,7 @@ public final class InspectionSessionDao_Impl implements InspectionSessionDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @NonNull

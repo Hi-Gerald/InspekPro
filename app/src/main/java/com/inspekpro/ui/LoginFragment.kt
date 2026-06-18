@@ -84,7 +84,9 @@ class LoginFragment : Fragment() {
                 launch {
                     viewModel.activeUser.collectLatest { user ->
                         if (user != null) {
-                            findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment)
+                            if (findNavController().currentDestination?.id == R.id.loginFragment) {
+                                findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment)
+                            }
                         }
                     }
                 }

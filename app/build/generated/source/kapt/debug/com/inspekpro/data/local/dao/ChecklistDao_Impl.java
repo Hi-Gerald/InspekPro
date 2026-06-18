@@ -237,7 +237,7 @@ public final class ChecklistDao_Impl implements ChecklistDao {
 
   @Override
   public Object insertTemplate(final ChecklistTemplateEntity template,
-      final Continuation<? super Long> $completion) {
+      final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -251,12 +251,11 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object insertItem(final ChecklistItemEntity item,
-      final Continuation<? super Long> $completion) {
+  public Object insertItem(final ChecklistItemEntity item, final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -270,12 +269,12 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object insertItems(final List<ChecklistItemEntity> items,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -289,12 +288,11 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteItem(final ChecklistItemEntity item,
-      final Continuation<? super Unit> $completion) {
+  public Object deleteItem(final ChecklistItemEntity item, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -308,12 +306,12 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object updateTemplate(final ChecklistTemplateEntity template,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -327,12 +325,11 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object updateItem(final ChecklistItemEntity item,
-      final Continuation<? super Unit> $completion) {
+  public Object updateItem(final ChecklistItemEntity item, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -346,7 +343,7 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -419,7 +416,7 @@ public final class ChecklistDao_Impl implements ChecklistDao {
 
   @Override
   public Object getTemplateById(final long templateId,
-      final Continuation<? super ChecklistTemplateEntity> $completion) {
+      final Continuation<? super ChecklistTemplateEntity> arg1) {
     final String _sql = "SELECT * FROM checklist_templates WHERE template_id = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -482,7 +479,7 @@ public final class ChecklistDao_Impl implements ChecklistDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override

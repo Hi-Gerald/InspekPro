@@ -110,8 +110,7 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
   }
 
   @Override
-  public Object insertPhoto(final FindingPhotoEntity photo,
-      final Continuation<? super Long> $completion) {
+  public Object insertPhoto(final FindingPhotoEntity photo, final Continuation<? super Long> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Long>() {
       @Override
       @NonNull
@@ -125,12 +124,12 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object insertPhotos(final List<FindingPhotoEntity> photos,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -144,12 +143,11 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deletePhoto(final FindingPhotoEntity photo,
-      final Continuation<? super Unit> $completion) {
+  public Object deletePhoto(final FindingPhotoEntity photo, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -163,11 +161,11 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deletePhotoById(final long photoId, final Continuation<? super Unit> $completion) {
+  public Object deletePhotoById(final long photoId, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -188,12 +186,12 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           __preparedStmtOfDeletePhotoById.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object markPhotoUploaded(final long photoId, final String url,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg2) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -220,7 +218,7 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           __preparedStmtOfMarkPhotoUploaded.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg2);
   }
 
   @Override
@@ -293,8 +291,7 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
   }
 
   @Override
-  public Object getPendingUploadPhotos(
-      final Continuation<? super List<FindingPhotoEntity>> $completion) {
+  public Object getPendingUploadPhotos(final Continuation<? super List<FindingPhotoEntity>> arg0) {
     final String _sql = "SELECT * FROM finding_photos WHERE is_uploaded = 0";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
@@ -354,7 +351,7 @@ public final class FindingPhotoDao_Impl implements FindingPhotoDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override
