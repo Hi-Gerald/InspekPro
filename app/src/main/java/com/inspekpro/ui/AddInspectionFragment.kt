@@ -24,6 +24,11 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Bagian Billy: UI Tambah Jadwal Inspeksi
+ * Fitur: Form input jadwal, validasi input, lampiran foto & video, serta progres checklist.
+ * Tujuan: Memungkinkan user membuat jadwal inspeksi baru yang nantinya disinkronkan ke Cloud dan Alarm.
+ */
 @AndroidEntryPoint
 class AddInspectionFragment : Fragment() {
 
@@ -73,7 +78,6 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        // Checklist Recycler
         checklistAdapter = ChecklistItemAdapter { position, isChecked ->
             checklistItems[position] = checklistItems[position].copy(second = isChecked)
             updateProgress()
@@ -85,7 +89,6 @@ class AddInspectionFragment : Fragment() {
         }
         checklistAdapter.submitList(checklistItems.toList())
 
-        // Photos Recycler
         photoAdapter = PhotoAdapter { position ->
             photos.removeAt(position)
             photoAdapter.submitList(photos.toList())
@@ -99,7 +102,6 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        // Date picker trigger
         binding.etDate.setOnClickListener {
             DatePickerDialog(
                 requireContext(),
@@ -117,7 +119,6 @@ class AddInspectionFragment : Fragment() {
             ).show()
         }
 
-        // Time picker trigger
         binding.etTime.setOnClickListener {
             TimePickerDialog(
                 requireContext(),
@@ -133,7 +134,6 @@ class AddInspectionFragment : Fragment() {
             ).show()
         }
 
-        // Add Checklist Item dynamically
         binding.btnChecklistAdd.setOnClickListener {
             val newItemTitle = "Pemeriksaan Baru ${checklistItems.size + 1} *"
             checklistItems.add(Pair(newItemTitle, false))
@@ -142,7 +142,6 @@ class AddInspectionFragment : Fragment() {
             Toast.makeText(requireContext(), "Item pemeriksaan ditambahkan", Toast.LENGTH_SHORT).show()
         }
 
-        // Add Photo dynamically
         binding.btnPhotoAdd.setOnClickListener {
             val randomImgUrl = "https://picsum.photos/id/${(10..100).random()}/200/200"
             photos.add(randomImgUrl)
@@ -150,7 +149,6 @@ class AddInspectionFragment : Fragment() {
             Toast.makeText(requireContext(), "Foto ditambahkan", Toast.LENGTH_SHORT).show()
         }
 
-        // Add Video (Mock Selection)
         binding.btnVideoAdd.setOnClickListener {
             videoPath = "/storage/emulated/0/DCIM/Camera/inspection_video_${System.currentTimeMillis()}.mp4"
             binding.tvVideoPath.text = "Video: inspection_video_... .mp4"
@@ -158,13 +156,12 @@ class AddInspectionFragment : Fragment() {
             Toast.makeText(requireContext(), "Video laporan dilampirkan", Toast.LENGTH_SHORT).show()
         }
 
-        // Save Button trigger with full validation
         binding.btnSaveInspection.setOnClickListener {
             if (validateInput()) {
                 viewModel.title.value = binding.etTitle.text.toString().trim()
                 viewModel.locationName.value = binding.etLocation.text.toString().trim()
                 viewModel.inspectorName.value = binding.etInspector.text.toString().trim()
-                // In a real app, we'd pass the videoPath to the viewModel
+                viewModel.videoPath.value = videoPath
                 viewModel.createSession("INS-001") 
             }
         }

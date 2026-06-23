@@ -5,8 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Entity: Sesi Inspeksi
- * Menyimpan semua data satu sesi pemeriksaan lapangan
+ * Bagian Billy: Entity Sesi Inspeksi
+ * Fitur: Metadata untuk Video Laporan & Status Sinkronisasi Cloud.
+ * Tujuan: Menyimpan informasi lengkap jadwal inspeksi termasuk path video laporan dan flag sinkronisasi Firestore.
  */
 @Entity(tableName = "inspection_sessions")
 data class InspectionSessionEntity(
@@ -16,7 +17,7 @@ data class InspectionSessionEntity(
     val sessionId: Long = 0,
 
     @ColumnInfo(name = "session_code")
-    val sessionCode: String,                    // e.g. "INS-2024-001"
+    val sessionCode: String,
 
     @ColumnInfo(name = "title")
     val title: String,
@@ -40,10 +41,10 @@ data class InspectionSessionEntity(
     val inspectorId: String,
 
     @ColumnInfo(name = "status")
-    val status: SessionStatus = SessionStatus.DRAFT,   // DRAFT, IN_PROGRESS, COMPLETED, CANCELLED
+    val status: SessionStatus = SessionStatus.DRAFT,
 
     @ColumnInfo(name = "scheduled_date")
-    val scheduledDate: Long,                    // epoch millis
+    val scheduledDate: Long,
 
     @ColumnInfo(name = "start_time")
     val startTime: Long? = null,
@@ -79,7 +80,7 @@ data class InspectionSessionEntity(
     val notes: String = "",
 
     @ColumnInfo(name = "report_video_path")
-    val reportVideoPath: String? = null,        // Lokasi file video laporan
+    val reportVideoPath: String? = null,
 
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),

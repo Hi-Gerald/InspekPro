@@ -6,6 +6,11 @@ import android.content.Context
 import android.content.Intent
 import com.inspekpro.data.local.entity.InspectionSessionEntity
 
+/**
+ * Bagian Billy: Alarm Scheduler
+ * Fitur: Penjadwalan AlarmManager (Exact Alarm)
+ * Tujuan: Mengatur agar sistem memberikan sinyal ke BroadcastReceiver tepat pada waktu inspeksi yang dijadwalkan.
+ */
 class AlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -24,7 +29,6 @@ class AlarmScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Jadwalkan alarm tepat pada waktunya
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             session.scheduledDate,

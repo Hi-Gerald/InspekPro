@@ -11,6 +11,11 @@ import androidx.core.app.NotificationCompat
 import com.inspekpro.MainActivity
 import com.inspekpro.R
 
+/**
+ * Bagian Billy: Receiver Notifikasi Inspeksi
+ * Fitur: BroadcastReceiver untuk menangkap sinyal AlarmManager.
+ * Tujuan: Menampilkan notifikasi pengingat ke user ketika waktu inspeksi telah tiba.
+ */
 class InspectionReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -47,7 +52,7 @@ class InspectionReminderReceiver : BroadcastReceiver() {
         )
 
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_logo) // Pastikan icon ini ada atau ganti ke ic_launcher
+            .setSmallIcon(R.drawable.ic_logo)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

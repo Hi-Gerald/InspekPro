@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DASHBOARD VIEW MODEL (Dikembalikan ke asal agar tidak ganggu tugas teman)
+// DASHBOARD VIEW MODEL
 // ─────────────────────────────────────────────────────────────────────────────
 
 @HiltViewModel
@@ -62,14 +62,16 @@ class DashboardViewModel @Inject constructor(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CREATE SESSION VIEW MODEL (Tugas Anda: Fokus di sini)
+// Bagian Billy: Create Session ViewModel
+// Fitur: Validasi input jadwal, Integrasi AlarmManager, & Sync Firestore
+// Untuk: Menangani logika bisnis pembuatan jadwal inspeksi baru dan sinkronisasi data.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val alarmScheduler: AlarmScheduler,
-    private val firestoreSyncRepo: FirestoreSyncRepository // Sinkronisasi diurus di sini
+    private val firestoreSyncRepo: FirestoreSyncRepository
 ) : ViewModel() {
 
     val title = MutableStateFlow("")
@@ -108,10 +110,10 @@ class CreateSessionViewModel @Inject constructor(
 
                 val sessionId = sessionRepo.createSession(newSession)
                 
-                // 1. Jadwalkan Pengingat (AlarmManager)
+                // Jadwalkan Pengingat (AlarmManager)
                 alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
 
-                // 2. Langsung sinkron ke Cloud (Firestore)
+                // Sinkron ke Cloud (Firestore)
                 firestoreSyncRepo.syncUnsyncedSessions()
 
                 _createResult.value = CreateSessionResult.Success(sessionId)

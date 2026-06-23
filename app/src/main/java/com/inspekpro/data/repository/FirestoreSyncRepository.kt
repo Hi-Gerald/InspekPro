@@ -7,6 +7,11 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Bagian Billy: Firestore Sync Repository
+ * Fitur: Sinkronisasi Cloud (Firebase Firestore)
+ * Untuk: Mengunggah data sesi inspeksi dari database lokal (Room) ke cloud secara otomatis agar data aman dan sinkron antar perangkat.
+ */
 @Singleton
 class FirestoreSyncRepository @Inject constructor(
     private val sessionDao: InspectionSessionDao,
@@ -15,10 +20,6 @@ class FirestoreSyncRepository @Inject constructor(
 
     private val sessionsCollection = firestore.collection("inspection_sessions")
 
-    /**
-     * Mengambil semua sesi yang belum disinkronkan dari Room 
-     * dan mengunggahnya ke Firestore.
-     */
     suspend fun syncUnsyncedSessions(): Result<Int> {
         return try {
             val unsynced = sessionDao.getUnsyncedSessions()
@@ -26,13 +27,8 @@ class FirestoreSyncRepository @Inject constructor(
 
             var count = 0
             for (session in unsynced) {
-                // Konversi Entity ke Map untuk Firestore
                 val data = sessionToMap(session)
-                
-                // Gunakan session_code sebagai ID dokumen agar tidak duplikat
                 sessionsCollection.document(session.sessionCode).set(data).await()
-                
-                // Tandai di lokal bahwa sudah di-sync
                 sessionDao.markAsSynced(session.sessionId)
                 count++
             }
