@@ -1,12 +1,16 @@
 package com.inspekpro.di
 
 import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.inspekpro.data.local.database.InspekProDatabase
 import com.inspekpro.data.remote.api.RetrofitClient
 import com.inspekpro.data.remote.api.WeatherApiService
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
 import com.inspekpro.data.repository.AuthRepository
+import com.inspekpro.receiver.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,6 +59,10 @@ object AppModule {
     @Provides
     fun provideWeatherApi(): WeatherApiService = RetrofitClient.weatherApiService
 
+    @Singleton
+    @Provides
+    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
     @Singleton
@@ -85,4 +93,11 @@ object AppModule {
     fun provideAuthRepository(db: InspekProDatabase): AuthRepository = AuthRepository(
         userDao = db.userDao()
     )
+
+    // ─── UTILS ────────────────────────────────────────────────────────────────
+
+    @Singleton
+    @Provides
+    fun provideAlarmScheduler(@ApplicationContext context: Context): AlarmScheduler =
+        AlarmScheduler(context)
 }

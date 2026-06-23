@@ -334,7 +334,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 3: 3. Dokumentasi Foto -->
+            <!-- Card 3: 3. Dokumentasi Foto & Video -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -353,7 +353,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="3. Dokumentasi Foto *"
+                        android:text="3. Dokumentasi Foto &amp; Video *"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -362,7 +362,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Upload foto kondisi mesin/objek saat inspeksi"
+                        android:text="Upload foto dan video kondisi saat inspeksi"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -420,6 +420,26 @@
                         </com.google.android.material.card.MaterialCardView>
 
                     </LinearLayout>
+
+                    <!-- Tambah Video Button (Baru) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVideoAdd"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Lampirkan Video Laporan"
+                        app:icon="@drawable/ic_video" />
+
+                    <TextView
+                        android:id="@+id/tvVideoPath"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Belum ada video dipilih"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:visibility="visible" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

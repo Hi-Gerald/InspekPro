@@ -42,6 +42,7 @@ class AddInspectionFragment : Fragment() {
     )
 
     private val photos = mutableListOf<String>()
+    private var videoPath: String? = null
     private val calendar = Calendar.getInstance()
 
     override fun onCreateView(
@@ -149,31 +150,59 @@ class AddInspectionFragment : Fragment() {
             Toast.makeText(requireContext(), "Foto ditambahkan", Toast.LENGTH_SHORT).show()
         }
 
-        // Save Button trigger
-        binding.btnSaveInspection.setOnClickListener {
-            val title = binding.etTitle.text.toString().trim()
-            val location = binding.etLocation.text.toString().trim()
-            val inspector = binding.etInspector.text.toString().trim()
-
-            if (title.isEmpty()) {
-                binding.titleInputLayout.error = "Nama objek tidak boleh kosong"
-                return@setOnClickListener
-            } else {
-                binding.titleInputLayout.error = null
-            }
-
-            if (location.isEmpty()) {
-                binding.locationInputLayout.error = "Lokasi tidak boleh kosong"
-                return@setOnClickListener
-            } else {
-                binding.locationInputLayout.error = null
-            }
-
-            viewModel.title.value = title
-            viewModel.locationName.value = location
-            viewModel.inspectorName.value = inspector
-            viewModel.createSession("INS-001") // Mock inspector ID
+        // Add Video (Mock Selection)
+        binding.btnVideoAdd.setOnClickListener {
+            videoPath = "/storage/emulated/0/DCIM/Camera/inspection_video_${System.currentTimeMillis()}.mp4"
+            binding.tvVideoPath.text = "Video: inspection_video_... .mp4"
+            binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
+            Toast.makeText(requireContext(), "Video laporan dilampirkan", Toast.LENGTH_SHORT).show()
         }
+
+        // Save Button trigger with full validation
+        binding.btnSaveInspection.setOnClickListener {
+            if (validateInput()) {
+                viewModel.title.value = binding.etTitle.text.toString().trim()
+                viewModel.locationName.value = binding.etLocation.text.toString().trim()
+                viewModel.inspectorName.value = binding.etInspector.text.toString().trim()
+                // In a real app, we'd pass the videoPath to the viewModel
+                viewModel.createSession("INS-001") 
+            }
+        }
+    }
+
+    private fun validateInput(): Boolean {
+        var isValid = true
+
+        val title = binding.etTitle.text.toString().trim()
+        if (title.isEmpty()) {
+            binding.titleInputLayout.error = "Nama objek tidak boleh kosong"
+            isValid = false
+        } else {
+            binding.titleInputLayout.error = null
+        }
+
+        val location = binding.etLocation.text.toString().trim()
+        if (location.isEmpty()) {
+            binding.locationInputLayout.error = "Lokasi tidak boleh kosong"
+            isValid = false
+        } else {
+            binding.locationInputLayout.error = null
+        }
+
+        val inspector = binding.etInspector.text.toString().trim()
+        if (inspector.isEmpty()) {
+            binding.inspectorInputLayout.error = "Nama inspektor harus diisi"
+            isValid = false
+        } else {
+            binding.inspectorInputLayout.error = null
+        }
+
+        if (photos.isEmpty()) {
+            Toast.makeText(requireContext(), "Minimal lampirkan 1 foto dokumentasi", Toast.LENGTH_SHORT).show()
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun updateProgress() {
@@ -198,7 +227,7 @@ class AddInspectionFragment : Fragment() {
                             binding.btnSaveInspection.text = "Menyimpan..."
                         }
                         is CreateSessionResult.Success -> {
-                            Toast.makeText(requireContext(), "Laporan inspeksi disimpan!", Toast.LENGTH_LONG).show()
+                            Toast.makeText(requireContext(), "Laporan inspeksi disimpan & alarm dijadwalkan!", Toast.LENGTH_LONG).show()
                             findNavController().popBackStack()
                         }
                         is CreateSessionResult.Error -> {

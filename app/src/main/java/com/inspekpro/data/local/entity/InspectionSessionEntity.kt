@@ -78,6 +78,9 @@ data class InspectionSessionEntity(
     @ColumnInfo(name = "notes")
     val notes: String = "",
 
+    @ColumnInfo(name = "report_video_path")
+    val reportVideoPath: String? = null,        // Lokasi file video laporan
+
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis(),
 
