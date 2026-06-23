@@ -59,12 +59,20 @@ object AppModule {
     @Provides
     fun provideWeatherApi(): WeatherApiService = RetrofitClient.weatherApiService
 
+    /**
+     * Bagian Billy: Provider Firebase Firestore
+     * Digunakan untuk sinkronisasi data jadwal inspeksi ke Cloud.
+     */
     @Singleton
     @Provides
     fun provideFirestore(): FirebaseFirestore = Firebase.firestore
 
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
+    /**
+     * Bagian Billy: Provider Session Repository
+     * Digunakan untuk manajemen data jadwal inspeksi di lokal (Room).
+     */
     @Singleton
     @Provides
     fun provideSessionRepository(
@@ -96,6 +104,10 @@ object AppModule {
 
     // ─── UTILS ────────────────────────────────────────────────────────────────
 
+    /**
+     * Bagian Billy: Provider Alarm Scheduler
+     * Digunakan untuk menjadwalkan notifikasi pengingat inspeksi.
+     */
     @Singleton
     @Provides
     fun provideAlarmScheduler(@ApplicationContext context: Context): AlarmScheduler =

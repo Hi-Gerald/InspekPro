@@ -9,6 +9,11 @@ import com.inspekpro.data.remote.model.WeatherInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 
+/**
+ * Bagian Billy: Repository Sesi Inspeksi
+ * Fitur: Manajemen data jadwal inspeksi, integrasi cuaca, dan pembuatan ringkasan laporan.
+ * Tujuan: Sebagai sumber data utama untuk fitur jadwal inspeksi Billy di seluruh aplikasi.
+ */
 class InspectionSessionRepository(
     private val sessionDao: InspectionSessionDao,
     private val findingDao: InspectionFindingDao,

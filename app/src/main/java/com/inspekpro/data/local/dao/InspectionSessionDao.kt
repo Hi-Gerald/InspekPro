@@ -5,10 +5,13 @@ import com.inspekpro.data.local.entity.InspectionSessionEntity
 import com.inspekpro.data.local.entity.SessionStatus
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Bagian Billy: Data Access Object (DAO) untuk Sesi Inspeksi
+ * Fitur: Operasi CRUD Sesi, Filter Status, dan Sinkronisasi.
+ * Tujuan: Menangani interaksi database untuk fitur jadwal inspeksi dan pelacakan status sinkronisasi ke Cloud.
+ */
 @Dao
 interface InspectionSessionDao {
-
-    // ─── INSERT / UPDATE / DELETE ──────────────────────────────────────────────
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: InspectionSessionEntity): Long
@@ -21,8 +24,6 @@ interface InspectionSessionDao {
 
     @Query("DELETE FROM inspection_sessions WHERE session_id = :sessionId")
     suspend fun deleteSessionById(sessionId: Long)
-
-    // ─── QUERIES ──────────────────────────────────────────────────────────────
 
     @Query("SELECT * FROM inspection_sessions ORDER BY created_at DESC")
     fun getAllSessions(): Flow<List<InspectionSessionEntity>>
@@ -55,8 +56,6 @@ interface InspectionSessionDao {
     """)
     fun searchSessions(query: String): Flow<List<InspectionSessionEntity>>
 
-    // ─── STATUS UPDATE ─────────────────────────────────────────────────────────
-
     @Query("UPDATE inspection_sessions SET status = :status, updated_at = :updatedAt WHERE session_id = :sessionId")
     suspend fun updateSessionStatus(sessionId: Long, status: SessionStatus, updatedAt: Long = System.currentTimeMillis())
 
@@ -65,8 +64,6 @@ interface InspectionSessionDao {
 
     @Query("UPDATE inspection_sessions SET end_time = :endTime, status = 'COMPLETED', updated_at = :now WHERE session_id = :sessionId")
     suspend fun completeSession(sessionId: Long, endTime: Long, now: Long = System.currentTimeMillis())
-
-    // ─── WEATHER UPDATE ────────────────────────────────────────────────────────
 
     @Query("""
         UPDATE inspection_sessions SET 
@@ -87,8 +84,6 @@ interface InspectionSessionDao {
         icon: String,
         now: Long = System.currentTimeMillis()
     )
-
-    // ─── STATISTICS ───────────────────────────────────────────────────────────
 
     @Query("SELECT COUNT(*) FROM inspection_sessions")
     fun getTotalSessionCount(): Flow<Int>

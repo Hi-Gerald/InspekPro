@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Bagian Billy: Layout Tambah Jadwal Inspeksi -->
+<!-- Fitur: Form input, Progress Indicator, Lampiran Foto & Video -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -421,7 +423,7 @@
 
                     </LinearLayout>
 
-                    <!-- Tambah Video Button (Baru) -->
+                    <!-- Tambah Video Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnVideoAdd"
                         style="@style/Widget.Material3.Button.OutlinedButton"
