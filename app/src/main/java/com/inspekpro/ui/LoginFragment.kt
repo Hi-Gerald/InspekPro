@@ -71,7 +71,6 @@ class LoginFragment : Fragment() {
 
         binding.googleLoginBtn.setOnClickListener {
             Toast.makeText(requireContext(), "Masuk dengan Google...", Toast.LENGTH_SHORT).show()
-            // We can register a dummy google user locally for testing Google login
             viewModel.register("Google User", "google@inspekpro.com", "InspekPro Corp", "google123")
             viewModel.login("google@inspekpro.com", "google123")
         }
@@ -80,9 +79,13 @@ class LoginFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Auto-login Redirect
                 launch {
                     viewModel.activeUser.collectLatest { user ->
+                        android.util.Log.d(
+                            "LOGIN_STATE",
+                            "user = ${user?.email}"
+                        )
+
                         if (user != null) {
                             if (findNavController().currentDestination?.id == R.id.loginFragment) {
                                 findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment)
