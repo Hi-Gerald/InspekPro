@@ -101,8 +101,9 @@ class DashboardFragment : Fragment() {
             Toast.makeText(requireContext(), "Tidak ada notifikasi baru", Toast.LENGTH_SHORT).show()
         }
         binding.btnProfile.setOnClickListener {
-            val user = authViewModel.activeUser.value
-            Toast.makeText(requireContext(), "Profil: ${user?.fullName ?: "Sofia"}", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(
+                R.id.profileFragment
+            )
         }
         binding.btnLihatSemuaInspeksi.setOnClickListener {
             Toast.makeText(requireContext(), "Menampilkan semua sesi...", Toast.LENGTH_SHORT).show()
