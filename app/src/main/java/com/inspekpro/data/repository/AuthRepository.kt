@@ -4,6 +4,7 @@ import com.inspekpro.data.local.dao.UserDao
 import com.inspekpro.data.local.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
 import java.security.MessageDigest
+import android.util.Log
 
 class AuthRepository(private val userDao: UserDao) {
 
@@ -21,23 +22,49 @@ class AuthRepository(private val userDao: UserDao) {
         }
     }
 
+    // Sofia edit (Fix glitch bug, cannot enter the dashboard
     suspend fun loginUser(email: String, password: String): Result<UserEntity> {
         return try {
+
+            Log.d("AUTH_DEBUG", "Cari user: $email")
+
             val user = userDao.getUserByEmail(email)
-                ?: return Result.failure(Exception("Email belum terdaftar"))
+
+            Log.d("AUTH_DEBUG", "User ditemukan = ${user != null}")
+
+            if (user == null) {
+                return Result.failure(Exception("Email belum terdaftar"))
+            }
 
             val hashedPassword = hashPassword(password)
+
+            Log.d(
+                "AUTH_DEBUG",
+                "Password cocok = ${user.passwordHash == hashedPassword}"
+            )
+
             if (user.passwordHash != hashedPassword) {
                 return Result.failure(Exception("Password salah"))
             }
 
+            Log.d("AUTH_DEBUG", "Update login status")
+
             userDao.clearAllLogins()
             userDao.updateLoginStatus(user.userId, true)
+
+            // Sofia Code Fix (Login)
+            Log.d(
+                "AUTH_DEBUG",
+                "LOGIN STATUS UPDATED FOR ${user.userId}"
+            )
             Result.success(user.copy(isLoggedIn = true))
+
         } catch (e: Exception) {
+            Log.e("AUTH_DEBUG", "ERROR LOGIN", e)
             Result.failure(e)
         }
     }
+
 
     fun getActiveUser(): Flow<UserEntity?> = userDao.getActiveUser()
 
