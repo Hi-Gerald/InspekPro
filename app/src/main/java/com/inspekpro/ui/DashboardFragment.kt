@@ -81,7 +81,7 @@ class DashboardFragment : Fragment() {
         }
 
         binding.tabInspeksi.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Inspeksi segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
         }
         binding.tabLaporan.setOnClickListener {
             Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()

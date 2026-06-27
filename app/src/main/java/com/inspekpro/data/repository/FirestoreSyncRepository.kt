@@ -15,12 +15,13 @@ import javax.inject.Singleton
 @Singleton
 class FirestoreSyncRepository @Inject constructor(
     private val sessionDao: InspectionSessionDao,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore?
 ) {
 
-    private val sessionsCollection = firestore.collection("inspection_sessions")
+    private val sessionsCollection = firestore?.collection("inspection_sessions")
 
     suspend fun syncUnsyncedSessions(): Result<Int> {
+        val collection = sessionsCollection ?: return Result.success(0)
         return try {
             val unsynced = sessionDao.getUnsyncedSessions()
             if (unsynced.isEmpty()) return Result.success(0)
@@ -28,7 +29,7 @@ class FirestoreSyncRepository @Inject constructor(
             var count = 0
             for (session in unsynced) {
                 val data = sessionToMap(session)
-                sessionsCollection.document(session.sessionCode).set(data).await()
+                collection.document(session.sessionCode).set(data).await()
                 sessionDao.markAsSynced(session.sessionId)
                 count++
             }
