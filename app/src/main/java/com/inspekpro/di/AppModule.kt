@@ -2,8 +2,6 @@ package com.inspekpro.di
 
 import android.content.Context
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.inspekpro.data.local.database.InspekProDatabase
 import com.inspekpro.data.remote.api.RetrofitClient
 import com.inspekpro.data.remote.api.WeatherApiService
@@ -62,10 +60,16 @@ object AppModule {
     /**
      * Bagian Billy: Provider Firebase Firestore
      * Digunakan untuk sinkronisasi data jadwal inspeksi ke Cloud.
+     * Ditambahkan Try-Catch agar tidak crash jika google-services.json belum ada.
      */
     @Singleton
     @Provides
-    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    fun provideFirestore(): FirebaseFirestore? = try {
+        // Coba ambil instance default, jika gagal (misal: config missing) akan lempar IllegalStateException
+        FirebaseFirestore.getInstance()
+    } catch (e: Exception) {
+        null
+    }
 
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
