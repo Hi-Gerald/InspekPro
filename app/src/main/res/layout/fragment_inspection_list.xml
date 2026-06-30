@@ -113,7 +113,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- Horizontal Date Picker (Mock) -->
+                    <!-- Horizontal Date Picker (Dynamic) -->
                     <LinearLayout
                         android:id="@+id/dateStrip"
                         android:layout_width="match_parent"
@@ -123,84 +123,102 @@
                         android:weightSum="7"
                         app:layout_constraintTop_toBottomOf="@id/tvCurrentMonth">
 
-                        <!-- Mon 8 -->
+                        <!-- Day 0 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer0"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sen" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="8" android:textSize="14sp" android:textColor="@color/text_primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sen" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum0" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="8" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Tue 9 (Selected/Indicator) -->
+                        <!-- Day 1 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sel" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="9" android:textSize="14sp" android:textColor="@color/text_primary" android:background="@drawable/bg_badge_rounded" android:backgroundTint="#E8F0FE" android:paddingHorizontal="4dp"/>
-                            <View android:layout_width="4dp" android:layout_height="4dp" android:layout_marginTop="2dp" android:background="@color/primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sel" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum1" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="9" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Wed 10 (Active) -->
+                        <!-- Day 2 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rab" android:textSize="10sp" android:textColor="@color/primary" android:textStyle="bold" />
-                            <TextView android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="10" android:textSize="14sp" android:textColor="@color/white" android:background="@drawable/bg_badge_rounded" android:backgroundTint="@color/primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rab" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum2" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="10" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Thu 11 -->
+                        <!-- Day 3 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer3"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Kam" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="11" android:textSize="14sp" android:textColor="@color/text_primary" android:background="@drawable/bg_badge_rounded" android:backgroundTint="#E8F0FE" android:paddingHorizontal="4dp"/>
-                            <View android:layout_width="4dp" android:layout_height="4dp" android:layout_marginTop="2dp" android:background="@color/primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Kam" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum3" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="11" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Fri 12 -->
+                        <!-- Day 4 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer4"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jum" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="12" android:textSize="14sp" android:textColor="@color/text_primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jum" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum4" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="12" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Sat 13 -->
+                        <!-- Day 5 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer5"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sab" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="13" android:textSize="14sp" android:textColor="@color/text_primary" android:background="@drawable/bg_badge_rounded" android:backgroundTint="#E8F0FE" android:paddingHorizontal="4dp"/>
-                            <View android:layout_width="4dp" android:layout_height="4dp" android:layout_marginTop="2dp" android:background="@color/primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sab" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum5" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="13" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
 
-                        <!-- Sun 14 -->
+                        <!-- Day 6 -->
                         <LinearLayout
+                            android:id="@+id/dayContainer6"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Min" android:textSize="10sp" android:textColor="@color/text_secondary" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="14" android:textSize="14sp" android:textColor="@color/text_primary" />
+                            android:orientation="vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView android:id="@+id/tvDayName6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Min" android:textSize="10sp" android:textColor="@color/text_secondary" />
+                            <TextView android:id="@+id/tvDayNum6" android:layout_width="28dp" android:layout_height="28dp" android:gravity="center" android:text="14" android:textSize="14sp" android:textColor="@color/text_primary" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -222,6 +240,7 @@
                             android:padding="12dp">
 
                             <TextView
+                                android:id="@+id/tvSelectedDayStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="10 Juni 2026 2 Inspeksi Dijadwalkan"
