@@ -80,6 +80,7 @@ class CreateSessionViewModel @Inject constructor(
     val inspectorName = MutableStateFlow("")
     val scheduledDate = MutableStateFlow(System.currentTimeMillis())
     val notes = MutableStateFlow("")
+    val photos = MutableStateFlow<List<String>>(emptyList())
     val videoPath = MutableStateFlow<String?>(null)
     
     // Finding Details
@@ -115,7 +116,7 @@ class CreateSessionViewModel @Inject constructor(
                     inspectorId   = inspectorId,
                     scheduledDate = scheduledDate.value,
                     notes         = conclusion.value.ifBlank { notes.value }.trim(),
-                    reportVideoPath = videoPath.value,
+                    reportVideoPath = videoPath.value ?: photos.value.firstOrNull { it.endsWith(".mp4") },
                     status        = status
                 )
 

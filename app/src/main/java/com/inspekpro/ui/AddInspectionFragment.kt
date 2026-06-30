@@ -105,6 +105,7 @@ class AddInspectionFragment : Fragment() {
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
             videoPath = it.toString()
+            addPhotoToList(it.toString(), isFinding = false)
             binding.tvVideoPath.text = "Video dilampirkan"
             binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
             updateProgress()
@@ -122,6 +123,7 @@ class AddInspectionFragment : Fragment() {
         if (success) {
             tempPhotoUri?.let { 
                 videoPath = it.toString()
+                addPhotoToList(it.toString(), isFinding = false)
                 binding.tvVideoPath.text = "Video direkam"
                 binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
                 updateProgress()
@@ -374,6 +376,7 @@ class AddInspectionFragment : Fragment() {
             viewModel.locationName.value = binding.etLocation.text.toString().trim()
             viewModel.inspectorName.value = binding.etInspector.text.toString().trim()
             viewModel.conclusion.value = binding.etConclusion.text.toString().trim()
+            viewModel.photos.value = photos
             viewModel.videoPath.value = videoPath
             
             if (binding.rbHasFindings.isChecked) {
