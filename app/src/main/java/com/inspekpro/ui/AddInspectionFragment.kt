@@ -57,6 +57,14 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
+    private val photoPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            photos.add(it.toString())
+            photoAdapter.submitList(photos.toList())
+            Toast.makeText(requireContext(), "Foto dokumentasi berhasil dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -189,10 +197,8 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnPhotoAdd.setOnClickListener {
-            val randomImgUrl = "https://picsum.photos/id/${(10..100).random()}/200/200"
-            photos.add(randomImgUrl)
-            photoAdapter.submitList(photos.toList())
-            Toast.makeText(requireContext(), "Foto ditambahkan", Toast.LENGTH_SHORT).show()
+            // Bagian Billy: Menggunakan Photo Picker asli (Bukan hardcoded picsum)
+            photoPickerLauncher.launch("image/*")
         }
 
         binding.btnVideoAdd.setOnClickListener {
