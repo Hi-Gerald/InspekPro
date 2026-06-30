@@ -105,9 +105,9 @@ class InspectionListFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe Active Sessions for the list
+                // Observe All Sessions for the list
                 launch {
-                    viewModel.activeSessions.collectLatest { sessions ->
+                    viewModel.allSessions.collectLatest { sessions ->
                         adapter.submitList(sessions)
                     }
                 }

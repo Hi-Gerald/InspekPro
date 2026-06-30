@@ -100,9 +100,29 @@ class CreateSessionViewModel @Inject constructor(
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
-    fun createSession(inspectorId: String, status: SessionStatus = SessionStatus.DRAFT) {
-        if (!isFormValid.value) return
+    fun createSession(
+        inspectorId: String, 
+        status: SessionStatus = SessionStatus.DRAFT,
+        manualTitle: String? = null,
+        manualLocation: String? = null,
+        manualInspector: String? = null,
+        manualConclusion: String? = null,
+        manualPhotos: List<String>? = null,
+        manualVideo: String? = null
+    ) {
         viewModelScope.launch {
+            val finalTitle = manualTitle ?: title.value
+            val finalLocation = manualLocation ?: locationName.value
+            val finalInspector = manualInspector ?: inspectorName.value
+            val finalConclusion = manualConclusion ?: conclusion.value
+            val finalPhotos = manualPhotos ?: photos.value
+            val finalVideo = manualVideo ?: videoPath.value
+
+            if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
+                _createResult.value = CreateSessionResult.Error("Harap isi field wajib: Judul, Lokasi, dan Inspector")
+                return@launch
+            }
+
             _createResult.value = CreateSessionResult.Loading
             try {
                 val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
@@ -110,13 +130,13 @@ class CreateSessionViewModel @Inject constructor(
 
                 val newSession = InspectionSessionEntity(
                     sessionCode   = code,
-                    title         = title.value.trim(),
-                    locationName  = locationName.value.trim(),
-                    inspectorName = inspectorName.value.trim(),
+                    title         = finalTitle.trim(),
+                    locationName  = finalLocation.trim(),
+                    inspectorName = finalInspector.trim(),
                     inspectorId   = inspectorId,
                     scheduledDate = scheduledDate.value,
-                    notes         = conclusion.value.ifBlank { notes.value }.trim(),
-                    reportVideoPath = videoPath.value ?: photos.value.firstOrNull { it.endsWith(".mp4") },
+                    notes         = finalConclusion.trim(),
+                    reportVideoPath = finalVideo ?: finalPhotos.firstOrNull { it.endsWith(".mp4") },
                     status        = status
                 )
 
