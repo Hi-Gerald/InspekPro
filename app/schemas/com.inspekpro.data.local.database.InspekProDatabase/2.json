@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "1d9b3b529d7a963e925f51aadd6cd30d",
+    "identityHash": "2be061e6099e83cf6b5df6b19e1bfdd9",
     "entities": [
       {
         "tableName": "inspection_sessions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `session_code` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `location_name` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `inspector_name` TEXT NOT NULL, `inspector_id` TEXT NOT NULL, `status` TEXT NOT NULL, `scheduled_date` INTEGER NOT NULL, `start_time` INTEGER, `end_time` INTEGER, `weather_condition` TEXT, `weather_temp_celsius` REAL, `weather_humidity` INTEGER, `weather_wind_speed` REAL, `weather_icon` TEXT, `total_items` INTEGER NOT NULL, `passed_items` INTEGER NOT NULL, `failed_items` INTEGER NOT NULL, `notes` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `is_synced` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `session_code` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `location_name` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `inspector_name` TEXT NOT NULL, `inspector_id` TEXT NOT NULL, `status` TEXT NOT NULL, `scheduled_date` INTEGER NOT NULL, `start_time` INTEGER, `end_time` INTEGER, `weather_condition` TEXT, `weather_temp_celsius` REAL, `weather_humidity` INTEGER, `weather_wind_speed` REAL, `weather_icon` TEXT, `total_items` INTEGER NOT NULL, `passed_items` INTEGER NOT NULL, `failed_items` INTEGER NOT NULL, `notes` TEXT NOT NULL, `report_video_path` TEXT, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `is_synced` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "sessionId",
@@ -139,6 +139,12 @@
             "columnName": "notes",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "reportVideoPath",
+            "columnName": "report_video_path",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "createdAt",
@@ -776,7 +782,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d9b3b529d7a963e925f51aadd6cd30d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2be061e6099e83cf6b5df6b19e1bfdd9')"
     ]
   }
 }

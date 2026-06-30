@@ -49,7 +49,10 @@ class DashboardFragment : Fragment() {
         setupClickListeners()
         observeViewModel()
 
-        viewModel.loadWeather(-6.2088, 106.8456)
+        android.util.Log.d("DASHBOARD_DEBUG", "Dashboard dibuat")
+
+
+        //viewModel.loadWeather(-6.2088, 106.8456)
     }
 
     private fun setupRecyclerViews() {
@@ -98,8 +101,9 @@ class DashboardFragment : Fragment() {
             Toast.makeText(requireContext(), "Tidak ada notifikasi baru", Toast.LENGTH_SHORT).show()
         }
         binding.btnProfile.setOnClickListener {
-            val user = authViewModel.activeUser.value
-            Toast.makeText(requireContext(), "Profil: ${user?.fullName ?: "Sofia"}", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(
+                R.id.profileFragment
+            )
         }
         binding.btnLihatSemuaInspeksi.setOnClickListener {
             Toast.makeText(requireContext(), "Menampilkan semua sesi...", Toast.LENGTH_SHORT).show()
@@ -109,12 +113,18 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    //Sofia Code Fix (Login)
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // Observe Active User & handle redirect if logged out
-                launch {
+                /*launch {
                     authViewModel.activeUser.collectLatest { user ->
+
+                        android.util.Log.d(
+                            "DASHBOARD_STATE",
+                            "user = ${user?.email}"
+                        )
                         if (user == null) {
                             if (findNavController().currentDestination?.id == R.id.dashboardFragment) {
                                 findNavController().navigate(R.id.action_dashboardFragment_to_loginFragment)
@@ -123,7 +133,7 @@ class DashboardFragment : Fragment() {
                             binding.tvUserGreeting.text = "Selamat Pagi, ${user.fullName}"
                         }
                     }
-                }
+                }*/
 
                 // Observe Active Inspections
                 launch {
