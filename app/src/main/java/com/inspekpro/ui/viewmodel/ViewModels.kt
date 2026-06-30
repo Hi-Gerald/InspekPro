@@ -88,8 +88,15 @@ class CreateSessionViewModel @Inject constructor(
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
-    fun createSession(inspectorId: String) {
+    fun createSession(inspectorId: String, totalItems: Int = 0, passedItems: Int = 0) {
         if (!isFormValid.value) return
+        
+        // Validasi: Waktu inspeksi tidak boleh di masa lalu
+        if (scheduledDate.value < System.currentTimeMillis()) {
+            _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
+            return
+        }
+
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
             try {
@@ -105,6 +112,8 @@ class CreateSessionViewModel @Inject constructor(
                     scheduledDate = scheduledDate.value,
                     notes         = notes.value.trim(),
                     reportVideoPath = videoPath.value,
+                    totalItems    = totalItems,
+                    passedItems   = passedItems,
                     status        = SessionStatus.DRAFT
                 )
 
@@ -126,8 +135,10 @@ class CreateSessionViewModel @Inject constructor(
     fun resetForm() {
         title.value = ""
         locationName.value = ""
+        inspectorName.value = ""
         notes.value = ""
         videoPath.value = null
+        scheduledDate.value = System.currentTimeMillis()
         _createResult.value = CreateSessionResult.Idle
     }
 }

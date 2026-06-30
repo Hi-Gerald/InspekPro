@@ -1,12 +1,17 @@
 package com.inspekpro.ui
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -16,6 +21,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.inspekpro.R
 import com.inspekpro.databinding.FragmentAddInspectionBinding
+import com.inspekpro.ui.viewmodel.AuthViewModel
 import com.inspekpro.ui.viewmodel.CreateSessionResult
 import com.inspekpro.ui.viewmodel.CreateSessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,9 +42,28 @@ class AddInspectionFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: CreateSessionViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var checklistAdapter: ChecklistItemAdapter
     private lateinit var photoAdapter: PhotoAdapter
+
+    // Bagian Billy: Launcher untuk Video & Permission
+    private val videoPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            videoPath = it.toString()
+            binding.tvVideoPath.text = "Video: Berhasil dilampirkan"
+            binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
+            Toast.makeText(requireContext(), "Video laporan berhasil dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(requireContext(), "Izin notifikasi ditolak. Pengingat mungkin tidak muncul.", Toast.LENGTH_LONG).show()
+        }
+    }
 
     private val checklistItems = mutableListOf(
         Pair("Tekan Pompa *", true),
@@ -61,11 +86,20 @@ class AddInspectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        checkNotificationPermission()
         setupFormDefaults()
         setupRecyclerViews()
         setupClickListeners()
         observeViewModel()
         updateProgress()
+    }
+
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     private fun setupFormDefaults() {
@@ -74,7 +108,17 @@ class AddInspectionFragment : Fragment() {
 
         binding.etDate.setText(dateFormat.format(calendar.time))
         binding.etTime.setText(timeFormat.format(calendar.time))
-        binding.etInspector.setText("Sofia")
+        
+        // Bagian Billy: Ambil data user login secara dinamis
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authViewModel.activeUser.collectLatest { user ->
+                    user?.let {
+                        binding.etInspector.setText(it.fullName)
+                    }
+                }
+            }
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -127,6 +171,8 @@ class AddInspectionFragment : Fragment() {
                     calendar.set(Calendar.MINUTE, minute)
                     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
                     binding.etTime.setText(timeFormat.format(calendar.time))
+                    // Pastikan waktu alarm terupdate di ViewModel
+                    viewModel.scheduledDate.value = calendar.timeInMillis
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
@@ -150,10 +196,8 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnVideoAdd.setOnClickListener {
-            videoPath = "/storage/emulated/0/DCIM/Camera/inspection_video_${System.currentTimeMillis()}.mp4"
-            binding.tvVideoPath.text = "Video: inspection_video_... .mp4"
-            binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
-            Toast.makeText(requireContext(), "Video laporan dilampirkan", Toast.LENGTH_SHORT).show()
+            // Bagian Billy: Menggunakan Video Picker asli (Bukan hardcoded)
+            videoPickerLauncher.launch("video/*")
         }
 
         binding.btnSaveInspection.setOnClickListener {
@@ -162,7 +206,14 @@ class AddInspectionFragment : Fragment() {
                 viewModel.locationName.value = binding.etLocation.text.toString().trim()
                 viewModel.inspectorName.value = binding.etInspector.text.toString().trim()
                 viewModel.videoPath.value = videoPath
-                viewModel.createSession("INS-001") 
+                
+                // Kirim data progres checklist (Laporan)
+                val totalItems = checklistItems.size
+                val passedItems = checklistItems.count { it.second }
+                
+                // Ambil ID user dari AuthViewModel
+                val currentUserId = authViewModel.activeUser.value?.userId?.toString() ?: "0"
+                viewModel.createSession(currentUserId, totalItems, passedItems)
             }
         }
     }
@@ -196,6 +247,11 @@ class AddInspectionFragment : Fragment() {
 
         if (photos.isEmpty()) {
             Toast.makeText(requireContext(), "Minimal lampirkan 1 foto dokumentasi", Toast.LENGTH_SHORT).show()
+            isValid = false
+        }
+
+        if (videoPath == null) {
+            Toast.makeText(requireContext(), "Harap lampirkan video laporan", Toast.LENGTH_SHORT).show()
             isValid = false
         }
 
