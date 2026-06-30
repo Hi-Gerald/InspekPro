@@ -32,6 +32,10 @@ class PhotoAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(path: String, position: Int, onRemoveClick: (Int) -> Unit) {
+            val isVideo = path.endsWith(".mp4") || path.contains("video", ignoreCase = true)
+            
+            binding.ivVideoIcon.visibility = if (isVideo) android.view.View.VISIBLE else android.view.View.GONE
+
             Glide.with(itemView.context)
                 .load(path)
                 .centerCrop()
