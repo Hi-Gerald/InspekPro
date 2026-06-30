@@ -372,37 +372,51 @@ class AddInspectionFragment : Fragment() {
 
     private fun saveInspection(status: SessionStatus) {
         if (validateInput()) {
-            viewModel.title.value = binding.etTitle.text.toString().trim()
-            viewModel.locationName.value = binding.etLocation.text.toString().trim()
-            viewModel.inspectorName.value = binding.etInspector.text.toString().trim()
-            viewModel.conclusion.value = binding.etConclusion.text.toString().trim()
-            viewModel.photos.value = photos
-            viewModel.videoPath.value = videoPath
+            val titleText = binding.etTitle.text.toString().trim()
+            val locationText = binding.etLocation.text.toString().trim()
+            val inspectorText = binding.etInspector.text.toString().trim()
+            val conclusionText = binding.etConclusion.text.toString().trim()
             
-            if (binding.rbHasFindings.isChecked) {
-                viewModel.hasFindings.value = true
-                viewModel.findingCategory.value = binding.etFindingCategory.text.toString().trim()
-                viewModel.priority.value = binding.etPriority.text.toString().trim()
-                viewModel.findingDescription.value = binding.etFindingDescription.text.toString().trim()
-                viewModel.findingPhotos.value = findingPhotos
-            }
-
-            viewModel.createSession("INS-USER-001", status)
+            // Pass all data directly to avoid StateFlow propagation delays
+            viewModel.createSession(
+                inspectorId = "INS-USER-001", 
+                status = status,
+                manualTitle = titleText,
+                manualLocation = locationText,
+                manualInspector = inspectorText,
+                manualConclusion = conclusionText,
+                manualPhotos = photos.toList(),
+                manualVideo = videoPath
+            )
         }
     }
 
     private fun validateInput(): Boolean {
         var isValid = true
-        if (binding.etTitle.text.isNullOrBlank()) { binding.titleInputLayout.error = "Wajib diisi"; isValid = false }
-        else binding.titleInputLayout.error = null
+        if (binding.etTitle.text.isNullOrBlank()) { 
+            binding.titleInputLayout.error = "Wajib diisi"
+            isValid = false 
+        } else {
+            binding.titleInputLayout.error = null
+        }
         
-        if (binding.etLocation.text.isNullOrBlank()) { binding.locationInputLayout.error = "Wajib diisi"; isValid = false }
-        else binding.locationInputLayout.error = null
+        if (binding.etLocation.text.isNullOrBlank()) { 
+            binding.locationInputLayout.error = "Wajib diisi"
+            isValid = false 
+        } else {
+            binding.locationInputLayout.error = null
+        }
         
-        if (binding.etConclusion.text.isNullOrBlank()) { binding.conclusionInputLayout.error = "Wajib diisi"; isValid = false }
-        else binding.conclusionInputLayout.error = null
+        if (binding.etConclusion.text.isNullOrBlank()) { 
+            binding.conclusionInputLayout.error = "Wajib diisi"
+            isValid = false 
+        } else {
+            binding.conclusionInputLayout.error = null
+        }
 
-        if (photos.isEmpty()) { Toast.makeText(requireContext(), "Lampirkan foto dokumentasi", Toast.LENGTH_SHORT).show(); isValid = false }
+        if (!isValid) {
+            Toast.makeText(requireContext(), "Harap lengkapi semua field wajib (*)", Toast.LENGTH_SHORT).show()
+        }
         
         return isValid
     }
