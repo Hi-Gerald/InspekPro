@@ -208,9 +208,25 @@ sealed class WeatherUiState {
 class SessionListViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository
 ) : ViewModel() {
-    private val _filter = MutableStateFlow(DateFilter.TODAY)
+    private val _filter = MutableStateFlow(DateFilter.ALL)
     val filter: StateFlow<DateFilter> = _filter.asStateFlow()
+
+    private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
+    val selectedDateMillis: StateFlow<Long> = _selectedDateMillis.asStateFlow()
+
     val allSessions = sessionRepo.getAllSessions()
+
+    val filteredSessions: Flow<List<InspectionSessionEntity>> = combine(allSessions, _selectedDateMillis) { sessions, selectedMillis ->
+        val cal = Calendar.getInstance().apply { timeInMillis = selectedMillis }
+        val day = cal.get(Calendar.DAY_OF_YEAR)
+        val year = cal.get(Calendar.YEAR)
+
+        sessions.filter {
+            val sessionCal = Calendar.getInstance().apply { timeInMillis = it.scheduledDate }
+            sessionCal.get(Calendar.DAY_OF_YEAR) == day && sessionCal.get(Calendar.YEAR) == year
+        }
+    }
+
     val sessionsByStatus: StateFlow<SessionGroupUiState> = allSessions.map { sessions ->
         SessionGroupUiState(
             total = sessions.size,
@@ -219,9 +235,11 @@ class SessionListViewModel @Inject constructor(
             tertunda = sessions.count { it.status == SessionStatus.DRAFT }
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SessionGroupUiState())
-    val activeSessions: Flow<List<InspectionSessionEntity>> = allSessions.map { list ->
-        list.filter { it.status in listOf(SessionStatus.IN_PROGRESS, SessionStatus.DRAFT) }
+    
+    fun setSelectedDate(millis: Long) {
+        _selectedDateMillis.value = millis
     }
+
     fun setFilter(filter: DateFilter) { _filter.value = filter }
     fun deleteSession(sessionId: Long) { viewModelScope.launch { sessionRepo.deleteSession(sessionId) } }
 }

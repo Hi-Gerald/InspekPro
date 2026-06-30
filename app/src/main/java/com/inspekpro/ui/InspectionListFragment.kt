@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -20,6 +21,7 @@ import com.inspekpro.ui.viewmodel.SessionListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
@@ -30,6 +32,8 @@ class InspectionListFragment : Fragment() {
 
     private val viewModel: SessionListViewModel by viewModels()
     private lateinit var adapter: ActiveInspectionAdapter
+
+    private val weekDays = mutableListOf<Calendar>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,9 +46,44 @@ class InspectionListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupCalendarStrip()
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun setupCalendarStrip() {
+        val calendar = Calendar.getInstance()
+        // Start from Monday of current week
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        
+        val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        binding.tvCurrentMonth.text = monthFormat.format(calendar.time)
+
+        val dayNames = arrayOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min")
+        
+        weekDays.clear()
+        for (i in 0..6) {
+            val dayCal = calendar.clone() as Calendar
+            weekDays.add(dayCal)
+            
+            val containerId = resources.getIdentifier("dayContainer$i", "id", requireContext().packageName)
+            val dayNameId = resources.getIdentifier("tvDayName$i", "id", requireContext().packageName)
+            val dayNumId = resources.getIdentifier("tvDayNum$i", "id", requireContext().packageName)
+
+            val container = binding.root.findViewById<View>(containerId)
+            val tvName = binding.root.findViewById<android.widget.TextView>(dayNameId)
+            val tvNum = binding.root.findViewById<android.widget.TextView>(dayNumId)
+
+            tvName.text = dayNames[i]
+            tvNum.text = dayCal.get(Calendar.DAY_OF_MONTH).toString()
+
+            container.setOnClickListener {
+                viewModel.setSelectedDate(dayCal.timeInMillis)
+            }
+            
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -79,17 +118,27 @@ class InspectionListFragment : Fragment() {
         }
 
         binding.btnNewSchedule.setOnClickListener {
-            findNavController().navigate(R.id.action_inspectionListFragment_to_addInspectionFragment)
+            createNewCalendarEvent()
+        }
+    }
+
+    private fun createNewCalendarEvent() {
+        val intent = Intent(Intent.ACTION_INSERT).apply {
+            data = CalendarContract.Events.CONTENT_URI
+            putExtra(CalendarContract.Events.TITLE, "Inspeksi Baru")
+            putExtra(CalendarContract.Events.DESCRIPTION, "Laporan inspeksi rutin")
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, System.currentTimeMillis())
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, System.currentTimeMillis() + 3600000)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Aplikasi kalender tidak ditemukan", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun openSystemCalendar() {
         val startMillis: Long = Calendar.getInstance().run {
-            set(2026, Calendar.JUNE, 10, 8, 0)
-            timeInMillis
-        }
-        val endMillis: Long = Calendar.getInstance().run {
-            set(2026, Calendar.JUNE, 10, 10, 0)
             timeInMillis
         }
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -105,10 +154,21 @@ class InspectionListFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe All Sessions for the list
+                // Observe Selected Date to update UI
                 launch {
-                    viewModel.allSessions.collectLatest { sessions ->
+                    viewModel.selectedDateMillis.collectLatest { selectedMillis ->
+                        updateCalendarUi(selectedMillis)
+                    }
+                }
+
+                // Observe Filtered Sessions for the list
+                launch {
+                    viewModel.filteredSessions.collectLatest { sessions ->
                         adapter.submitList(sessions)
+                        
+                        val sdf = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+                        val dateStr = sdf.format(Date(viewModel.selectedDateMillis.value))
+                        binding.tvSelectedDayStatus.text = "$dateStr ${sessions.size} Inspeksi Dijadwalkan"
                     }
                 }
 
@@ -121,6 +181,29 @@ class InspectionListFragment : Fragment() {
                         binding.tvDraftCount.text = stats.tertunda.toString()
                     }
                 }
+            }
+        }
+    }
+
+    private fun updateCalendarUi(selectedMillis: Long) {
+        val selectedCal = Calendar.getInstance().apply { timeInMillis = selectedMillis }
+        val selectedDay = selectedCal.get(Calendar.DAY_OF_YEAR)
+        val selectedYear = selectedCal.get(Calendar.YEAR)
+
+        for (i in 0..6) {
+            val dayCal = weekDays[i]
+            val isSelected = dayCal.get(Calendar.DAY_OF_YEAR) == selectedDay && dayCal.get(Calendar.YEAR) == selectedYear
+            
+            val dayNumId = resources.getIdentifier("tvDayNum$i", "id", requireContext().packageName)
+            val tvNum = binding.root.findViewById<android.widget.TextView>(dayNumId)
+
+            if (isSelected) {
+                tvNum.setBackgroundResource(R.drawable.bg_badge_rounded)
+                tvNum.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.primary)
+                tvNum.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            } else {
+                tvNum.background = null
+                tvNum.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary))
             }
         }
     }
