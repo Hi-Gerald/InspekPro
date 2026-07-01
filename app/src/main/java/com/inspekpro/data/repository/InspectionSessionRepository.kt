@@ -112,6 +112,25 @@ class InspectionSessionRepository(
         }
     }
 
+    /**
+     * Menyematkan info cuaca hasil query kota ke dalam data sesi di database lokal.
+     * Dibutuhkan sebagai pelengkap proses fallback di CreateSessionViewModel.
+     */
+    suspend fun attachWeatherToSession(sessionId: Long, info: WeatherInfo) {
+        try {
+            sessionDao.updateWeather(
+                sessionId = sessionId,
+                condition = info.conditionDesc,
+                tempC    = info.tempCelsius,
+                humidity = info.humidity,
+                windSpeed = info.windSpeedMs,
+                icon     = info.iconCode
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     // ─── SUMMARY ───────────────────────────────────────────────────────────────
 
     fun getSessionSummary(sessionId: Long): Flow<SessionSummaryEntity?> =
@@ -143,14 +162,14 @@ class InspectionSessionRepository(
         summaryDao.insertOrUpdateSummary(
             SessionSummaryEntity(
                 sessionId         = sessionId,
-                totalFindings     = raw.totalFindings,
-                criticalCount     = raw.criticalCount,
+                totalFindings      = raw.totalFindings,
+                criticalCount      = raw.criticalCount,
                 majorCount        = raw.majorCount,
                 minorCount        = raw.minorCount,
                 observationCount  = raw.observationCount,
-                passCount         = raw.passCount,
-                failCount         = raw.failCount,
-                naCount           = raw.naCount,
+                passCount          = raw.passCount,
+                failCount          = raw.failCount,
+                naCount            = raw.naCount,
                 complianceScore   = score,
                 openFindings      = raw.totalFindings - raw.failCount,
                 resolvedFindings  = raw.passCount,

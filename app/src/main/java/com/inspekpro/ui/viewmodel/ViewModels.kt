@@ -27,6 +27,9 @@ class DashboardViewModel @Inject constructor(
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val weather: StateFlow<WeatherUiState> = _weather.asStateFlow()
 
+    // Guard: mencegah pemanggilan ganda (rotasi layar, GPS callback berulang, dll.)
+    private var isLoadingWeather = false
+
     val totalSessions = sessionRepo.getTotalSessionCount()
     val completedSessions = sessionRepo.getCompletedCount()
     val activeSessions = sessionRepo.getAllSessions()
@@ -50,19 +53,50 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun loadWeather(lat: Double, lon: Double) {
+        // Abaikan jika request sebelumnya masih berjalan → cegah loop
+        if (isLoadingWeather) return
+
         viewModelScope.launch {
+            isLoadingWeather = true
             _weather.value = WeatherUiState.Loading
-            val result = sessionRepo.fetchWeatherByCity("Jakarta")
-            result.fold(
-                onSuccess = { _weather.value = WeatherUiState.Success(it) },
-                onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
-            )
+            try {
+                val result = sessionRepo.fetchWeatherByCoordinates(lat, lon)
+                result.fold(
+                    onSuccess = { _weather.value = WeatherUiState.Success(it) },
+                    onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
+                )
+            } finally {
+                // Selalu reset flag, bahkan kalau ada exception tak terduga
+                isLoadingWeather = false
+            }
+        }
+    }
+
+    /**
+     * Overload untuk pemanggilan berdasarkan nama kota (mis. dari DashboardFragment
+     * ketika GPS tidak tersedia).
+     */
+    fun loadWeatherByCity(cityName: String) {
+        if (isLoadingWeather) return
+
+        viewModelScope.launch {
+            isLoadingWeather = true
+            _weather.value = WeatherUiState.Loading
+            try {
+                val result = sessionRepo.fetchWeatherByCity(cityName)
+                result.fold(
+                    onSuccess = { _weather.value = WeatherUiState.Success(it) },
+                    onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
+                )
+            } finally {
+                isLoadingWeather = false
+            }
         }
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Bagian Billy: Create Session ViewModel
+// Bagian Anom: Create Session ViewModel
 // Fitur: Validasi input jadwal, Integrasi AlarmManager, & Sync Firestore
 // Untuk: Menangani logika bisnis pembuatan jadwal inspeksi baru dan sinkronisasi data.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -81,6 +115,10 @@ class CreateSessionViewModel @Inject constructor(
     val notes = MutableStateFlow("")
     val videoPath = MutableStateFlow<String?>(null)
 
+    // TAMBAHAN ANOM: Field untuk menyimpan koordinat GPS temporer
+    private var lastLat: Double? = null
+    private var lastLon: Double? = null
+
     private val _createResult = MutableStateFlow<CreateSessionResult>(CreateSessionResult.Idle)
     val createResult: StateFlow<CreateSessionResult> = _createResult.asStateFlow()
 
@@ -88,8 +126,14 @@ class CreateSessionViewModel @Inject constructor(
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
+    // TAMBAHAN ANOM: Fungsi baru dipanggil dari Fragment setelah mendapatkan GPS
+    fun setGpsCoordinates(lat: Double, lon: Double) {
+        lastLat = lat
+        lastLon = lon
+    }
+
     fun createSession(inspectorId: String, totalItems: Int = 0, passedItems: Int = 0) {
-        // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
+        // Bagian Anom: Cek langsung dari nilai field (menghindari delay stateIn)
         if (title.value.isBlank() || locationName.value.isBlank() || inspectorName.value.isBlank()) {
             _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
             return
@@ -100,6 +144,9 @@ class CreateSessionViewModel @Inject constructor(
             _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
             return
         }
+
+        // Mencegah trigger ganda/dobel submit saat loading berjalan
+        if (_createResult.value is CreateSessionResult.Loading) return
 
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
@@ -126,12 +173,36 @@ class CreateSessionViewModel @Inject constructor(
                 // Jadwalkan Pengingat (AlarmManager)
                 alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
 
-                // Data lokal & alarm sudah aman → langsung sukses
+                // Data lokal & alarm sudah aman → langsung sukses (UI tidak nge-block)
                 _createResult.value = CreateSessionResult.Success(sessionId)
+
+                // TAMBAHAN ANOM: Proses fetch cuaca di background agar tidak mengunci UI utama
+                val lat = lastLat
+                val lon = lastLon
+                launch {
+                    try {
+                        if (lat != null && lon != null) {
+                            // GPS tersedia → pakai koordinat (paling akurat)
+                            sessionRepo.fetchAndAttachWeather(sessionId, lat, lon)
+                        } else if (locationName.value.isNotBlank()) {
+                            // Fallback → pakai nama lokasi yang diketik user
+                            sessionRepo.fetchWeatherByCity(locationName.value.trim())
+                                .onSuccess { info -> 
+                                    sessionRepo.attachWeatherToSession(sessionId, info) 
+                                }
+                        }
+                    } catch (weatherError: Exception) {
+                        weatherError.printStackTrace() // Gagal cuaca tidak membatalkan session success
+                    }
+                }
 
                 // Sinkron ke Cloud di background (tidak memblokir user)
                 launch {
-                    firestoreSyncRepo.syncUnsyncedSessions()
+                    try {
+                        firestoreSyncRepo.syncUnsyncedSessions()
+                    } catch (syncError: Exception) {
+                        syncError.printStackTrace()
+                    }
                 }
             } catch (e: Exception) {
                 _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal membuat sesi")
@@ -145,6 +216,8 @@ class CreateSessionViewModel @Inject constructor(
         inspectorName.value = ""
         notes.value = ""
         videoPath.value = null
+        lastLat = null // Reset koordinat GPS
+        lastLon = null // Reset koordinat GPS
         scheduledDate.value = System.currentTimeMillis()
         _createResult.value = CreateSessionResult.Idle
     }

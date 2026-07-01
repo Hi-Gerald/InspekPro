@@ -1,0 +1,9 @@
+# Salin file ini menjadi local.properties (di root project), lalu isi key-nya.
+# File local.properties TIDAK boleh di-commit ke Git (sudah ada di .gitignore).
+#
+# Daftar API key gratis di: https://openweathermap.org/api
+# Tier gratis mencukupi untuk 60 request/menit.
+
+sdk.dir=/Users/NAMA_KAMU/Library/Android/sdk
+
+WEATHER_API_KEY=isi_api_key_openweathermap_kamu_di_sini
