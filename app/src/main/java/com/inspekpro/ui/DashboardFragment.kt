@@ -87,7 +87,7 @@ class DashboardFragment : Fragment() {
                 val baseMargin = (24 * density).toInt()
                 topMargin = baseMargin + systemBars.top
             }
-            binding.btnProfile.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            binding.cardNotification.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 val baseMargin = (24 * density).toInt()
                 topMargin = baseMargin + systemBars.top
             }
