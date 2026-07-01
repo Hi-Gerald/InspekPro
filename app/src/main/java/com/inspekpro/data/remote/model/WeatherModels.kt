@@ -1,6 +1,7 @@
 package com.inspekpro.data.remote.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Locale
 
 // ─── RESPONSE MODELS ──────────────────────────────────────────────────────────
 
@@ -108,11 +109,11 @@ data class WeatherInfo(
                 conditionDesc = desc,
                 iconCode = icon,
                 iconUrl = "https://openweathermap.org/img/wn/${icon}@2x.png",
-                tempCelsius = String.format("%.1f", tempC).toDouble(),
-                feelsLikeCelsius = String.format("%.1f", feelsLikeC).toDouble(),
+                tempCelsius = String.format(Locale.US, "%.1f", tempC).toDouble(),
+                feelsLikeCelsius = String.format(Locale.US, "%.1f", feelsLikeC).toDouble(),
                 humidity = response.main.humidity,
                 windSpeedMs = response.wind.speed,
-                windSpeedKmh = String.format("%.1f", windKmh).toDouble(),
+                windSpeedKmh = String.format(Locale.US, "%.1f", windKmh).toDouble(),
                 pressureHpa = response.main.pressure,
                 cloudCoverPercent = response.clouds.all,
                 visibilityKm = visKm,

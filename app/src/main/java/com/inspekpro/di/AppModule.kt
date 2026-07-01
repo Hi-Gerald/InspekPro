@@ -1,6 +1,8 @@
 package com.inspekpro.di
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -67,6 +69,10 @@ object AppModule {
     @Provides
     fun provideFirestore(): FirebaseFirestore = Firebase.firestore
 
+    @Singleton
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
+
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
     /**
@@ -98,8 +104,12 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideAuthRepository(db: InspekProDatabase): AuthRepository = AuthRepository(
-        userDao = db.userDao()
+    fun provideAuthRepository(
+        db: InspekProDatabase,
+        firebaseAuth: FirebaseAuth
+    ): AuthRepository = AuthRepository(
+        userDao = db.userDao(),
+        firebaseAuth = firebaseAuth
     )
 
     // ─── UTILS ────────────────────────────────────────────────────────────────

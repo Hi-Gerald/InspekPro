@@ -61,6 +61,9 @@ class RegisterFragment : Fragment() {
             if (email.isEmpty()) {
                 binding.emailInputLayout.error = "Email tidak boleh kosong"
                 return@setOnClickListener
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.emailInputLayout.error = "Format email tidak valid"
+                return@setOnClickListener
             } else {
                 binding.emailInputLayout.error = null
             }
@@ -75,12 +78,18 @@ class RegisterFragment : Fragment() {
             if (password.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
                 return@setOnClickListener
+            } else if (password.length < 6) {
+                binding.passwordInputLayout.error = "Password minimal 6 karakter"
+                return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
             }
 
-            if (confirmPassword != password) {
-                binding.confirmPasswordInputLayout.error = "Konfirmasi password tidak cocok"
+            if (confirmPassword.isEmpty()) {
+                binding.confirmPasswordInputLayout.error = "Konfirmasi Password tidak boleh kosong"
+                return@setOnClickListener
+            } else if (password != confirmPassword) {
+                binding.confirmPasswordInputLayout.error = "Password tidak cocok"
                 return@setOnClickListener
             } else {
                 binding.confirmPasswordInputLayout.error = null
