@@ -61,4 +61,24 @@
     <string name="ringkasan_hasil_inspeksi">Ringkasan hasil inspeksi secara keseluruhan</string>
     <string name="simpan_draft">Simpan Draft</string>
     <string name="selesaikan_inspeksi">Selesaikan Inspeksi</string>
+
+    <!-- Report Module Strings -->
+    <string name="report_title">Laporan Inspeksi</string>
+    <string name="report_subtitle">Kelola dan unduh laporan inspeksi yang telah selesai</string>
+    <string name="no_reports_title">Belum ada laporan inspeksi.</string>
+    <string name="no_reports_subtitle">Silakan selesaikan inspeksi terlebih dahulu.</string>
+    <string name="search_hint">Cari mesin, lokasi, atau inspector...</string>
+    <string name="filter_title">Filter Laporan</string>
+    <string name="filter_reset">Reset</string>
+    <string name="filter_apply">Terapkan Filter</string>
+    <string name="filter_location">Lokasi</string>
+    <string name="filter_date_range">Rentang Tanggal</string>
+    <string name="filter_findings_status">Status Temuan</string>
+    <string name="filter_status_all">Semua</string>
+    <string name="filter_status_has_findings">Ada Temuan</string>
+    <string name="filter_status_no_findings">Tidak Ada Temuan</string>
+    <string name="btn_view">Lihat</string>
+    <string name="btn_pdf">PDF</string>
+    <string name="btn_print">Cetak</string>
+    <string name="btn_download_pdf">Download PDF</string>
 </resources>

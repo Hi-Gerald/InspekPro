@@ -203,7 +203,8 @@ class DashboardFragment : Fragment() {
                     findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
                 }
                 R.id.tabLaporan -> {
-                    Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
+                    animateTabTransition(clickedTabId)
+                    findNavController().navigate(R.id.action_dashboardFragment_to_reportFragment)
                 }
                 R.id.tabAkun -> {
                     animateTabTransition(clickedTabId)

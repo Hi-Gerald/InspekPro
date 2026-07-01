@@ -88,7 +88,7 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_profileFragment_to_inspectionListFragment)
         }
         binding.tabLaporan.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_profileFragment_to_reportFragment)
         }
         binding.tabAkun.setOnClickListener {
             // Already on profile screen, no action needed
