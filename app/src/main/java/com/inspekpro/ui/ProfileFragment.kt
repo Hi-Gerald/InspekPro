@@ -85,7 +85,7 @@ class ProfileFragment : Fragment() {
             findNavController().popBackStack(R.id.dashboardFragment, false)
         }
         binding.tabInspeksi.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Inspeksi segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_profileFragment_to_inspectionListFragment)
         }
         binding.tabLaporan.setOnClickListener {
             Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
@@ -94,7 +94,7 @@ class ProfileFragment : Fragment() {
             // Already on profile screen, no action needed
         }
         binding.fabAdd.setOnClickListener {
-            Toast.makeText(requireContext(), "Tambah Inspeksi belum tersedia", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_profileFragment_to_addInspectionFragment)
         }
     }
 

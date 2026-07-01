@@ -51,6 +51,10 @@ class ActiveInspectionAdapter(
 
             binding.sessionProgressBar.progress = progress
             binding.tvProgressPercentage.text = "$progress%"
+            
+            val filled = session.passedItems + session.failedItems
+            val total = if (session.totalItems > 0) session.totalItems else 6
+            binding.tvProgressDesc.text = "$filled dari $total kolom terisi"
 
             // Badges & Colors based on Status
             val (bgColor, textColor, progressColor) = when (session.status) {

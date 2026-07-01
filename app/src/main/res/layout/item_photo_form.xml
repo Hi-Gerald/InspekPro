@@ -23,6 +23,21 @@
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_logo" />
 
+        <!-- Video Icon Overlay -->
+        <ImageView
+            android:id="@+id/ivVideoIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_video"
+            android:visibility="gone"
+            app:tint="@color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible"
+            tools:ignore="ContentDescription" />
+
         <!-- Overlay Delete Button -->
         <ImageView
             android:id="@+id/btnRemovePhoto"

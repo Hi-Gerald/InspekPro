@@ -10,15 +10,20 @@ import java.security.MessageDigest
 
 class AuthRepository(
     private val userDao: UserDao,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth?
 ) {
 
     suspend fun registerUser(user: UserEntity): Result<Long> {
         return try {
             // Firebase Auth Registration
-            val authResult = firebaseAuth.createUserWithEmailAndPassword(user.email, user.passwordHash).await()
-            val firebaseUser = authResult.user
-            if (firebaseUser == null) {
+            val firebaseUser = firebaseAuth?.let { auth ->
+                val authResult = auth.createUserWithEmailAndPassword(user.email, user.passwordHash).await()
+                authResult.user
+            }
+
+            // Jika firebaseAuth null atau gagal dapat user, kita tetap izinkan register lokal jika perlu
+            // Namun di sini kita asumsikan Firebase wajib untuk register jika disediakan
+            if (firebaseAuth != null && firebaseUser == null) {
                 return Result.failure(Exception("Gagal mendaftarkan akun di Firebase"))
             }
 
@@ -32,6 +37,27 @@ class AuthRepository(
         }
     }
 
+    suspend fun socialLogin(fullName: String, email: String, companyName: String): Result<UserEntity> {
+        return try {
+            // Check if user already exists
+            var user = userDao.getUserByEmail(email)
+            if (user == null) {
+                // Register if not exists
+                val newUser = UserEntity(
+                    fullName = fullName,
+                    email = email,
+                    companyName = companyName,
+                    passwordHash = "social_login_placeholder" // Or generate one
+                )
+                val userId = userDao.insertUser(newUser)
+                user = newUser.copy(userId = userId)
+            }
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun loginUser(email: String, password: String): Result<UserEntity> {
         return try {
             Log.d("AUTH_DEBUG", "Memulai login untuk: $email")
@@ -39,9 +65,11 @@ class AuthRepository(
             var user = userDao.getUserByEmail(email)
 
             // Firebase Auth Login
-            val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            if (authResult.user == null) {
-                return Result.failure(Exception("Gagal masuk via Firebase"))
+            if (firebaseAuth != null) {
+                val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+                if (authResult.user == null) {
+                    return Result.failure(Exception("Gagal masuk via Firebase"))
+                }
             }
             
             // Sinkronisasi otomatis ke lokal jika login Firebase berhasil namun data lokal hilang
@@ -85,7 +113,7 @@ class AuthRepository(
 
     suspend fun logoutUser() {
         try {
-            firebaseAuth.signOut()
+            firebaseAuth?.signOut()
         } catch (e: Exception) {
             Log.e("AUTH_DEBUG", "Error signing out from Firebase", e)
         }

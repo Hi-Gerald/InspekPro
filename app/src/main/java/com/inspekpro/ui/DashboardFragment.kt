@@ -13,6 +13,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import com.inspekpro.R
 import com.inspekpro.databinding.FragmentDashboardBinding
 import com.inspekpro.ui.viewmodel.AuthViewModel
@@ -53,12 +56,44 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupRecyclerViews()
         setupClickListeners()
         setupBottomNavigation()
         observeViewModel()
         checkAndRequestPermissions()
         setupDateAndGreeting()
+
+        android.util.Log.d("DASHBOARD_DEBUG", "Dashboard dibuat")
+    }
+
+    private fun applyWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+            
+            // Handle Bottom Insets
+            binding.bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = systemBars.bottom
+            }
+            
+            binding.fabAdd.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (32 * density).toInt()
+                bottomMargin = baseMargin + systemBars.bottom
+            }
+
+            // Handle Top Insets (Status Bar)
+            binding.tvAppName.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (24 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+            binding.btnProfile.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (24 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+            
+            insets
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -127,12 +162,7 @@ class DashboardFragment : Fragment() {
     private fun setupClickListeners() {
         // Floating Action Button
         binding.fabAdd.setOnClickListener {
-            val resId = resources.getIdentifier("action_dashboardFragment_to_addInspectionFragment", "id", requireContext().packageName)
-            if (resId != 0) {
-                navigateSafely(resId, "Tambah Inspeksi belum tersedia")
-            } else {
-                Toast.makeText(requireContext(), "Tambah Inspeksi belum tersedia", Toast.LENGTH_SHORT).show()
-            }
+            findNavController().navigate(R.id.action_dashboardFragment_to_addInspectionFragment)
         }
 
         // Notification Icon
@@ -169,20 +199,15 @@ class DashboardFragment : Fragment() {
                     animateTabTransition(clickedTabId)
                 }
                 R.id.tabInspeksi -> {
-                    Toast.makeText(requireContext(), "Menu Inspeksi segera hadir", Toast.LENGTH_SHORT).show()
+                    animateTabTransition(clickedTabId)
+                    findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
                 }
                 R.id.tabLaporan -> {
                     Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
                 }
                 R.id.tabAkun -> {
-                    // Animate visual highlight and navigate to Profile fragment
                     animateTabTransition(clickedTabId)
-                    val resId = resources.getIdentifier("action_dashboardFragment_to_profileFragment", "id", requireContext().packageName)
-                    if (resId != 0) {
-                        navigateSafely(resId, "Profil belum tersedia")
-                    } else {
-                        Toast.makeText(requireContext(), "Profil belum tersedia", Toast.LENGTH_SHORT).show()
-                    }
+                    findNavController().navigate(R.id.action_dashboardFragment_to_profileFragment)
                 }
             }
         }
