@@ -166,7 +166,7 @@
                 <ImageView
                     android:layout_width="160dp"
                     android:layout_height="160dp"
-                    android:src="@drawable/ic_empty_schedule"
+                    android:src="@drawable/ic_report"
                     app:tint="@color/text_secondary" />
 
                 <TextView
@@ -223,7 +223,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_dashboard"
+                    android:src="@drawable/ic_home"
                     app:tint="@color/text_secondary" />
 
                 <TextView

@@ -145,10 +145,10 @@ class ReportDetailFragment : Fragment() {
                         val randomCover = photoPaths.random()
                         Glide.with(requireContext())
                             .load(randomCover)
-                            .placeholder(R.drawable.ic_empty_schedule)
+                            .placeholder(R.drawable.ic_report)
                             .into(binding.ivCover)
                     } else {
-                        binding.ivCover.setImageResource(R.drawable.ic_empty_schedule)
+                        binding.ivCover.setImageResource(R.drawable.ic_report)
                     }
 
                     // Display priority

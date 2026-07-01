@@ -52,17 +52,17 @@ class ReportAdapter(
             binding.tvDateAndInspector.text = "$formattedDate • Oleh ${session.inspectorName}"
 
             // Setup cover image loading asynchronously using lifecycle scope of ViewTree
-            binding.ivCover.setImageResource(R.drawable.ic_empty_schedule)
+            binding.ivCover.setImageResource(R.drawable.ic_report)
             itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                 val path = loadCoverPhoto(session.sessionId)
                 if (path != null) {
                     Glide.with(context)
                         .load(path)
-                        .placeholder(R.drawable.ic_empty_schedule)
-                        .error(R.drawable.ic_empty_schedule)
+                        .placeholder(R.drawable.ic_report)
+                        .error(R.drawable.ic_report)
                         .into(binding.ivCover)
                 } else {
-                    binding.ivCover.setImageResource(R.drawable.ic_empty_schedule)
+                    binding.ivCover.setImageResource(R.drawable.ic_report)
                 }
             }
 
