@@ -29,7 +29,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -137,6 +139,12 @@ class AddInspectionFragment : Fragment() {
         observeViewModel()
         setupFragmentResultListeners()
         updateProgress()
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        })
     }
 
     private fun applyWindowInsets() {
@@ -200,15 +208,52 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        checklistAdapter = ChecklistItemAdapter { position, text, isChecked ->
-            checklistItems[position] = Pair(text, isChecked)
-            updateProgress()
-        }
+        var itemTouchHelper: ItemTouchHelper? = null
+
+        checklistAdapter = ChecklistItemAdapter(
+            onStartDrag = { viewHolder ->
+                itemTouchHelper?.startDrag(viewHolder)
+            },
+            onItemChanged = { position, text, isChecked ->
+                checklistItems[position] = Pair(text, isChecked)
+                updateProgress()
+            }
+        )
         binding.rvChecklist.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = checklistAdapter
         }
         checklistAdapter.submitList(checklistItems.toList())
+
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                if (fromPos < 0 || fromPos >= checklistItems.size || toPos < 0 || toPos >= checklistItems.size) return false
+
+                val temp = checklistItems[fromPos]
+                checklistItems[fromPos] = checklistItems[toPos]
+                checklistItems[toPos] = temp
+
+                checklistAdapter.submitList(checklistItems.toList())
+                checklistAdapter.notifyItemMoved(fromPos, toPos)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun isLongPressDragEnabled(): Boolean {
+                return false
+            }
+        }
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(binding.rvChecklist)
 
         photoAdapter = PhotoAdapter(
             onRemoveClick = { position ->
@@ -238,7 +283,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnBack.setOnClickListener { findNavController().popBackStack() }
+        binding.btnBack.setOnClickListener { handleBackNavigation() }
 
         binding.locationInputLayout.setEndIconOnClickListener {
             checkLocationPermissionAndGet()
@@ -355,6 +400,10 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun showMediaOptions(isFinding: Boolean) {
+        if (!isFinding && photos.size >= 3) {
+            Toast.makeText(requireContext(), "Maksimal 3 foto diperbolehkan", Toast.LENGTH_SHORT).show()
+            return
+        }
         val options = arrayOf("Ambil Foto", "Pilih dari Galeri")
         AlertDialog.Builder(requireContext())
             .setTitle("Pilih Foto")
@@ -597,6 +646,37 @@ class AddInspectionFragment : Fragment() {
 
         btnClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+    private fun isFormDirty(): Boolean {
+        val titleText = binding.etTitle.text?.toString() ?: ""
+        val locationText = binding.etLocation.text?.toString() ?: ""
+        val inspectorText = binding.etInspector.text?.toString() ?: ""
+        val conclusionText = binding.etConclusion.text?.toString() ?: ""
+        return titleText.isNotBlank() ||
+                locationText.isNotBlank() ||
+                inspectorText.isNotBlank() ||
+                conclusionText.isNotBlank() ||
+                photos.isNotEmpty() ||
+                videoPath != null
+    }
+
+    private fun handleBackNavigation() {
+        if (isFormDirty()) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Simpan ke Draft?")
+                .setMessage("Anda sedang mengisi form inspeksi. Apakah Anda ingin menyimpannya sebagai draft sebelum keluar?")
+                .setPositiveButton("Simpan Draft") { _, _ ->
+                    saveInspection(SessionStatus.DRAFT)
+                }
+                .setNegativeButton("Keluar") { _, _ ->
+                    findNavController().popBackStack()
+                }
+                .setNeutralButton("Batal", null)
+                .show()
+        } else {
+            findNavController().popBackStack()
+        }
     }
 
     override fun onDestroyView() {

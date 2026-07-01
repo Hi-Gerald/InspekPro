@@ -1,8 +1,10 @@
 package com.inspekpro.ui
 
+import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -14,6 +16,7 @@ import com.inspekpro.databinding.ItemChecklistFormBinding
  * Fitur: Menampilkan daftar item pemeriksaan dinamis pada form tambah jadwal.
  */
 class ChecklistItemAdapter(
+    private val onStartDrag: (RecyclerView.ViewHolder) -> Unit,
     private val onItemChanged: (Int, String, Boolean) -> Unit
 ) : ListAdapter<Pair<String, Boolean>, ChecklistItemAdapter.ViewHolder>(DiffCallback) {
 
@@ -26,7 +29,7 @@ class ChecklistItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, position, onItemChanged)
+        holder.bind(item, position, onStartDrag, onItemChanged)
     }
 
     class ViewHolder(private val binding: ItemChecklistFormBinding) :
@@ -34,9 +37,11 @@ class ChecklistItemAdapter(
 
         private var textWatcher: TextWatcher? = null
 
+        @SuppressLint("ClickableViewAccessibility")
         fun bind(
             item: Pair<String, Boolean>,
             position: Int,
+            onStartDrag: (RecyclerView.ViewHolder) -> Unit,
             onItemChanged: (Int, String, Boolean) -> Unit
         ) {
             // Remove previous watcher to avoid multiple triggers during recycling
@@ -58,12 +63,18 @@ class ChecklistItemAdapter(
             binding.cbChecklistItem.setOnCheckedChangeListener { _, isChecked ->
                 onItemChanged(adapterPosition, binding.etChecklistItemTitle.text.toString(), isChecked)
             }
+
+            binding.ivDragHandle.setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                    onStartDrag(this)
+                }
+                false
+            }
         }
     }
 
     companion object DiffCallback : DiffUtil.ItemCallback<Pair<String, Boolean>>() {
         override fun areItemsTheSame(oldItem: Pair<String, Boolean>, newItem: Pair<String, Boolean>): Boolean {
-            // In a real app, use a unique ID. Here we use position or content with caution.
             return false // Force rebind for simplicity in this demo form
         }
 
