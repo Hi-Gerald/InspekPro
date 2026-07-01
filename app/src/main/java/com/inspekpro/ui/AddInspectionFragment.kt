@@ -64,11 +64,7 @@ class AddInspectionFragment : Fragment() {
     private lateinit var photoAdapter: PhotoAdapter
     private lateinit var findingPhotoAdapter: PhotoAdapter
 
-    private val checklistItems = mutableListOf(
-        Pair("Kondisi Bearing", true),
-        Pair("Temperatur Bearing", true),
-        Pair("Sistem Grounding", true)
-    )
+    private val checklistItems = mutableListOf<Pair<String, Boolean>>()
 
     private val photos = mutableListOf<String>()
     private val findingPhotos = mutableListOf<String>()
@@ -193,12 +189,11 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupFormDefaults() {
-        val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-
-        binding.etDate.setText(dateFormat.format(calendar.time))
-        binding.etTime.setText(timeFormat.format(calendar.time))
-        binding.etInspector.setText("Sofia")
+        if (inspectionId == -1L) {
+            binding.etDate.setText("")
+            binding.etTime.setText("")
+            binding.etInspector.setText("")
+        }
         
         binding.rbNoFindings.isChecked = true
         binding.findingDetailsContainer.visibility = View.GONE
