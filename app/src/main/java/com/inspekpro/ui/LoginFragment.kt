@@ -60,9 +60,6 @@ class LoginFragment : Fragment() {
             if (password.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
                 return@setOnClickListener
-            } else if (password.length < 6) {
-                binding.passwordInputLayout.error = "Password minimal 6 karakter"
-                return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
             }
@@ -77,7 +74,7 @@ class LoginFragment : Fragment() {
 
         binding.googleLoginBtn.setOnClickListener {
             Toast.makeText(requireContext(), "Masuk dengan Google...", Toast.LENGTH_SHORT).show()
-            viewModel.loginWithGoogle()
+            viewModel.socialLogin("Google User", "google@inspekpro.com", "InspekPro Corp")
         }
     }
 
