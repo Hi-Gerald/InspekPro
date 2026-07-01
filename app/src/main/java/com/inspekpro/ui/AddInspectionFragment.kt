@@ -97,20 +97,39 @@ class AddInspectionFragment : Fragment() {
 
     // Activity Results for Media
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { addPhotoToList(it.toString(), isFinding = false) }
+        uri?.let { 
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            } else {
+                addPhotoToList(it.toString(), isFinding = false) 
+            }
+        }
     }
     
     private val pickFindingImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { addPhotoToList(it.toString(), isFinding = true) }
+        uri?.let { 
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto temuan minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            } else {
+                addPhotoToList(it.toString(), isFinding = true) 
+            }
+        }
     }
 
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
-            videoPath = it.toString()
-            addPhotoToList(it.toString(), isFinding = false)
-            binding.tvVideoPath.text = "Video dilampirkan"
-            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
-            updateProgress()
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+            } else {
+                videoPath = it.toString()
+                addPhotoToList(it.toString(), isFinding = false)
+                binding.tvVideoPath.text = "Video dilampirkan"
+                binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                updateProgress()
+            }
         }
     }
 
@@ -184,13 +203,22 @@ class AddInspectionFragment : Fragment() {
             val isVideo = bundle.getBoolean("isVideo")
 
             uri?.let {
+                val size = getUriSizeInBytes(requireContext(), it)
                 if (isVideo) {
-                    videoPath = it
-                    addPhotoToList(it, isFinding = false) // Add video to the main media list
-                    binding.tvVideoPath.text = "Video direkam"
-                    binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    if (size > 0 && size < 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+                    } else {
+                        videoPath = it
+                        addPhotoToList(it, isFinding = false) // Add video to the main media list
+                        binding.tvVideoPath.text = "Video direkam"
+                        binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    }
                 } else {
-                    addPhotoToList(it, isFinding = isFinding)
+                    if (size > 0 && size < 100 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+                    } else {
+                        addPhotoToList(it, isFinding = isFinding)
+                    }
                 }
                 updateProgress()
             }
@@ -309,7 +337,7 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnChecklistAdd.setOnClickListener {
-            checklistItems.add(Pair("", false))
+            checklistItems.add(Pair("", true))
             checklistAdapter.submitList(checklistItems.toList())
             updateProgress()
         }
@@ -491,7 +519,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun saveInspection(status: SessionStatus) {
-        if (validateInput()) {
+        if (validateInput(status)) {
             val titleText = binding.etTitle.text.toString().trim()
             val locationText = binding.etLocation.text.toString().trim()
             val inspectorText = binding.etInspector.text.toString().trim()
@@ -511,7 +539,7 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
-    private fun validateInput(): Boolean {
+    private fun validateInput(status: SessionStatus): Boolean {
         var isValid = true
         if (binding.etTitle.text.isNullOrBlank()) { 
             binding.titleInputLayout.error = "Wajib diisi"
@@ -534,6 +562,18 @@ class AddInspectionFragment : Fragment() {
             binding.conclusionInputLayout.error = null
         }
 
+        // Validate min 1 photo and 1 video only when finishing
+        if (status == SessionStatus.COMPLETED) {
+            if (photos.isEmpty()) {
+                Toast.makeText(requireContext(), "Minimal 1 foto wajib dilampirkan", Toast.LENGTH_SHORT).show()
+                isValid = false
+            }
+            if (videoPath == null) {
+                Toast.makeText(requireContext(), "Video wajib dilampirkan", Toast.LENGTH_SHORT).show()
+                isValid = false
+            }
+        }
+        
         if (!isValid) {
             Toast.makeText(requireContext(), "Harap lengkapi semua field wajib (*)", Toast.LENGTH_SHORT).show()
         }
@@ -677,6 +717,22 @@ class AddInspectionFragment : Fragment() {
                 .show()
         } else {
             findNavController().popBackStack()
+        }
+    }
+
+    private fun getUriSizeInBytes(context: Context, uriString: String): Long {
+        return try {
+            val uri = Uri.parse(uriString)
+            if (uri.scheme == "content" || uri.scheme == "android.resource") {
+                context.contentResolver.openAssetFileDescriptor(uri, "r")?.use {
+                    it.length
+                } ?: 0L
+            } else {
+                val file = java.io.File(uri.path ?: "")
+                if (file.exists()) file.length() else 0L
+            }
+        } catch (e: Exception) {
+            0L
         }
     }
 

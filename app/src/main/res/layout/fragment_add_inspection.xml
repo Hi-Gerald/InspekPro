@@ -230,9 +230,7 @@
                             app:boxCornerRadiusTopEnd="12dp"
                             app:boxCornerRadiusTopStart="12dp"
                             app:startIconDrawable="@drawable/ic_calendar"
-                            app:startIconTint="@color/primary"
-                            app:endIconMode="custom"
-                            app:endIconDrawable="@drawable/ic_calendar">
+                            app:startIconTint="@color/primary">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etDate"
@@ -260,9 +258,7 @@
                             app:boxCornerRadiusTopEnd="12dp"
                             app:boxCornerRadiusTopStart="12dp"
                             app:startIconDrawable="@drawable/ic_clock"
-                            app:startIconTint="@color/primary"
-                            app:endIconMode="custom"
-                            app:endIconDrawable="@drawable/ic_clock">
+                            app:startIconTint="@color/primary">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etTime"
@@ -422,7 +418,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Upload foto (maksimal 3) dan video (maksimal 1) kondisi saat inspeksi"
+                        android:text="• Foto: Minimal 1, Maksimal 3 (.jpg, .png | Min 100KB)\n• Video: Minimal 1, Maksimal 1 (.mp4 | Min 1MB)"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
