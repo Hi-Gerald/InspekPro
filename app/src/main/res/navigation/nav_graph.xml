@@ -12,7 +12,11 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
-            app:destination="@id/registerFragment" />
+            app:destination="@id/registerFragment"
+            app:enterAnim="@anim/fade_in_slow"
+            app:exitAnim="@anim/fade_out_slow"
+            app:popEnterAnim="@anim/fade_in_slow"
+            app:popExitAnim="@anim/fade_out_slow" />
         <action
             android:id="@+id/action_loginFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment"

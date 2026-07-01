@@ -29,8 +29,22 @@ class DashboardViewModel @Inject constructor(
 
     val totalSessions = sessionRepo.getTotalSessionCount()
     val completedSessions = sessionRepo.getCompletedCount()
-    val activeSessions = sessionRepo.getAllSessions()
-    val recentFindings = findingRepo.getRecentFindings(10)
+
+    val activeSessions = sessionRepo.getAllSessions().map { list ->
+        list.filter { it.status == SessionStatus.IN_PROGRESS }
+            .sortedByDescending { it.scheduledDate }
+            .take(3)
+    }
+    
+    // Recent findings: take(3)
+    val recentFindings = findingRepo.getRecentFindings(10).map { list ->
+        list.take(3)
+    }
+
+    // Dashboard stats observed from Room
+    val dashboardStats = sessionRepo.getAllSessions().mapLatest {
+        sessionRepo.getDashboardStats()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
         viewModelScope.launch {
