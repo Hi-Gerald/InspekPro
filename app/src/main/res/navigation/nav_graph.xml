@@ -71,6 +71,24 @@
             app:destination="@id/dashboardFragment"
             app:popUpTo="@id/dashboardFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_addInspectionFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.inspekpro.ui.CameraFragment"
+        android:label="Camera"
+        tools:layout="@layout/fragment_camera">
+        <argument
+            android:name="isVideoButton"
+            android:defaultValue="false"
+            app:argType="boolean" />
+        <argument
+            android:name="isFinding"
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 
     <fragment
