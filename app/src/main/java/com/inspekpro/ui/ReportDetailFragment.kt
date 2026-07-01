@@ -79,7 +79,7 @@ class ReportDetailFragment : Fragment() {
 
     private fun setupRecyclerView() {
         photoAdapter = PhotoAdapter(
-            onRemoveClick = null, // Detail view, no remove option
+            onRemoveClick = {}, // Detail view, no remove option
             onItemClick = { path ->
                 // Visualise photo preview
                 showPhotoPreview(path)

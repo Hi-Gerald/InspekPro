@@ -36,7 +36,16 @@ class ReportViewModel @Inject constructor(
         filterEndDate,
         filterFindingStatus,
         sortOption
-    ) { sessions, query, loc, start, end, finding, sort ->
+    ) { flowsArray ->
+        @Suppress("UNCHECKED_CAST")
+        val sessions = flowsArray[0] as List<InspectionSessionEntity>
+        val query = flowsArray[1] as String
+        val loc = flowsArray[2] as String
+        val start = flowsArray[3] as Long?
+        val end = flowsArray[4] as Long?
+        val finding = flowsArray[5] as String
+        val sort = flowsArray[6] as String
+
         var list = sessions
 
         // Realtime Search (Machine Name / Title, Location, Inspector)
@@ -68,7 +77,6 @@ class ReportViewModel @Inject constructor(
         // Filtering by Finding Status
         if (finding != "All") {
             list = list.filter {
-                // If it has findings, failedItems > 0 or totalItems - passedItems > 0 or has failed_items
                 val hasFindings = it.failedItems > 0 || (it.totalItems - it.passedItems) > 0
                 if (finding == "Has Findings") hasFindings else !hasFindings
             }
