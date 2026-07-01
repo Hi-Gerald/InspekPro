@@ -50,12 +50,18 @@ class LoginFragment : Fragment() {
             if (email.isEmpty()) {
                 binding.emailInputLayout.error = "Email tidak boleh kosong"
                 return@setOnClickListener
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.emailInputLayout.error = "Format email tidak valid"
+                return@setOnClickListener
             } else {
                 binding.emailInputLayout.error = null
             }
 
             if (password.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
+                return@setOnClickListener
+            } else if (password.length < 6) {
+                binding.passwordInputLayout.error = "Password minimal 6 karakter"
                 return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
@@ -71,8 +77,7 @@ class LoginFragment : Fragment() {
 
         binding.googleLoginBtn.setOnClickListener {
             Toast.makeText(requireContext(), "Masuk dengan Google...", Toast.LENGTH_SHORT).show()
-            viewModel.register("Google User", "google@inspekpro.com", "InspekPro Corp", "google123")
-            viewModel.login("google@inspekpro.com", "google123")
+            viewModel.loginWithGoogle()
         }
     }
 
