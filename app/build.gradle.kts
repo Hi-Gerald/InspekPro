@@ -47,6 +47,10 @@ android {
         disable.add("GooglePlayCompliance")
     }
 
+    lint {
+        disable.add("GooglePlayCompliance")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
