@@ -55,20 +55,10 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun loginWithGoogle() {
+    fun loginWithGoogle(idToken: String) {
         viewModelScope.launch {
             _loginResult.value = AuthResult.Loading
-            val user = UserEntity(
-                fullName = "Google User",
-                email = "google@inspekpro.com",
-                companyName = "InspekPro Corp",
-                passwordHash = "google123"
-            )
-            // Register first (ignore error if email already registered)
-            authRepository.registerUser(user)
-            
-            // Login after registration completes
-            val result = authRepository.loginUser("google@inspekpro.com", "google123")
+            val result = authRepository.googleSignIn(idToken)
             result.fold(
                 onSuccess = { _loginResult.value = AuthResult.Success },
                 onFailure = { _loginResult.value = AuthResult.Error(it.message ?: "Login Google gagal") }
