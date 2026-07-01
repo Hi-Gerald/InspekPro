@@ -38,14 +38,25 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(fullName: String, email: String, companyName: String, passwordHash: String) {
+    fun socialLogin(fullName: String, email: String, companyName: String) {
+        viewModelScope.launch {
+            _loginResult.value = AuthResult.Loading
+            val result = authRepository.socialLogin(fullName, email, companyName)
+            result.fold(
+                onSuccess = { _loginResult.value = AuthResult.Success },
+                onFailure = { _loginResult.value = AuthResult.Error(it.message ?: "Login sosial gagal") }
+            )
+        }
+    }
+
+    fun register(fullName: String, email: String, companyName: String, password: String) {
         viewModelScope.launch {
             _registerResult.value = AuthResult.Loading
             val user = UserEntity(
                 fullName = fullName,
                 email = email,
                 companyName = companyName,
-                passwordHash = passwordHash
+                passwordHash = password
             )
             val result = authRepository.registerUser(user)
             result.fold(
