@@ -244,8 +244,17 @@ class AddInspectionFragment : Fragment() {
                 itemTouchHelper?.startDrag(viewHolder)
             },
             onItemChanged = { position, text, isChecked ->
-                checklistItems[position] = Pair(text, isChecked)
-                updateProgress()
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems[position] = Pair(text, isChecked)
+                    updateProgress()
+                }
+            },
+            onItemEmptyAndLostFocus = { position ->
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems.removeAt(position)
+                    checklistAdapter.submitList(checklistItems.toList())
+                    updateProgress()
+                }
             }
         )
         binding.rvChecklist.apply {

@@ -17,7 +17,8 @@ import com.inspekpro.databinding.ItemChecklistFormBinding
  */
 class ChecklistItemAdapter(
     private val onStartDrag: (RecyclerView.ViewHolder) -> Unit,
-    private val onItemChanged: (Int, String, Boolean) -> Unit
+    private val onItemChanged: (Int, String, Boolean) -> Unit,
+    private val onItemEmptyAndLostFocus: (Int) -> Unit
 ) : ListAdapter<Pair<String, Boolean>, ChecklistItemAdapter.ViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -29,7 +30,7 @@ class ChecklistItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, position, onStartDrag, onItemChanged)
+        holder.bind(item, position, onStartDrag, onItemChanged, onItemEmptyAndLostFocus)
     }
 
     class ViewHolder(private val binding: ItemChecklistFormBinding) :
@@ -42,7 +43,8 @@ class ChecklistItemAdapter(
             item: Pair<String, Boolean>,
             position: Int,
             onStartDrag: (RecyclerView.ViewHolder) -> Unit,
-            onItemChanged: (Int, String, Boolean) -> Unit
+            onItemChanged: (Int, String, Boolean) -> Unit,
+            onItemEmptyAndLostFocus: (Int) -> Unit
         ) {
             // Remove previous watcher to avoid multiple triggers during recycling
             textWatcher?.let { binding.etChecklistItemTitle.removeTextChangedListener(it) }
@@ -62,6 +64,15 @@ class ChecklistItemAdapter(
 
             binding.cbChecklistItem.setOnCheckedChangeListener { _, isChecked ->
                 onItemChanged(adapterPosition, binding.etChecklistItemTitle.text.toString(), isChecked)
+            }
+
+            binding.etChecklistItemTitle.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    val text = binding.etChecklistItemTitle.text?.toString() ?: ""
+                    if (text.trim().isEmpty()) {
+                        onItemEmptyAndLostFocus(adapterPosition)
+                    }
+                }
             }
 
             binding.ivDragHandle.setOnTouchListener { _, event ->
