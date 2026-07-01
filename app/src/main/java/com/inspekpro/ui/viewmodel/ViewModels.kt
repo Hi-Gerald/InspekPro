@@ -21,7 +21,8 @@ import java.util.*
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
-    private val findingRepo: FindingRepository
+    private val findingRepo: FindingRepository,
+    private val firestoreSyncRepo: FirestoreSyncRepository
 ) : ViewModel() {
 
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
@@ -57,6 +58,16 @@ class DashboardViewModel @Inject constructor(
                 onSuccess = { _weather.value = WeatherUiState.Success(it) },
                 onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
             )
+        }
+    }
+
+    private val _syncStatus = MutableSharedFlow<Result<Int>>()
+    val syncStatus: SharedFlow<Result<Int>> = _syncStatus.asSharedFlow()
+
+    fun syncNow() {
+        viewModelScope.launch {
+            val result = firestoreSyncRepo.syncUnsyncedSessions()
+            _syncStatus.emit(result)
         }
     }
 }
