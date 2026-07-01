@@ -12,7 +12,20 @@
           "package_name": "com.inspekpro"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "690974321994-tfggp6ffhv6rie9a0e5to2mqgc7i4unu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inspekpro",
+            "certificate_hash": "7a79f2cc8759c58bfc42b85d9d85ca3c01bfebfd"
+          }
+        },
+        {
+          "client_id": "690974321994-nlisjf1cep5m7usvs7jvvemnai10vrsl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC7l9RVVhf7awjOwI6NQj-ZzUxfPJ-oZEk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "690974321994-nlisjf1cep5m7usvs7jvvemnai10vrsl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

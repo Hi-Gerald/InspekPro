@@ -98,7 +98,8 @@ class DashboardFragment : Fragment() {
         }
 
         binding.btnNotification.setOnClickListener {
-            Toast.makeText(requireContext(), "Tidak ada notifikasi baru", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Mulai sinkronisasi ke Cloud...", Toast.LENGTH_SHORT).show()
+            viewModel.syncNow()
         }
         binding.btnProfile.setOnClickListener {
             findNavController().navigate(
@@ -180,6 +181,22 @@ class DashboardFragment : Fragment() {
                                 binding.tvTemperature.text = "28°C"
                                 binding.tvWeatherStatus.text = "Berawan Sebagian"
                             }
+                        }
+                    }
+                }
+                
+                // Observe Sync Status
+                launch {
+                    viewModel.syncStatus.collectLatest { result ->
+                        if (result.isSuccess) {
+                            val count = result.getOrDefault(0)
+                            if (count > 0) {
+                                Toast.makeText(requireContext(), "Sinkronisasi selesai! $count data di-upload.", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(requireContext(), "Semua data sudah sinkron.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Gagal sinkronisasi: ${result.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
