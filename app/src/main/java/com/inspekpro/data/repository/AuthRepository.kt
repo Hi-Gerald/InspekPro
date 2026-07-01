@@ -74,6 +74,15 @@ class AuthRepository(
 
     fun getActiveUser(): Flow<UserEntity?> = userDao.getActiveUser()
 
+    suspend fun updateUser(user: UserEntity): Result<Unit> {
+        return try {
+            userDao.updateUser(user)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun logoutUser() {
         try {
             firebaseAuth.signOut()

@@ -82,12 +82,9 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupDateAndGreeting() {
-        // Date Format EEEE, d MMMM yyyy in Indonesian
         val idLocale = Locale("id", "ID")
         val sdf = SimpleDateFormat("EEEE, d MMMM yyyy", idLocale)
         binding.tvDate.text = sdf.format(Date())
-
-        // Initial Greeting setup, name will be fetched dynamically from user session flow below
         binding.tvUserGreeting.text = "${getGreetingText()}, Budi"
     }
 
@@ -148,14 +145,9 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        // Profile Icon
-        binding.btnProfile.setOnClickListener {
-            val resId = resources.getIdentifier("action_dashboardFragment_to_profileFragment", "id", requireContext().packageName)
-            if (resId != 0) {
-                navigateSafely(resId, "Profil belum tersedia")
-            } else {
-                Toast.makeText(requireContext(), "Profil belum tersedia", Toast.LENGTH_SHORT).show()
-            }
+        // Firebase Cloud Sync Indicator Icon
+        binding.btnCloudSync.setOnClickListener {
+            Toast.makeText(requireContext(), "Sinkronisasi Cloud otomatis aktif", Toast.LENGTH_SHORT).show()
         }
 
         // View All (Lihat Semua) Actions
@@ -183,20 +175,14 @@ class DashboardFragment : Fragment() {
                     Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
                 }
                 R.id.tabAkun -> {
-                    // Temporarily animate color transition to Akun tab
-                    animateTabTransition(R.id.tabAkun)
-
-                    AlertDialog.Builder(requireContext())
-                        .setTitle("Logout")
-                        .setMessage("Apakah Anda yakin ingin keluar dari akun?")
-                        .setPositiveButton("Ya") { _, _ ->
-                            authViewModel.logout()
-                        }
-                        .setNegativeButton("Tidak") { _, _ ->
-                            // Reset visual selection back to Dashboard if cancelled
-                            animateTabTransition(R.id.tabDashboard)
-                        }
-                        .show()
+                    // Animate visual highlight and navigate to Profile fragment
+                    animateTabTransition(clickedTabId)
+                    val resId = resources.getIdentifier("action_dashboardFragment_to_profileFragment", "id", requireContext().packageName)
+                    if (resId != 0) {
+                        navigateSafely(resId, "Profil belum tersedia")
+                    } else {
+                        Toast.makeText(requireContext(), "Profil belum tersedia", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

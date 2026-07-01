@@ -1,4 +1,19 @@
 <resources>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!-- Placeholder string -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Edit Profile Strings -->
+    <string name="edit_profile_title">Edit Profil</string>
+    <string name="hint_full_name">Nama Lengkap</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_job_title">Jabatan</string>
+    <string name="job_title_inspector">Inspector</string>
+    <string name="hint_company">Perusahaan</string>
+    <string name="logo_company_label">Logo Perusahaan</string>
+    <string name="upload_logo_title">Upload logo perusahaan</string>
+    <string name="upload_logo_subtitle">Format PNG/JPG, maks. 5MB</string>
+    <string name="btn_save_changes">Simpan Perubahan</string>
+    <string name="btn_cancel">Batal</string>
+    <string name="btn_back_desc">Kembali</string>
+    <string name="btn_change_avatar_desc">Ubah Foto Profil</string>
 </resources>

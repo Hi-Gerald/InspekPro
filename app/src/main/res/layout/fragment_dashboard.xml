@@ -69,14 +69,14 @@
                 android:id="@+id/cardNotification"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginEnd="12dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="24dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#33FFFFFF"
                 app:strokeWidth="0dp"
-                app:layout_constraintBottom_toBottomOf="@id/cardProfile"
-                app:layout_constraintEnd_toStartOf="@id/cardProfile"
-                app:layout_constraintTop_toTopOf="@id/cardProfile">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:id="@+id/btnNotification"
@@ -89,26 +89,26 @@
                     tools:ignore="ContentDescription" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Profile Icon Card -->
+            <!-- Firebase Cloud Sync Card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardProfile"
+                android:id="@+id/cardCloudSync"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="24dp"
+                android:layout_marginEnd="12dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#33FFFFFF"
                 app:strokeWidth="0dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintBottom_toBottomOf="@id/cardNotification"
+                app:layout_constraintEnd_toStartOf="@id/cardNotification"
+                app:layout_constraintTop_toTopOf="@id/cardNotification">
 
                 <ImageView
-                    android:id="@+id/btnProfile"
+                    android:id="@+id/btnCloudSync"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_person"
+                    android:src="@drawable/ic_cloud_sync"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     app:tint="@color/white"
                     tools:ignore="ContentDescription" />

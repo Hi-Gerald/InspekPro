@@ -8,6 +8,7 @@ import com.inspekpro.data.remote.model.WeatherInfo
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
 import com.inspekpro.data.repository.FirestoreSyncRepository
+import com.inspekpro.data.repository.AuthRepository
 import com.inspekpro.receiver.AlarmScheduler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -219,3 +220,57 @@ class SessionDetailViewModel @Inject constructor(
     fun addFinding(finding: InspectionFindingEntity) { viewModelScope.launch { findingRepo.addFinding(finding) } }
     fun markFindingResult(findingId: Long, result: FindingResult) { viewModelScope.launch { findingRepo.markFindingResult(findingId, result, sessionId) } }
 }
+
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
+
+    val activeUser: StateFlow<UserEntity?> = authRepository.getActiveUser()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    private val _updateResult = MutableStateFlow<ProfileUpdateResult>(ProfileUpdateResult.Idle)
+    val updateResult: StateFlow<ProfileUpdateResult> = _updateResult.asStateFlow()
+
+    fun updateProfile(fullName: String, companyName: String) {
+        viewModelScope.launch {
+            _updateResult.value = ProfileUpdateResult.Loading
+            try {
+                val currentUser = activeUser.value
+                if (currentUser != null) {
+                    val updatedUser = currentUser.copy(
+                        fullName = fullName,
+                        companyName = companyName
+                    )
+                    val result = authRepository.updateUser(updatedUser)
+                    result.fold(
+                        onSuccess = { _updateResult.value = ProfileUpdateResult.Success },
+                        onFailure = { exception -> _updateResult.value = ProfileUpdateResult.Error(exception.message ?: "Gagal memperbarui profil") }
+                    )
+                } else {
+                    _updateResult.value = ProfileUpdateResult.Error("Sesi pengguna tidak ditemukan")
+                }
+            } catch (e: Exception) {
+                _updateResult.value = ProfileUpdateResult.Error(e.message ?: "Gagal memperbarui profil")
+            }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logoutUser()
+        }
+    }
+
+    fun resetResult() {
+        _updateResult.value = ProfileUpdateResult.Idle
+    }
+}
+
+sealed class ProfileUpdateResult {
+    object Idle : ProfileUpdateResult()
+    object Loading : ProfileUpdateResult()
+    object Success : ProfileUpdateResult()
+    data class Error(val message: String) : ProfileUpdateResult()
+}
+
