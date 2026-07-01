@@ -2,10 +2,7 @@ package com.inspekpro.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.inspekpro.data.local.database.InspekProDatabase
 import com.inspekpro.data.remote.api.RetrofitClient
 import com.inspekpro.data.remote.api.WeatherApiService
@@ -67,11 +64,11 @@ object AppModule {
      */
     @Singleton
     @Provides
-    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
     @Singleton
     @Provides
-    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
