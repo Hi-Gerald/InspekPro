@@ -77,7 +77,7 @@ class CreateSessionViewModel @Inject constructor(
     val title = MutableStateFlow("")
     val locationName = MutableStateFlow("")
     val inspectorName = MutableStateFlow("")
-    val scheduledDate = MutableStateFlow(System.currentTimeMillis())
+    val scheduledDate = MutableStateFlow(0L)
     val notes = MutableStateFlow("")
     val videoPath = MutableStateFlow<String?>(null)
     val hasFindings = MutableStateFlow(false)
@@ -132,10 +132,16 @@ class CreateSessionViewModel @Inject constructor(
             return
         }
         
-        // Validasi: Waktu inspeksi tidak boleh di masa lalu (only for new sessions)
-        if (_existingSession.value == null && scheduledDate.value < System.currentTimeMillis() - 60000) { 
-            _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
-            return
+        // Validasi: Waktu inspeksi tidak boleh kosong atau di masa lalu (only for new sessions)
+        if (_existingSession.value == null) {
+            if (scheduledDate.value == 0L) {
+                _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+                return
+            }
+            if (scheduledDate.value < System.currentTimeMillis() - 60000) { 
+                _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
+                return
+            }
         }
 
         viewModelScope.launch {
@@ -201,7 +207,7 @@ class CreateSessionViewModel @Inject constructor(
         inspectorName.value = ""
         notes.value = ""
         videoPath.value = null
-        scheduledDate.value = System.currentTimeMillis()
+        scheduledDate.value = 0L
         _createResult.value = CreateSessionResult.Idle
     }
 }
