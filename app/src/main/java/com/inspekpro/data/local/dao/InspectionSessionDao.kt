@@ -6,7 +6,7 @@ import com.inspekpro.data.local.entity.SessionStatus
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Bagian Billy: Data Access Object (DAO) untuk Sesi Inspeksi
+ * Bagian Anom: Data Access Object (DAO) untuk Sesi Inspeksi
  * Fitur: Operasi CRUD Sesi, Filter Status, dan Sinkronisasi.
  * Tujuan: Menangani interaksi database untuk fitur jadwal inspeksi dan pelacakan status sinkronisasi ke Cloud.
  */

@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Bagian Billy: Entity Sesi Inspeksi
+ * Bagian Anom: Entity Sesi Inspeksi
  * Fitur: Metadata untuk Video Laporan & Status Sinkronisasi Cloud.
  * Tujuan: Menyimpan informasi lengkap jadwal inspeksi termasuk path video laporan dan flag sinkronisasi Firestore.
  */

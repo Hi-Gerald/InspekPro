@@ -40,8 +40,26 @@ interface WeatherApiService {
     ): Response<WeatherResponse>
 
     companion object {
-        // Ganti dengan API key dari openweathermap.org (free tier cukup)
-        const val API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"
+        /**
+         * API key dibaca dari BuildConfig agar tidak ter-commit ke Git.
+         * Setup:
+         *   1. Buka file local.properties (jangan di-commit!)
+         *   2. Tambahkan baris:  WEATHER_API_KEY=isi_key_kamu_di_sini
+         *   3. Di app/build.gradle.kts, di dalam defaultConfig tambahkan:
+         *        buildConfigField("String", "WEATHER_API_KEY", "\"${properties["WEATHER_API_KEY"] ?: ""}\"")
+         *      dan di atas android { } tambahkan:
+         *        val properties = java.util.Properties().also {
+         *            it.load(rootProject.file("local.properties").inputStream())
+         *        }
+         *   4. Sync Gradle → BuildConfig.WEATHER_API_KEY siap dipakai.
+         *
+         * Daftar key gratis di: https://openweathermap.org/api
+         */
+        val API_KEY: String get() = try {
+            com.inspekpro.BuildConfig.WEATHER_API_KEY
+        } catch (_: Exception) {
+            "" // fallback kosong → request gagal gracefully, tidak crash
+        }
         const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
         const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
     }

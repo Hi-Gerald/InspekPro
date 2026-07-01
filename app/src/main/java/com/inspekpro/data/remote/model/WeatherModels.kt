@@ -32,7 +32,7 @@ data class WeatherDescription(
 )
 
 data class MainWeather(
-    @SerializedName("temp")       val temp: Double,        // Kelvin by default
+    @SerializedName("temp")       val temp: Double,        // Celsius (units=metric diminta di query)
     @SerializedName("feels_like") val feelsLike: Double,
     @SerializedName("temp_min")   val tempMin: Double,
     @SerializedName("temp_max")   val tempMax: Double,
@@ -82,8 +82,10 @@ data class WeatherInfo(
 ) {
     companion object {
         fun fromResponse(response: WeatherResponse): WeatherInfo {
-            val tempC = response.main.temp - 273.15
-            val feelsLikeC = response.main.feelsLike - 273.15
+            // units=metric sudah diminta di query → API mengembalikan Celsius langsung.
+            // JANGAN kurangi 273.15 lagi; itu untuk respons tanpa units (Kelvin).
+            val tempC = response.main.temp
+            val feelsLikeC = response.main.feelsLike
             val windKmh = response.wind.speed * 3.6
             val visKm = response.visibility / 1000.0
             val desc = response.weather.firstOrNull()?.description ?: ""
