@@ -70,7 +70,6 @@ class DashboardViewModel @Inject constructor(
 @HiltViewModel
 class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
-    private val findingRepo: FindingRepository,
     private val alarmScheduler: AlarmScheduler,
     private val firestoreSyncRepo: FirestoreSyncRepository
 ) : ViewModel() {
@@ -80,18 +79,7 @@ class CreateSessionViewModel @Inject constructor(
     val inspectorName = MutableStateFlow("")
     val scheduledDate = MutableStateFlow(System.currentTimeMillis())
     val notes = MutableStateFlow("")
-    val photos = MutableStateFlow<List<String>>(emptyList())
     val videoPath = MutableStateFlow<String?>(null)
-    
-    // Finding Details
-    val hasFindings = MutableStateFlow(false)
-    val findingCategory = MutableStateFlow("")
-    val priority = MutableStateFlow("")
-    val findingDescription = MutableStateFlow("")
-    val findingPhotos = MutableStateFlow<List<String>>(emptyList())
-    
-    // Inspection Conclusion
-    val conclusion = MutableStateFlow("")
 
     private val _createResult = MutableStateFlow<CreateSessionResult>(CreateSessionResult.Idle)
     val createResult: StateFlow<CreateSessionResult> = _createResult.asStateFlow()
@@ -100,29 +88,20 @@ class CreateSessionViewModel @Inject constructor(
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
-    fun createSession(
-        inspectorId: String, 
-        status: SessionStatus = SessionStatus.DRAFT,
-        manualTitle: String? = null,
-        manualLocation: String? = null,
-        manualInspector: String? = null,
-        manualConclusion: String? = null,
-        manualPhotos: List<String>? = null,
-        manualVideo: String? = null
-    ) {
+    fun createSession(inspectorId: String, totalItems: Int = 0, passedItems: Int = 0) {
+        // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
+        if (title.value.isBlank() || locationName.value.isBlank() || inspectorName.value.isBlank()) {
+            _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
+            return
+        }
+        
+        // Validasi: Waktu inspeksi tidak boleh di masa lalu
+        if (scheduledDate.value < System.currentTimeMillis()) {
+            _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
+            return
+        }
+
         viewModelScope.launch {
-            val finalTitle = manualTitle ?: title.value
-            val finalLocation = manualLocation ?: locationName.value
-            val finalInspector = manualInspector ?: inspectorName.value
-            val finalConclusion = manualConclusion ?: conclusion.value
-            val finalPhotos = manualPhotos ?: photos.value
-            val finalVideo = manualVideo ?: videoPath.value
-
-            if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
-                _createResult.value = CreateSessionResult.Error("Harap isi field wajib: Judul, Lokasi, dan Inspector")
-                return@launch
-            }
-
             _createResult.value = CreateSessionResult.Loading
             try {
                 val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
@@ -130,52 +109,30 @@ class CreateSessionViewModel @Inject constructor(
 
                 val newSession = InspectionSessionEntity(
                     sessionCode   = code,
-                    title         = finalTitle.trim(),
-                    locationName  = finalLocation.trim(),
-                    inspectorName = finalInspector.trim(),
+                    title         = title.value.trim(),
+                    locationName  = locationName.value.trim(),
+                    inspectorName = inspectorName.value.trim(),
                     inspectorId   = inspectorId,
                     scheduledDate = scheduledDate.value,
-                    notes         = finalConclusion.trim(),
-                    reportVideoPath = finalVideo ?: finalPhotos.firstOrNull { it.endsWith(".mp4") },
-                    status        = status
+                    notes         = notes.value.trim(),
+                    reportVideoPath = videoPath.value,
+                    totalItems    = totalItems,
+                    passedItems   = passedItems,
+                    status        = SessionStatus.DRAFT
                 )
 
                 val sessionId = sessionRepo.createSession(newSession)
                 
-                // Add finding if exists
-                if (hasFindings.value) {
-                    val finding = InspectionFindingEntity(
-                        sessionId = sessionId,
-                        findingCode = "FND-${System.currentTimeMillis() % 10000}",
-                        category = findingCategory.value,
-                        title = "Temuan ${title.value}",
-                        description = findingDescription.value,
-                        severity = when(priority.value.lowercase()) {
-                            "high", "tinggi", "kritis" -> FindingSeverity.CRITICAL
-                            "medium", "sedang" -> FindingSeverity.MAJOR
-                            else -> FindingSeverity.MINOR
-                        },
-                        status = FindingStatus.OPEN,
-                        photoPaths = findingPhotos.value.joinToString(",")
-                    )
-                    val findingId = findingRepo.addFinding(finding)
-                    
-                    // Add finding photos to FindingPhotoEntity as well
-                    findingPhotos.value.forEach { path ->
-                        findingRepo.addPhoto(FindingPhotoEntity(
-                            findingId = findingId,
-                            localPath = path
-                        ))
-                    }
-                }
-
                 // Jadwalkan Pengingat (AlarmManager)
                 alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
 
-                // Sinkron ke Cloud (Firestore)
-                firestoreSyncRepo.syncUnsyncedSessions()
-
+                // Data lokal & alarm sudah aman → langsung sukses
                 _createResult.value = CreateSessionResult.Success(sessionId)
+
+                // Sinkron ke Cloud di background (tidak memblokir user)
+                launch {
+                    firestoreSyncRepo.syncUnsyncedSessions()
+                }
             } catch (e: Exception) {
                 _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal membuat sesi")
             }
@@ -185,8 +142,10 @@ class CreateSessionViewModel @Inject constructor(
     fun resetForm() {
         title.value = ""
         locationName.value = ""
+        inspectorName.value = ""
         notes.value = ""
         videoPath.value = null
+        scheduledDate.value = System.currentTimeMillis()
         _createResult.value = CreateSessionResult.Idle
     }
 }
@@ -208,25 +167,9 @@ sealed class WeatherUiState {
 class SessionListViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository
 ) : ViewModel() {
-    private val _filter = MutableStateFlow(DateFilter.ALL)
+    private val _filter = MutableStateFlow(DateFilter.TODAY)
     val filter: StateFlow<DateFilter> = _filter.asStateFlow()
-
-    private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
-    val selectedDateMillis: StateFlow<Long> = _selectedDateMillis.asStateFlow()
-
     val allSessions = sessionRepo.getAllSessions()
-
-    val filteredSessions: Flow<List<InspectionSessionEntity>> = combine(allSessions, _selectedDateMillis) { sessions, selectedMillis ->
-        val cal = Calendar.getInstance().apply { timeInMillis = selectedMillis }
-        val day = cal.get(Calendar.DAY_OF_YEAR)
-        val year = cal.get(Calendar.YEAR)
-
-        sessions.filter {
-            val sessionCal = Calendar.getInstance().apply { timeInMillis = it.scheduledDate }
-            sessionCal.get(Calendar.DAY_OF_YEAR) == day && sessionCal.get(Calendar.YEAR) == year
-        }
-    }
-
     val sessionsByStatus: StateFlow<SessionGroupUiState> = allSessions.map { sessions ->
         SessionGroupUiState(
             total = sessions.size,
@@ -235,11 +178,9 @@ class SessionListViewModel @Inject constructor(
             tertunda = sessions.count { it.status == SessionStatus.DRAFT }
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SessionGroupUiState())
-    
-    fun setSelectedDate(millis: Long) {
-        _selectedDateMillis.value = millis
+    val activeSessions: Flow<List<InspectionSessionEntity>> = allSessions.map { list ->
+        list.filter { it.status in listOf(SessionStatus.IN_PROGRESS, SessionStatus.DRAFT) }
     }
-
     fun setFilter(filter: DateFilter) { _filter.value = filter }
     fun deleteSession(sessionId: Long) { viewModelScope.launch { sessionRepo.deleteSession(sessionId) } }
 }

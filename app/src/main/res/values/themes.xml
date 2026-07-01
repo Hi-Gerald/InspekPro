@@ -11,4 +11,13 @@
         <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background, animated icon, and animation duration. -->
+        <item name="windowSplashScreenBackground">@color/background</item>
+        <!-- Use an animated icon or standard vector drawable here -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_inspekpro</item>
+        <!-- Post-splash theme -->
+        <item name="postSplashScreenTheme">@style/Theme.InspekPro</item>
+    </style>
 </resources>

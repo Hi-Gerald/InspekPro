@@ -85,8 +85,11 @@ class RegisterFragment : Fragment() {
                 binding.passwordInputLayout.error = null
             }
 
-            if (confirmPassword != password) {
-                binding.confirmPasswordInputLayout.error = "Konfirmasi password tidak cocok"
+            if (confirmPassword.isEmpty()) {
+                binding.confirmPasswordInputLayout.error = "Konfirmasi Password tidak boleh kosong"
+                return@setOnClickListener
+            } else if (password != confirmPassword) {
+                binding.confirmPasswordInputLayout.error = "Password tidak cocok"
                 return@setOnClickListener
             } else {
                 binding.confirmPasswordInputLayout.error = null

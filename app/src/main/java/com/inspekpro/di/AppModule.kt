@@ -1,6 +1,7 @@
 package com.inspekpro.di
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.inspekpro.data.local.database.InspekProDatabase
 import com.inspekpro.data.remote.api.RetrofitClient
@@ -60,16 +61,14 @@ object AppModule {
     /**
      * Bagian Billy: Provider Firebase Firestore
      * Digunakan untuk sinkronisasi data jadwal inspeksi ke Cloud.
-     * Ditambahkan Try-Catch agar tidak crash jika google-services.json belum ada.
      */
     @Singleton
     @Provides
-    fun provideFirestore(): FirebaseFirestore? = try {
-        // Coba ambil instance default, jika gagal (misal: config missing) akan lempar IllegalStateException
-        FirebaseFirestore.getInstance()
-    } catch (e: Exception) {
-        null
-    }
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Singleton
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
@@ -102,8 +101,12 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideAuthRepository(db: InspekProDatabase): AuthRepository = AuthRepository(
-        userDao = db.userDao()
+    fun provideAuthRepository(
+        db: InspekProDatabase,
+        firebaseAuth: FirebaseAuth
+    ): AuthRepository = AuthRepository(
+        userDao = db.userDao(),
+        firebaseAuth = firebaseAuth
     )
 
     // ─── UTILS ────────────────────────────────────────────────────────────────
