@@ -89,7 +89,11 @@ class CreateSessionViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     fun createSession(inspectorId: String, totalItems: Int = 0, passedItems: Int = 0) {
-        if (!isFormValid.value) return
+        // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
+        if (title.value.isBlank() || locationName.value.isBlank() || inspectorName.value.isBlank()) {
+            _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
+            return
+        }
         
         // Validasi: Waktu inspeksi tidak boleh di masa lalu
         if (scheduledDate.value < System.currentTimeMillis()) {
@@ -122,10 +126,13 @@ class CreateSessionViewModel @Inject constructor(
                 // Jadwalkan Pengingat (AlarmManager)
                 alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
 
-                // Sinkron ke Cloud (Firestore)
-                firestoreSyncRepo.syncUnsyncedSessions()
-
+                // Data lokal & alarm sudah aman → langsung sukses
                 _createResult.value = CreateSessionResult.Success(sessionId)
+
+                // Sinkron ke Cloud di background (tidak memblokir user)
+                launch {
+                    firestoreSyncRepo.syncUnsyncedSessions()
+                }
             } catch (e: Exception) {
                 _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal membuat sesi")
             }
