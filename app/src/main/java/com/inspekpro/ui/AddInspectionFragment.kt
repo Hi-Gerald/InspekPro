@@ -4,13 +4,12 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
+import android.util.Log
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -19,14 +18,18 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import com.bumptech.glide.Glide
 import com.inspekpro.R
 import com.inspekpro.data.local.entity.SessionStatus
 import com.inspekpro.databinding.FragmentAddInspectionBinding
@@ -35,7 +38,6 @@ import com.inspekpro.ui.viewmodel.CreateSessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -68,13 +70,12 @@ class AddInspectionFragment : Fragment() {
     private val calendar = Calendar.getInstance()
 
     // Temp URIs for Camera Capture
-    private var tempPhotoUri: Uri? = null
     private var isCapturingFinding = false
     private var isCapturingVideo = false
 
     private val requestCameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
-            if (isCapturingVideo) startCameraForVideo() else startCameraForPhoto()
+            checkCameraPermissionAndLaunch()
         } else {
             Toast.makeText(requireContext(), "Izin kamera diperlukan untuk mengambil gambar/video", Toast.LENGTH_SHORT).show()
         }
@@ -89,45 +90,13 @@ class AddInspectionFragment : Fragment() {
         uri?.let { addPhotoToList(it.toString(), isFinding = true) }
     }
 
-    private val takePhoto = registerForActivityResult(object : ActivityResultContracts.TakePicture() {
-        override fun createIntent(context: Context, input: Uri): Intent {
-            return super.createIntent(context, input).apply {
-                clipData = ClipData.newRawUri("", input)
-                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            }
-        }
-    }) { success ->
-        if (success) {
-            tempPhotoUri?.let { addPhotoToList(it.toString(), isFinding = isCapturingFinding) }
-        }
-    }
-
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
             videoPath = it.toString()
             addPhotoToList(it.toString(), isFinding = false)
             binding.tvVideoPath.text = "Video dilampirkan"
-            binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
+            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
             updateProgress()
-        }
-    }
-
-    private val captureVideo = registerForActivityResult(object : ActivityResultContracts.CaptureVideo() {
-        override fun createIntent(context: Context, input: Uri): Intent {
-            return super.createIntent(context, input).apply {
-                clipData = ClipData.newRawUri("", input)
-                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            }
-        }
-    }) { success ->
-        if (success) {
-            tempPhotoUri?.let { 
-                videoPath = it.toString()
-                addPhotoToList(it.toString(), isFinding = false)
-                binding.tvVideoPath.text = "Video direkam"
-                binding.tvVideoPath.setTextColor(resources.getColor(R.color.primary, null))
-                updateProgress()
-            }
         }
     }
 
@@ -142,12 +111,63 @@ class AddInspectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupFormDefaults()
         setupRecyclerViews()
         setupClickListeners()
         setupFormWatchers()
         observeViewModel()
+        setupFragmentResultListeners()
         updateProgress()
+    }
+
+    private fun applyWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+
+            // Bottom Insets
+            binding.footerContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (16 * density).toInt()
+                bottomMargin = baseMargin + systemBars.bottom
+            }
+
+            // Top Insets
+            binding.btnBack.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (16 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+            binding.tvHeaderTitle.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (24 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+            binding.progressBadge.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                val baseMargin = (24 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+
+            insets
+        }
+    }
+
+    private fun setupFragmentResultListeners() {
+        setFragmentResultListener("camera_result") { _, bundle ->
+            val uri = bundle.getString("uri")
+            val isFinding = bundle.getBoolean("isFinding")
+            val isVideo = bundle.getBoolean("isVideo")
+
+            uri?.let {
+                if (isVideo) {
+                    videoPath = it
+                    addPhotoToList(it, isFinding = false) // Add video to the main media list
+                    binding.tvVideoPath.text = "Video direkam"
+                    binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                } else {
+                    addPhotoToList(it, isFinding = isFinding)
+                }
+                updateProgress()
+            }
+        }
     }
 
     private fun setupFormDefaults() {
@@ -173,21 +193,27 @@ class AddInspectionFragment : Fragment() {
         }
         checklistAdapter.submitList(checklistItems.toList())
 
-        photoAdapter = PhotoAdapter { position ->
-            photos.removeAt(position)
-            photoAdapter.submitList(photos.toList())
-            updateProgress()
-        }
+        photoAdapter = PhotoAdapter(
+            onRemoveClick = { position ->
+                photos.removeAt(position)
+                photoAdapter.submitList(photos.toList())
+                updateProgress()
+            },
+            onItemClick = { path -> showMediaPreview(path) }
+        )
         binding.rvPhotos.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = photoAdapter
         }
         
-        findingPhotoAdapter = PhotoAdapter { position ->
-            findingPhotos.removeAt(position)
-            findingPhotoAdapter.submitList(findingPhotos.toList())
-            updateProgress()
-        }
+        findingPhotoAdapter = PhotoAdapter(
+            onRemoveClick = { position ->
+                findingPhotos.removeAt(position)
+                findingPhotoAdapter.submitList(findingPhotos.toList())
+                updateProgress()
+            },
+            onItemClick = { path -> showMediaPreview(path) }
+        )
         binding.rvFindingPhotos.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = findingPhotoAdapter
@@ -278,24 +304,14 @@ class AddInspectionFragment : Fragment() {
 
     private fun checkCameraPermissionAndLaunch() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            if (isCapturingVideo) startCameraForVideo() else startCameraForPhoto()
+            val bundle = Bundle().apply {
+                putBoolean("isVideoButton", isCapturingVideo)
+                putBoolean("isFinding", isCapturingFinding)
+            }
+            findNavController().navigate(R.id.action_addInspectionFragment_to_cameraFragment, bundle)
         } else {
             requestCameraPermission.launch(Manifest.permission.CAMERA)
         }
-    }
-
-    private fun startCameraForPhoto() {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "JPEG_${timeStamp}_"
-        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val imageFile = File.createTempFile(fileName, ".jpg", storageDir)
-        
-        tempPhotoUri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            imageFile
-        )
-        takePhoto.launch(tempPhotoUri)
     }
 
     private fun showVideoOptions() {
@@ -305,25 +321,12 @@ class AddInspectionFragment : Fragment() {
             .setItems(options) { _, which ->
                 if (which == 0) {
                     isCapturingVideo = true
+                    isCapturingFinding = false // Reset finding flag for video
                     checkCameraPermissionAndLaunch()
                 } else {
                     pickVideo.launch("video/*")
                 }
             }.show()
-    }
-
-    private fun startCameraForVideo() {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "VIDEO_${timeStamp}_"
-        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-        val videoFile = File.createTempFile(fileName, ".mp4", storageDir)
-        
-        tempPhotoUri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            videoFile
-        )
-        captureVideo.launch(tempPhotoUri)
     }
 
     private fun addPhotoToList(path: String, isFinding: Boolean) {
@@ -444,6 +447,63 @@ class AddInspectionFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun showMediaPreview(path: String) {
+        val isVideo = path.endsWith(".mp4") || path.contains("video", ignoreCase = true)
+        val dialog = android.app.Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_media_preview)
+        
+        val imageView = dialog.findViewById<android.widget.ImageView>(R.id.ivPreview)
+        val videoView = dialog.findViewById<android.widget.VideoView>(R.id.vvPreview)
+        val btnClose = dialog.findViewById<android.widget.ImageButton>(R.id.btnClose)
+        val root = dialog.findViewById<View>(R.id.previewRoot)
+
+        // Ensure the dialog window is actually full screen
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+        // Handle insets for the close button
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+            val params = btnClose.layoutParams as ViewGroup.MarginLayoutParams
+            params.topMargin = (16 * density).toInt() + systemBars.top
+            params.rightMargin = (16 * density).toInt() + systemBars.right
+            btnClose.layoutParams = params
+            insets
+        }
+
+        if (isVideo) {
+            imageView.visibility = View.GONE
+            videoView.visibility = View.VISIBLE
+            
+            try {
+                videoView.setVideoURI(Uri.parse(path))
+                videoView.setOnPreparedListener { mp ->
+                    mp.isLooping = true
+                    mp.start()
+                }
+                videoView.setOnErrorListener { _, what, extra ->
+                    videoView.visibility = View.GONE
+                    imageView.visibility = View.VISIBLE
+                    Glide.with(requireContext()).load(path).into(imageView)
+                    true
+                }
+            } catch (e: Exception) {
+                videoView.visibility = View.GONE
+                imageView.visibility = View.VISIBLE
+                Glide.with(requireContext()).load(path).into(imageView)
+            }
+        } else {
+            imageView.visibility = View.VISIBLE
+            videoView.visibility = View.GONE
+            Glide.with(requireContext())
+                .load(path)
+                .into(imageView)
+        }
+
+        btnClose.setOnClickListener { dialog.dismiss() }
+        dialog.show()
     }
 
     override fun onDestroyView() {

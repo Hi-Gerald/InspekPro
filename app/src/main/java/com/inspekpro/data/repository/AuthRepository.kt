@@ -32,6 +32,27 @@ class AuthRepository(
         }
     }
 
+    suspend fun socialLogin(fullName: String, email: String, companyName: String): Result<UserEntity> {
+        return try {
+            // Check if user already exists
+            var user = userDao.getUserByEmail(email)
+            if (user == null) {
+                // Register if not exists
+                val newUser = UserEntity(
+                    fullName = fullName,
+                    email = email,
+                    companyName = companyName,
+                    passwordHash = "social_login_placeholder" // Or generate one
+                )
+                val userId = userDao.insertUser(newUser)
+                user = newUser.copy(userId = userId)
+            }
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun loginUser(email: String, password: String): Result<UserEntity> {
         return try {
             Log.d("AUTH_DEBUG", "Memulai login untuk: $email")

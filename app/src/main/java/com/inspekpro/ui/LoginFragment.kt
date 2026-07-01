@@ -11,6 +11,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.inspekpro.R
 import com.inspekpro.databinding.FragmentLoginBinding
 import com.inspekpro.ui.viewmodel.AuthResult
@@ -38,8 +40,17 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun applyWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
     }
 
     private fun setupClickListeners() {

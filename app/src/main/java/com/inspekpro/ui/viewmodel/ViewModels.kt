@@ -80,6 +80,7 @@ class CreateSessionViewModel @Inject constructor(
     val scheduledDate = MutableStateFlow(System.currentTimeMillis())
     val notes = MutableStateFlow("")
     val videoPath = MutableStateFlow<String?>(null)
+    val hasFindings = MutableStateFlow(false)
 
     private val _createResult = MutableStateFlow<CreateSessionResult>(CreateSessionResult.Idle)
     val createResult: StateFlow<CreateSessionResult> = _createResult.asStateFlow()
@@ -88,15 +89,28 @@ class CreateSessionViewModel @Inject constructor(
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
-    fun createSession(inspectorId: String, totalItems: Int = 0, passedItems: Int = 0) {
+    fun createSession(
+        inspectorId: String, 
+        status: SessionStatus = SessionStatus.DRAFT,
+        manualTitle: String? = null,
+        manualLocation: String? = null,
+        manualInspector: String? = null,
+        manualConclusion: String? = null,
+        manualPhotos: List<String> = emptyList(),
+        manualVideo: String? = null
+    ) {
         // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
-        if (title.value.isBlank() || locationName.value.isBlank() || inspectorName.value.isBlank()) {
+        val finalTitle = manualTitle ?: title.value
+        val finalLocation = manualLocation ?: locationName.value
+        val finalInspector = manualInspector ?: inspectorName.value
+
+        if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
             _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
             return
         }
         
         // Validasi: Waktu inspeksi tidak boleh di masa lalu
-        if (scheduledDate.value < System.currentTimeMillis()) {
+        if (scheduledDate.value < System.currentTimeMillis() - 60000) { // Tolerate 1 min
             _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
             return
         }
@@ -109,16 +123,16 @@ class CreateSessionViewModel @Inject constructor(
 
                 val newSession = InspectionSessionEntity(
                     sessionCode   = code,
-                    title         = title.value.trim(),
-                    locationName  = locationName.value.trim(),
-                    inspectorName = inspectorName.value.trim(),
+                    title         = finalTitle.trim(),
+                    locationName  = finalLocation.trim(),
+                    inspectorName = finalInspector.trim(),
                     inspectorId   = inspectorId,
                     scheduledDate = scheduledDate.value,
-                    notes         = notes.value.trim(),
-                    reportVideoPath = videoPath.value,
-                    totalItems    = totalItems,
-                    passedItems   = passedItems,
-                    status        = SessionStatus.DRAFT
+                    notes         = manualConclusion ?: notes.value.trim(),
+                    reportVideoPath = manualVideo ?: videoPath.value,
+                    totalItems    = 0,
+                    passedItems   = 0,
+                    status        = status
                 )
 
                 val sessionId = sessionRepo.createSession(newSession)
@@ -169,7 +183,22 @@ class SessionListViewModel @Inject constructor(
 ) : ViewModel() {
     private val _filter = MutableStateFlow(DateFilter.TODAY)
     val filter: StateFlow<DateFilter> = _filter.asStateFlow()
+    
+    private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
+    val selectedDateMillis: StateFlow<Long> = _selectedDateMillis.asStateFlow()
+
     val allSessions = sessionRepo.getAllSessions()
+
+    val filteredSessions: StateFlow<List<InspectionSessionEntity>> = 
+        combine(allSessions, _selectedDateMillis) { sessions, date ->
+            val cal = Calendar.getInstance().apply { timeInMillis = date }
+            sessions.filter { 
+                val sessionCal = Calendar.getInstance().apply { timeInMillis = it.scheduledDate }
+                sessionCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR) &&
+                sessionCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val sessionsByStatus: StateFlow<SessionGroupUiState> = allSessions.map { sessions ->
         SessionGroupUiState(
             total = sessions.size,
@@ -182,6 +211,7 @@ class SessionListViewModel @Inject constructor(
         list.filter { it.status in listOf(SessionStatus.IN_PROGRESS, SessionStatus.DRAFT) }
     }
     fun setFilter(filter: DateFilter) { _filter.value = filter }
+    fun setSelectedDate(millis: Long) { _selectedDateMillis.value = millis }
     fun deleteSession(sessionId: Long) { viewModelScope.launch { sessionRepo.deleteSession(sessionId) } }
 }
 

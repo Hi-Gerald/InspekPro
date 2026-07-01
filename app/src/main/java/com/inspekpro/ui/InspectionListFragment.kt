@@ -15,6 +15,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import com.inspekpro.R
 import com.inspekpro.databinding.FragmentInspectionListBinding
 import com.inspekpro.ui.viewmodel.SessionListViewModel
@@ -46,10 +49,35 @@ class InspectionListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupCalendarStrip()
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun applyWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+
+            // Bottom Insets
+            binding.bottomNavContainer.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                bottomMargin = systemBars.bottom
+            }
+            binding.fabAdd.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                val baseMargin = (32 * density).toInt()
+                bottomMargin = baseMargin + systemBars.bottom
+            }
+
+            // Top Insets
+            binding.tvAppName.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                val baseMargin = (24 * density).toInt()
+                topMargin = baseMargin + systemBars.top
+            }
+
+            insets
+        }
     }
 
     private fun setupCalendarStrip() {
