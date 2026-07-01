@@ -8,6 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.inspekpro.databinding.ItemPhotoFormBinding
 
+/**
+ * Bagian Billy: Adapter Foto Dokumentasi
+ * Fitur: Menampilkan preview foto-foto lampiran pada laporan inspeksi.
+ */
 class PhotoAdapter(
     private val onRemoveClick: (Int) -> Unit
 ) : ListAdapter<String, PhotoAdapter.ViewHolder>(DiffCallback) {

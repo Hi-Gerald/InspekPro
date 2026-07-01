@@ -9,6 +9,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.inspekpro.databinding.ItemChecklistFormBinding
 
+/**
+ * Bagian Billy: Adapter Item Checklist
+ * Fitur: Menampilkan daftar item pemeriksaan dinamis pada form tambah jadwal.
+ */
 class ChecklistItemAdapter(
     private val onItemChanged: (Int, String, Boolean) -> Unit
 ) : ListAdapter<Pair<String, Boolean>, ChecklistItemAdapter.ViewHolder>(DiffCallback) {
