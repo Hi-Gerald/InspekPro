@@ -137,11 +137,11 @@ class InspectionListFragment : Fragment() {
         }
 
         binding.tabLaporan.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_inspectionListFragment_to_reportFragment)
         }
 
         binding.tabAkun.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Akun segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_inspectionListFragment_to_profileFragment)
         }
 
         binding.btnViewCalendar.setOnClickListener {

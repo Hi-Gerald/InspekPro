@@ -1,6 +1,8 @@
 package com.inspekpro.ui
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,21 +13,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.inspekpro.R
-import com.inspekpro.databinding.FragmentRegisterBinding
-import com.inspekpro.ui.viewmodel.AuthResult
-import com.inspekpro.ui.viewmodel.AuthViewModel
+import com.inspekpro.databinding.FragmentForgotPasswordBinding
+import com.inspekpro.ui.viewmodel.ForgotPasswordViewModel
+import com.inspekpro.ui.viewmodel.ResetPasswordResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class RegisterFragment : Fragment() {
+class ForgotPasswordFragment : Fragment() {
 
-    private var _binding: FragmentRegisterBinding? = null
+    private var _binding: FragmentForgotPasswordBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AuthViewModel by viewModels()
+    private val viewModel: ForgotPasswordViewModel by viewModels()
 
     private var isCharCountValid = false
     private var isUppercaseValid = false
@@ -36,7 +39,7 @@ class RegisterFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        _binding = FragmentForgotPasswordBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -44,26 +47,28 @@ class RegisterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
+        setupTextWatchers()
         observeViewModel()
-        setupPasswordValidation()
     }
 
     private fun setupClickListeners() {
-        binding.registerBtn.setOnClickListener {
-            val name = binding.nameEditText.text.toString().trim()
+        // Back Navigation Button
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
+        // Login Link Button
+        binding.loginLinkText.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
+        // Save New Password Button Action
+        binding.btnSave.setOnClickListener {
             val email = binding.emailEditText.text.toString().trim()
-            val company = binding.companyEditText.text.toString().trim()
-            val password = binding.passwordEditText.text.toString().trim()
+            val newPassword = binding.passwordEditText.text.toString().trim()
             val confirmPassword = binding.confirmPasswordEditText.text.toString().trim()
-            val isTermsAccepted = binding.termsCheckbox.isChecked
 
-            if (name.isEmpty()) {
-                binding.nameInputLayout.error = "Nama Lengkap tidak boleh kosong"
-                return@setOnClickListener
-            } else {
-                binding.nameInputLayout.error = null
-            }
-
+            // 1. Email Validations
             if (email.isEmpty()) {
                 binding.emailInputLayout.error = "Email tidak boleh kosong"
                 return@setOnClickListener
@@ -74,86 +79,41 @@ class RegisterFragment : Fragment() {
                 binding.emailInputLayout.error = null
             }
 
-            if (company.isEmpty()) {
-                binding.companyInputLayout.error = "Nama Perusahaan tidak boleh kosong"
-                return@setOnClickListener
-            } else {
-                binding.companyInputLayout.error = null
-            }
-
-            if (password.isEmpty()) {
+            // 2. Password Strength Requirements Verification
+            if (newPassword.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
                 return@setOnClickListener
-            } else if (password.length < 6) {
-                binding.passwordInputLayout.error = "Password minimal 6 karakter"
+            } else if (!isCharCountValid || !isUppercaseValid || !isLowercaseValid || !isNumberValid) {
+                binding.passwordInputLayout.error = "Password tidak memenuhi kriteria kekuatan"
                 return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
             }
 
+            // 3. Confirm Password Match Check
             if (confirmPassword.isEmpty()) {
-                binding.confirmPasswordInputLayout.error = "Konfirmasi Password tidak boleh kosong"
+                binding.confirmPasswordInputLayout.error = "Konfirmasi password tidak boleh kosong"
                 return@setOnClickListener
-            } else if (password != confirmPassword) {
-                binding.confirmPasswordInputLayout.error = "Password tidak cocok"
+            } else if (newPassword != confirmPassword) {
+                binding.confirmPasswordInputLayout.error = "Password konfirmasi tidak cocok"
                 return@setOnClickListener
             } else {
                 binding.confirmPasswordInputLayout.error = null
             }
 
-            if (!isTermsAccepted) {
-                Toast.makeText(requireContext(), "Anda harus menyetujui syarat & ketentuan", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            viewModel.register(name, email, company, password)
-        }
-
-        binding.loginLinkText.setOnClickListener {
-            findNavController().popBackStack()
+            // Trigger reset password action via Viewmodel
+            viewModel.resetPassword(email, newPassword)
         }
     }
 
-    private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.registerResult.collectLatest { result ->
-                    when (result) {
-                        is AuthResult.Idle -> {
-                            binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
-                        }
-                        is AuthResult.Loading -> {
-                            binding.registerBtn.isEnabled = false
-                            binding.registerBtn.text = "Mendaftarkan..."
-                        }
-                        is AuthResult.Success -> {
-                            binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
-                            viewModel.resetResults()
-                            Toast.makeText(requireContext(), "Pendaftaran berhasil! Silakan masuk.", Toast.LENGTH_LONG).show()
-                            findNavController().popBackStack()
-                        }
-                        is AuthResult.Error -> {
-                            binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
-                            Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
-                            viewModel.resetResults()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setupPasswordValidation() {
-        binding.passwordEditText.addTextChangedListener(object : android.text.TextWatcher {
+    private fun setupTextWatchers() {
+        binding.passwordEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val password = s?.toString() ?: ""
                 checkPasswordRequirements(password)
             }
-            override fun afterTextChanged(s: android.text.Editable?) {}
+            override fun afterTextChanged(s: Editable?) {}
         })
     }
 
@@ -215,6 +175,50 @@ class RegisterFragment : Fragment() {
             .scaleY(targetScale)
             .setDuration(200)
             .start()
+    }
+
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.resetResult.collectLatest { result ->
+                    when (result) {
+                        is ResetPasswordResult.Idle -> {
+                            binding.btnSave.isEnabled = true
+                            binding.btnSave.text = getString(R.string.btn_save_new_password)
+                        }
+                        is ResetPasswordResult.Loading -> {
+                            binding.btnSave.isEnabled = false
+                            binding.btnSave.text = "Memperbarui..."
+                        }
+                        is ResetPasswordResult.Success -> {
+                            binding.btnSave.isEnabled = true
+                            binding.btnSave.text = getString(R.string.btn_save_new_password)
+                            
+                            Snackbar.make(
+                                binding.root,
+                                "Password berhasil diperbarui.",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                            
+                            viewModel.resetResult()
+                            findNavController().navigateUp()
+                        }
+                        is ResetPasswordResult.Error -> {
+                            binding.btnSave.isEnabled = true
+                            binding.btnSave.text = getString(R.string.btn_save_new_password)
+                            
+                            Snackbar.make(
+                                binding.root,
+                                result.message,
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                            
+                            viewModel.resetResult()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

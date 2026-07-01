@@ -83,6 +83,11 @@ class LoginFragment : Fragment() {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
+        binding.forgotPasswordText.setOnClickListener {
+            viewModel.resetResults()
+            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        }
+
         binding.googleLoginBtn.setOnClickListener {
             Toast.makeText(requireContext(), "Masuk dengan Google...", Toast.LENGTH_SHORT).show()
             viewModel.socialLogin("Google User", "google@inspekpro.com", "InspekPro Corp")
