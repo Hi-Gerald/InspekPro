@@ -62,7 +62,119 @@ class DashboardViewModel @Inject constructor(
     }
 
     private suspend fun populateMockData() {
-        // ... (Kode mock data tetap sama)
+        try {
+            val s1Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 1,
+                    sessionCode = "INS-2026-001",
+                    title = "Turbine Generator Unit 2",
+                    locationName = "Plant A - Section 3",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.IN_PROGRESS,
+                    scheduledDate = System.currentTimeMillis() - 86400000,
+                    totalItems = 4,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s2Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 2,
+                    sessionCode = "INS-2026-002",
+                    title = "Pressure Vessel Tank B-301",
+                    locationName = "Plant B - Section 1",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.DRAFT,
+                    scheduledDate = System.currentTimeMillis(),
+                    totalItems = 10,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s3Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 3,
+                    sessionCode = "INS-2026-003",
+                    title = "Cooling Tower System",
+                    locationName = "Plant A - Section 5",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.COMPLETED,
+                    scheduledDate = System.currentTimeMillis() - 172800000,
+                    totalItems = 5,
+                    passedItems = 5,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 1,
+                    sessionId = s1Id,
+                    findingCode = "F-001",
+                    category = "Mechanical",
+                    title = "Kebocoran Minor pada Seal Turbine",
+                    description = "Kebocoran oli pelumas pada seal turbine unit 2.",
+                    severity = FindingSeverity.MINOR,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 3600000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 2,
+                    sessionId = s1Id,
+                    findingCode = "F-002",
+                    category = "Corrosion",
+                    title = "Korosi pada Flange Connection",
+                    description = "Korosi permukaan pada flange pipa kondensor.",
+                    severity = FindingSeverity.MAJOR,
+                    status = FindingStatus.IN_PROGRESS,
+                    createdAt = System.currentTimeMillis() - 7200000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 3,
+                    sessionId = s1Id,
+                    findingCode = "F-003",
+                    category = "Vibration",
+                    title = "Getaran Berlebih pada Motor Pump",
+                    description = "Amplitudo getaran melebihi batas toleransi pada motor pompa utama.",
+                    severity = FindingSeverity.CRITICAL,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 10800000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 4,
+                    sessionId = s3Id,
+                    findingCode = "F-004",
+                    category = "Structural",
+                    title = "Deformasi Ringan pada Support Beam",
+                    description = "Deformasi kecil terdeteksi pada kaki penyangga tower.",
+                    severity = FindingSeverity.OBSERVATION,
+                    status = FindingStatus.RESOLVED,
+                    createdAt = System.currentTimeMillis() - 14400000
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun loadWeather(lat: Double, lon: Double) {
