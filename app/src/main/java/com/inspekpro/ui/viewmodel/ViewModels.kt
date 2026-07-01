@@ -85,9 +85,32 @@ class CreateSessionViewModel @Inject constructor(
     private val _createResult = MutableStateFlow<CreateSessionResult>(CreateSessionResult.Idle)
     val createResult: StateFlow<CreateSessionResult> = _createResult.asStateFlow()
 
+    private val _existingSession = MutableStateFlow<InspectionSessionEntity?>(null)
+    val existingSession: StateFlow<InspectionSessionEntity?> = _existingSession.asStateFlow()
+
     val isFormValid: StateFlow<Boolean> = combine(title, locationName, inspectorName) { t, l, i ->
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+
+    fun loadSession(sessionId: Long) {
+        if (sessionId == -1L) {
+            resetForm()
+            return
+        }
+        viewModelScope.launch {
+            sessionRepo.getSessionById(sessionId).collectLatest { session ->
+                session?.let {
+                    _existingSession.value = it
+                    title.value = it.title
+                    locationName.value = it.locationName
+                    inspectorName.value = it.inspectorName
+                    scheduledDate.value = it.scheduledDate
+                    notes.value = it.notes ?: ""
+                    videoPath.value = it.reportVideoPath
+                }
+            }
+        }
+    }
 
     fun createSession(
         inspectorId: String, 
@@ -109,8 +132,8 @@ class CreateSessionViewModel @Inject constructor(
             return
         }
         
-        // Validasi: Waktu inspeksi tidak boleh di masa lalu
-        if (scheduledDate.value < System.currentTimeMillis() - 60000) { // Tolerate 1 min
+        // Validasi: Waktu inspeksi tidak boleh di masa lalu (only for new sessions)
+        if (_existingSession.value == null && scheduledDate.value < System.currentTimeMillis() - 60000) { 
             _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
             return
         }
@@ -118,42 +141,61 @@ class CreateSessionViewModel @Inject constructor(
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
             try {
-                val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
-                val code = "INS-$dateStr"
+                val currentExisting = _existingSession.value
+                val sessionId: Long
 
-                val newSession = InspectionSessionEntity(
-                    sessionCode   = code,
-                    title         = finalTitle.trim(),
-                    locationName  = finalLocation.trim(),
-                    inspectorName = finalInspector.trim(),
-                    inspectorId   = inspectorId,
-                    scheduledDate = scheduledDate.value,
-                    notes         = manualConclusion ?: notes.value.trim(),
-                    reportVideoPath = manualVideo ?: videoPath.value,
-                    totalItems    = 0,
-                    passedItems   = 0,
-                    status        = status
-                )
+                if (currentExisting != null) {
+                    // Update existing
+                    val updatedSession = currentExisting.copy(
+                        title         = finalTitle.trim(),
+                        locationName  = finalLocation.trim(),
+                        inspectorName = finalInspector.trim(),
+                        scheduledDate = scheduledDate.value,
+                        notes         = manualConclusion ?: notes.value.trim(),
+                        reportVideoPath = manualVideo ?: videoPath.value,
+                        status        = status,
+                        updatedAt     = System.currentTimeMillis()
+                    )
+                    sessionRepo.updateSession(updatedSession)
+                    sessionId = updatedSession.sessionId
+                    
+                    // Reschedule alarm
+                    alarmScheduler.schedule(updatedSession)
+                } else {
+                    // Create new
+                    val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
+                    val code = "INS-$dateStr"
 
-                val sessionId = sessionRepo.createSession(newSession)
-                
-                // Jadwalkan Pengingat (AlarmManager)
-                alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
+                    val newSession = InspectionSessionEntity(
+                        sessionCode   = code,
+                        title         = finalTitle.trim(),
+                        locationName  = finalLocation.trim(),
+                        inspectorName = finalInspector.trim(),
+                        inspectorId   = inspectorId,
+                        scheduledDate = scheduledDate.value,
+                        notes         = manualConclusion ?: notes.value.trim(),
+                        reportVideoPath = manualVideo ?: videoPath.value,
+                        totalItems    = 0,
+                        passedItems   = 0,
+                        status        = status
+                    )
+                    sessionId = sessionRepo.createSession(newSession)
+                    alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
+                }
 
-                // Data lokal & alarm sudah aman → langsung sukses
                 _createResult.value = CreateSessionResult.Success(sessionId)
 
-                // Sinkron ke Cloud di background (tidak memblokir user)
                 launch {
                     firestoreSyncRepo.syncUnsyncedSessions()
                 }
             } catch (e: Exception) {
-                _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal membuat sesi")
+                _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal memproses sesi")
             }
         }
     }
 
     fun resetForm() {
+        _existingSession.value = null
         title.value = ""
         locationName.value = ""
         inspectorName.value = ""

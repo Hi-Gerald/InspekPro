@@ -66,6 +66,10 @@
         android:name="com.inspekpro.ui.AddInspectionFragment"
         android:label="Add Inspection"
         tools:layout="@layout/fragment_add_inspection">
+        <argument
+            android:name="sessionId"
+            android:defaultValue="-1L"
+            app:argType="long" />
         <action
             android:id="@+id/action_addInspectionFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment"
