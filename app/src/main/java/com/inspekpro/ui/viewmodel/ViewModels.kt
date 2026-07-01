@@ -2,6 +2,7 @@ package com.inspekpro.ui.viewmodel
 
 import androidx.lifecycle.*
 import com.inspekpro.data.local.entity.*
+import com.inspekpro.data.local.dao.UserDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.inspekpro.data.remote.model.WeatherInfo
@@ -272,5 +273,58 @@ sealed class ProfileUpdateResult {
     object Loading : ProfileUpdateResult()
     object Success : ProfileUpdateResult()
     data class Error(val message: String) : ProfileUpdateResult()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORGOT PASSWORD VIEW MODEL
+// ─────────────────────────────────────────────────────────────────────────────
+
+@HiltViewModel
+class ForgotPasswordViewModel @Inject constructor(
+    private val userDao: UserDao
+) : ViewModel() {
+
+    private val _resetResult = MutableStateFlow<ResetPasswordResult>(ResetPasswordResult.Idle)
+    val resetResult: StateFlow<ResetPasswordResult> = _resetResult.asStateFlow()
+
+    fun resetPassword(email: String, newPasswordHash: String) {
+        viewModelScope.launch {
+            _resetResult.value = ResetPasswordResult.Loading
+            try {
+                val user = userDao.getUserByEmail(email)
+                if (user == null) {
+                    _resetResult.value = ResetPasswordResult.Error("Email tidak ditemukan.")
+                    return@launch
+                }
+
+                // Hash password
+                val hashedPassword = hashPassword(newPasswordHash)
+                val updatedUser = user.copy(passwordHash = hashedPassword)
+                userDao.updateUser(updatedUser)
+                
+                _resetResult.value = ResetPasswordResult.Success
+            } catch (e: Exception) {
+                _resetResult.value = ResetPasswordResult.Error(e.message ?: "Gagal memperbarui password")
+            }
+        }
+    }
+
+    fun resetResult() {
+        _resetResult.value = ResetPasswordResult.Idle
+    }
+
+    private fun hashPassword(password: String): String {
+        val bytes = password.toByteArray()
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
+    }
+}
+
+sealed class ResetPasswordResult {
+    object Idle : ResetPasswordResult()
+    object Loading : ResetPasswordResult()
+    object Success : ResetPasswordResult()
+    data class Error(val message: String) : ResetPasswordResult()
 }
 
