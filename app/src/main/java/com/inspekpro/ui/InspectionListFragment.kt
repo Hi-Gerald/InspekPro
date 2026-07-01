@@ -116,7 +116,10 @@ class InspectionListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = ActiveInspectionAdapter { session ->
-            Toast.makeText(requireContext(), "Edit: ${session.title}", Toast.LENGTH_SHORT).show()
+            val bundle = Bundle().apply {
+                putLong("sessionId", session.sessionId)
+            }
+            findNavController().navigate(R.id.action_inspectionListFragment_to_addInspectionFragment, bundle)
         }
         binding.rvInspections.apply {
             layoutManager = LinearLayoutManager(requireContext())
