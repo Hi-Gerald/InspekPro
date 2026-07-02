@@ -15,7 +15,8 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var firebaseAuth: FirebaseAuth
+    @JvmField
+    var firebaseAuth: FirebaseAuth? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -34,7 +35,13 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
 
-        if (firebaseAuth.currentUser != null) {
+        val isFirebaseLoggedIn = try {
+            firebaseAuth?.currentUser != null
+        } catch (e: Exception) {
+            false
+        }
+
+        if (isFirebaseLoggedIn) {
             navGraph.setStartDestination(R.id.dashboardFragment)
         } else {
             navGraph.setStartDestination(R.id.loginFragment)

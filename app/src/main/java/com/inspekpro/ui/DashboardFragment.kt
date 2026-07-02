@@ -20,10 +20,11 @@ import com.inspekpro.R
 import com.inspekpro.databinding.FragmentDashboardBinding
 import com.inspekpro.ui.viewmodel.AuthViewModel
 import com.inspekpro.ui.viewmodel.DashboardViewModel
-import com.inspekpro.ui.viewmodel.WeatherUiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment() {
@@ -36,6 +37,13 @@ class DashboardFragment : Fragment() {
 
     private lateinit var activeInspectionAdapter: ActiveInspectionAdapter
     private lateinit var newFindingAdapter: NewFindingAdapter
+
+    private var currentSelectedTabId = R.id.tabDashboard
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ ->
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +59,10 @@ class DashboardFragment : Fragment() {
         applyWindowInsets()
         setupRecyclerViews()
         setupClickListeners()
+        setupBottomNavigation()
         observeViewModel()
+        checkAndRequestPermissions()
+        setupDateAndGreeting()
 
         android.util.Log.d("DASHBOARD_DEBUG", "Dashboard dibuat")
     }
@@ -62,9 +73,7 @@ class DashboardFragment : Fragment() {
             val density = resources.displayMetrics.density
             
             // Handle Bottom Insets
-            binding.bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = systemBars.bottom
-            }
+            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
             
             binding.fabAdd.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 val baseMargin = (32 * density).toInt()
@@ -76,13 +85,14 @@ class DashboardFragment : Fragment() {
                 val baseMargin = (24 * density).toInt()
                 topMargin = baseMargin + systemBars.top
             }
-            binding.btnProfile.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            binding.cardNotification.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 val baseMargin = (24 * density).toInt()
                 topMargin = baseMargin + systemBars.top
             }
             
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupRecyclerViews() {
@@ -105,36 +115,72 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    private fun setupDateAndGreeting() {
+        val idLocale = Locale("id", "ID")
+        val sdf = SimpleDateFormat("EEEE, d MMMM yyyy", idLocale)
+        binding.tvDate.text = sdf.format(Date())
+        binding.tvUserGreeting.text = "${getGreetingText()}, Budi"
+    }
+
+    private fun getGreetingText(): String {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        return when (hour) {
+            in 0..10 -> "Selamat Pagi"
+            in 11..14 -> "Selamat Siang"
+            in 15..17 -> "Selamat Sore"
+            else -> "Selamat Malam"
+        }
+    }
+
+    private fun checkAndRequestPermissions() {
+        val permissions = mutableListOf<String>()
+
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                permissions.add(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        if (permissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(permissions.toTypedArray())
+        }
+    }
+
     private fun setupClickListeners() {
+        // Floating Action Button
         binding.fabAdd.setOnClickListener {
             findNavController().navigate(R.id.action_dashboardFragment_to_addInspectionFragment)
         }
 
-        binding.tabInspeksi.setOnClickListener {
-            findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
-        }
-        binding.tabLaporan.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
-        }
-        binding.tabAkun.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Logout")
-                .setMessage("Apakah Anda yakin ingin keluar dari akun?")
-                .setPositiveButton("Ya") { _, _ ->
-                    authViewModel.logout()
-                }
-                .setNegativeButton("Tidak", null)
-                .show()
+        // Notification Icon
+        binding.btnNotification.setOnClickListener {
+            val resId = resources.getIdentifier("action_dashboardFragment_to_notificationFragment", "id", requireContext().packageName)
+            if (resId != 0) {
+                navigateSafely(resId, "In Progress")
+            } else {
+                Toast.makeText(requireContext(), "In Progress", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        binding.btnNotification.setOnClickListener {
-            Toast.makeText(requireContext(), "Tidak ada notifikasi baru", Toast.LENGTH_SHORT).show()
+        // Firebase Cloud Sync Indicator Icon
+        binding.btnCloudSync.setOnClickListener {
+            Toast.makeText(requireContext(), "Mulai sinkronisasi ke Cloud...", Toast.LENGTH_SHORT).show()
+            viewModel.syncNow()
         }
-        binding.btnProfile.setOnClickListener {
-            findNavController().navigate(
-                R.id.profileFragment
-            )
-        }
+
+        // View All (Lihat Semua) Actions
         binding.btnLihatSemuaInspeksi.setOnClickListener {
             Toast.makeText(requireContext(), "Menampilkan semua sesi...", Toast.LENGTH_SHORT).show()
         }
@@ -143,76 +189,178 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    //Sofia Code Fix (Login)
+    private fun setupBottomNavigation() {
+        val clickListener = View.OnClickListener { v ->
+            val clickedTabId = v.id
+            if (clickedTabId == currentSelectedTabId) return@OnClickListener
+
+            when (clickedTabId) {
+                R.id.tabDashboard -> {
+                    animateTabTransition(clickedTabId)
+                }
+                R.id.tabInspeksi -> {
+                    animateTabTransition(clickedTabId)
+                    findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
+                }
+                R.id.tabLaporan -> {
+                    animateTabTransition(clickedTabId)
+                    findNavController().navigate(R.id.action_dashboardFragment_to_reportFragment)
+                }
+                R.id.tabAkun -> {
+                    animateTabTransition(clickedTabId)
+                    findNavController().navigate(R.id.action_dashboardFragment_to_profileFragment)
+                }
+            }
+        }
+
+        binding.tabDashboard.setOnClickListener(clickListener)
+        binding.tabInspeksi.setOnClickListener(clickListener)
+        binding.tabLaporan.setOnClickListener(clickListener)
+        binding.tabAkun.setOnClickListener(clickListener)
+    }
+
+    private fun animateTabTransition(newTabId: Int) {
+        if (newTabId == currentSelectedTabId) return
+
+        val context = requireContext()
+        val grayColor = androidx.core.content.ContextCompat.getColor(context, R.color.text_secondary)
+        val blueColor = androidx.core.content.ContextCompat.getColor(context, R.color.primary)
+
+        val tabs = listOf(
+            Triple(R.id.tabDashboard, binding.ivTabDashboard, binding.tvTabDashboard),
+            Triple(R.id.tabInspeksi, binding.ivTabInspeksi, binding.tvTabInspeksi),
+            Triple(R.id.tabLaporan, binding.ivTabLaporan, binding.tvTabLaporan),
+            Triple(R.id.tabAkun, binding.ivTabAkun, binding.tvTabAkun)
+        )
+
+        for (tab in tabs) {
+            val (id, imageView, textView) = tab
+            if (id == newTabId) {
+                android.animation.ValueAnimator.ofArgb(grayColor, blueColor).apply {
+                    duration = 250
+                    addUpdateListener { animator ->
+                        val color = animator.animatedValue as Int
+                        imageView.setColorFilter(color)
+                        textView.setTextColor(color)
+                    }
+                    start()
+                }
+                textView.setTypeface(null, android.graphics.Typeface.BOLD)
+            } else if (id == currentSelectedTabId) {
+                android.animation.ValueAnimator.ofArgb(blueColor, grayColor).apply {
+                    duration = 250
+                    addUpdateListener { animator ->
+                        val color = animator.animatedValue as Int
+                        imageView.setColorFilter(color)
+                        textView.setTextColor(color)
+                    }
+                    start()
+                }
+                textView.setTypeface(null, android.graphics.Typeface.NORMAL)
+            }
+        }
+
+        currentSelectedTabId = newTabId
+    }
+
+    private fun navigateSafely(actionId: Int, fallbackText: String) {
+        try {
+            val navController = findNavController()
+            val currentDest = navController.currentDestination
+            if (currentDest != null && currentDest.getAction(actionId) != null) {
+                navController.navigate(actionId)
+            } else {
+                Toast.makeText(requireContext(), fallbackText, Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), fallbackText, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe Active User & handle redirect if logged out
-                /*launch {
+                // Observe User session & redirection logic
+                launch {
                     authViewModel.activeUser.collectLatest { user ->
-
-                        android.util.Log.d(
-                            "DASHBOARD_STATE",
-                            "user = ${user?.email}"
-                        )
                         if (user == null) {
-                            if (findNavController().currentDestination?.id == R.id.dashboardFragment) {
-                                findNavController().navigate(R.id.action_dashboardFragment_to_loginFragment)
+                            val firebaseAuth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                            if (firebaseAuth.currentUser == null) {
+                                if (findNavController().currentDestination?.id == R.id.dashboardFragment) {
+                                    findNavController().navigate(R.id.action_dashboardFragment_to_loginFragment)
+                                }
                             }
                         } else {
-                            binding.tvUserGreeting.text = "Selamat Pagi, ${user.fullName}"
+                            val greeting = getGreetingText()
+                            binding.tvUserGreeting.text = "$greeting, ${user.fullName}"
                         }
                     }
-                }*/
+                }
 
-                // Observe Active Inspections
+                // Observe Active Inspections (filter & take(3) done inside ViewModel)
                 launch {
                     viewModel.activeSessions.collectLatest { sessions ->
-                        activeInspectionAdapter.submitList(sessions)
-                    }
-                }
-
-                // Observe Recent Findings
-                launch {
-                    viewModel.recentFindings.collectLatest { findings ->
-                        newFindingAdapter.submitList(findings)
-                    }
-                }
-
-                // Observe Stats - offsetted to match Figma exactly
-                launch {
-                    viewModel.totalSessions.collect { count ->
-                        binding.tvTotalInspeksiVal.text = (245 + count).toString()
-                    }
-                }
-
-                launch {
-                    viewModel.completedSessions.collect { count ->
-                        binding.tvSelesaiVal.text = (188 + count).toString()
-                        binding.tvLaporanVal.text = (202 + count).toString()
-                    }
-                }
-
-                // Observe Weather
-                launch {
-                    viewModel.weather.collectLatest { state ->
-                        when (state) {
-                            is WeatherUiState.Loading -> {
-                                binding.tvTemperature.text = "28°C"
-                                binding.tvWeatherStatus.text = "Berawan Sebagian"
-                            }
-                            is WeatherUiState.Success -> {
-                                val weatherInfo = state.data
-                                binding.tvTemperature.text = "${weatherInfo.tempCelsius.toInt()}°C"
-                                binding.tvWeatherStatus.text = weatherInfo.conditionDesc.replaceFirstChar { it.uppercase() }
-                            }
-                            is WeatherUiState.Error -> {
-                                binding.tvTemperature.text = "28°C"
-                                binding.tvWeatherStatus.text = "Berawan Sebagian"
-                            }
+                        if (sessions.isEmpty()) {
+                            binding.rvActiveInspections.visibility = View.GONE
+                            binding.tvNoActiveInspections.visibility = View.VISIBLE
+                        } else {
+                            binding.rvActiveInspections.visibility = View.VISIBLE
+                            binding.tvNoActiveInspections.visibility = View.GONE
+                            activeInspectionAdapter.submitList(sessions)
                         }
                     }
                 }
+                // Observe Sync Status
+                launch {
+                    viewModel.syncStatus.collectLatest { result ->
+                        if (result.isSuccess) {
+                            val count = result.getOrDefault(0)
+                            if (count > 0) {
+                                Toast.makeText(requireContext(), "Sinkronisasi selesai! $count data di-upload.", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(requireContext(), "Semua data sudah sinkron.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Gagal sinkronisasi: ${result.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+
+                // Observe Recent Findings (take(3) done inside ViewModel)
+                launch {
+                    viewModel.recentFindings.collectLatest { findings ->
+                        if (findings.isEmpty()) {
+                            binding.tvTemuanBaruHeader.visibility = View.GONE
+                            binding.btnLihatSemuaTemuan.visibility = View.GONE
+                            binding.rvNewFindings.visibility = View.GONE
+                        } else {
+                            binding.tvTemuanBaruHeader.visibility = View.VISIBLE
+                            binding.btnLihatSemuaTemuan.visibility = View.VISIBLE
+                            binding.rvNewFindings.visibility = View.VISIBLE
+                            newFindingAdapter.submitList(findings)
+                        }
+                    }
+                }
+
+                // Observe Dashboard stats live from Room (initial state shows 0)
+                launch {
+                    viewModel.dashboardStats.collectLatest { stats ->
+                        if (stats != null) {
+                            binding.tvTotalInspeksiVal.text = stats.totalSessions.toString()
+                            binding.tvSelesaiVal.text = stats.completedSessions.toString()
+                            binding.tvKritisVal.text = stats.totalCritical.toString()
+                            binding.tvLaporanVal.text = stats.completedSessions.toString()
+                        } else {
+                            binding.tvTotalInspeksiVal.text = "0"
+                            binding.tvSelesaiVal.text = "0"
+                            binding.tvKritisVal.text = "0"
+                            binding.tvLaporanVal.text = "0"
+                        }
+                    }
+                }
+
+                // TODO: WeatherRepository integration will be added later by teammate.
+                // Currently preparing weather card visual layout with default state.
             }
         }
     }

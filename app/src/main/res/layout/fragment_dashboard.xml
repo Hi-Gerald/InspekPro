@@ -64,33 +64,55 @@
                 app:layout_constraintStart_toStartOf="@id/tvAppName"
                 app:layout_constraintTop_toBottomOf="@id/tvUserGreeting" />
 
-            <!-- Notification Bell Icon -->
-            <ImageView
-                android:id="@+id/btnNotification"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="12dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
-                android:src="@drawable/ic_bell"
-                app:layout_constraintBottom_toBottomOf="@id/btnProfile"
-                app:layout_constraintEnd_toStartOf="@id/btnProfile"
-                app:layout_constraintTop_toTopOf="@id/btnProfile"
-                tools:ignore="ContentDescription" />
-
-            <!-- Profile Icon -->
-            <ImageView
-                android:id="@+id/btnProfile"
+            <!-- Notification Bell Icon Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNotification"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
-                android:src="@drawable/ic_person"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#33FFFFFF"
+                app:strokeWidth="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="ContentDescription" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/btnNotification"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_bell"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/white"
+                    tools:ignore="ContentDescription" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Firebase Cloud Sync Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCloudSync"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#33FFFFFF"
+                app:strokeWidth="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/cardNotification"
+                app:layout_constraintEnd_toStartOf="@id/cardNotification"
+                app:layout_constraintTop_toTopOf="@id/cardNotification">
+
+                <ImageView
+                    android:id="@+id/btnCloudSync"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_cloud_sync"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/white"
+                    tools:ignore="ContentDescription" />
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Weather Card (Floating) -->
             <com.google.android.material.card.MaterialCardView
@@ -411,18 +433,36 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvInspeksiAktifHeader" />
 
-            <!-- Inspeksi Aktif List -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvActiveInspections"
+            <!-- Container for Active Inspections -->
+            <FrameLayout
+                android:id="@+id/activeInspectionsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:nestedScrollingEnabled="false"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:clipToPadding="false"
-                app:layout_constraintTop_toBottomOf="@id/tvInspeksiAktifHeader"
-                tools:listitem="@layout/item_active_inspection" />
+                app:layout_constraintTop_toBottomOf="@id/tvInspeksiAktifHeader">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvActiveInspections"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:clipToPadding="false"
+                    tools:listitem="@layout/item_active_inspection" />
+
+                <TextView
+                    android:id="@+id/tvNoActiveInspections"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Tidak ada inspeksi aktif"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+            </FrameLayout>
 
             <!-- Temuan Baru Section Header -->
             <TextView
@@ -436,7 +476,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rvActiveInspections" />
+                app:layout_constraintTop_toBottomOf="@id/activeInspectionsContainer" />
 
             <TextView
                 android:id="@+id/btnLihatSemuaTemuan"
@@ -473,7 +513,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomNavContainer"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
+        android:minHeight="72dp"
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -487,7 +528,7 @@
         <!-- 4 Custom Bottom Nav tabs layout -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="72dp"
             android:orientation="horizontal"
             android:weightSum="5">
 
@@ -504,6 +545,7 @@
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
+                    android:id="@+id/ivTabDashboard"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_home"
@@ -511,6 +553,7 @@
                     tools:ignore="ContentDescription" />
 
                 <TextView
+                    android:id="@+id/tvTabDashboard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
@@ -533,6 +576,7 @@
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
+                    android:id="@+id/ivTabInspeksi"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_inspection"
@@ -540,6 +584,7 @@
                     tools:ignore="ContentDescription" />
 
                 <TextView
+                    android:id="@+id/tvTabInspeksi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
@@ -567,6 +612,7 @@
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
+                    android:id="@+id/ivTabLaporan"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_report"
@@ -574,6 +620,7 @@
                     tools:ignore="ContentDescription" />
 
                 <TextView
+                    android:id="@+id/tvTabLaporan"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
@@ -595,6 +642,7 @@
                 tools:ignore="UseCompoundDrawables">
 
                 <ImageView
+                    android:id="@+id/ivTabAkun"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_person"
@@ -602,6 +650,7 @@
                     tools:ignore="ContentDescription" />
 
                 <TextView
+                    android:id="@+id/tvTabAkun"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"

@@ -20,6 +20,13 @@ import com.inspekpro.ui.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import android.util.Log
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -51,6 +58,7 @@ class LoginFragment : Fragment() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupClickListeners() {
@@ -71,9 +79,6 @@ class LoginFragment : Fragment() {
             if (password.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
                 return@setOnClickListener
-            } else if (password.length < 6) {
-                binding.passwordInputLayout.error = "Password minimal 6 karakter"
-                return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
             }
@@ -86,9 +91,59 @@ class LoginFragment : Fragment() {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
+        binding.forgotPasswordText.setOnClickListener {
+            viewModel.resetResults()
+            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        }
+
         binding.googleLoginBtn.setOnClickListener {
-            Toast.makeText(requireContext(), "Masuk dengan Google...", Toast.LENGTH_SHORT).show()
-            viewModel.loginWithGoogle()
+            handleGoogleSignIn()
+        }
+    }
+
+    private fun handleGoogleSignIn() {
+        val webClientId = getString(R.string.default_web_client_id)
+        
+        val googleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(webClientId)
+            .setAutoSelectEnabled(true)
+            .build()
+
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
+
+        val credentialManager = CredentialManager.create(requireContext())
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = requireActivity()
+                )
+                
+                val credential = result.credential
+                if (credential is com.google.android.libraries.identity.googleid.GoogleIdTokenCredential) {
+                    val idToken = credential.idToken
+                    viewModel.loginWithGoogle(idToken)
+                } else if (credential.type == com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    try {
+                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                        viewModel.loginWithGoogle(googleIdTokenCredential.idToken)
+                    } catch (e: GoogleIdTokenParsingException) {
+                        Log.e("AUTH_DEBUG", "Received an invalid google id token response", e)
+                        Toast.makeText(requireContext(), "Gagal memverifikasi akun Google", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.e("AUTH_DEBUG", "Unexpected type of credential")
+                    Toast.makeText(requireContext(), "Tipe kredensial tidak valid", Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: GetCredentialException) {
+                Log.e("AUTH_DEBUG", "GetCredentialException: ${e.message}")
+                Toast.makeText(requireContext(), "Proses Google Login dibatalkan", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

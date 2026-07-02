@@ -114,6 +114,7 @@ class CameraFragment : Fragment() {
 
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun startCamera() {

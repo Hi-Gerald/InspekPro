@@ -62,9 +62,7 @@ class InspectionListFragment : Fragment() {
             val density = resources.displayMetrics.density
 
             // Bottom Insets
-            binding.bottomNavContainer.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
-                bottomMargin = systemBars.bottom
-            }
+            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
             binding.fabAdd.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
                 val baseMargin = (32 * density).toInt()
                 bottomMargin = baseMargin + systemBars.bottom
@@ -78,6 +76,7 @@ class InspectionListFragment : Fragment() {
 
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupCalendarStrip() {
@@ -137,11 +136,11 @@ class InspectionListFragment : Fragment() {
         }
 
         binding.tabLaporan.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Laporan segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_inspectionListFragment_to_reportFragment)
         }
 
         binding.tabAkun.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu Akun segera hadir", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_inspectionListFragment_to_profileFragment)
         }
 
         binding.btnViewCalendar.setOnClickListener {

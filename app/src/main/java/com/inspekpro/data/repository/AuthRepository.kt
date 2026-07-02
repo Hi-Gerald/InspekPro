@@ -10,15 +10,20 @@ import java.security.MessageDigest
 
 class AuthRepository(
     private val userDao: UserDao,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth?
 ) {
 
     suspend fun registerUser(user: UserEntity): Result<Long> {
         return try {
             // Firebase Auth Registration
-            val authResult = firebaseAuth.createUserWithEmailAndPassword(user.email, user.passwordHash).await()
-            val firebaseUser = authResult.user
-            if (firebaseUser == null) {
+            val firebaseUser = firebaseAuth?.let { auth ->
+                val authResult = auth.createUserWithEmailAndPassword(user.email, user.passwordHash).await()
+                authResult.user
+            }
+
+            // Jika firebaseAuth null atau gagal dapat user, kita tetap izinkan register lokal jika perlu
+            // Namun di sini kita asumsikan Firebase wajib untuk register jika disediakan
+            if (firebaseAuth != null && firebaseUser == null) {
                 return Result.failure(Exception("Gagal mendaftarkan akun di Firebase"))
             }
 
@@ -60,9 +65,11 @@ class AuthRepository(
             var user = userDao.getUserByEmail(email)
 
             // Firebase Auth Login
-            val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            if (authResult.user == null) {
-                return Result.failure(Exception("Gagal masuk via Firebase"))
+            if (firebaseAuth != null) {
+                val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+                if (authResult.user == null) {
+                    return Result.failure(Exception("Gagal masuk via Firebase"))
+                }
             }
             
             // Sinkronisasi otomatis ke lokal jika login Firebase berhasil namun data lokal hilang
@@ -93,11 +100,56 @@ class AuthRepository(
         }
     }
 
+    suspend fun googleSignIn(idToken: String): Result<UserEntity> {
+        return try {
+            val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseAuth?.signInWithCredential(credential)?.await()
+            val firebaseUser = authResult?.user ?: return Result.failure(Exception("Gagal masuk dengan Google"))
+
+            val email = firebaseUser.email ?: "no-email@google.com"
+            var user = userDao.getUserByEmail(email)
+
+            if (user == null) {
+                val newUser = UserEntity(
+                    fullName = firebaseUser.displayName ?: "Google User",
+                    email = email,
+                    companyName = "Google Account",
+                    passwordHash = "" // OAuth users don't need a local password
+                )
+                userDao.insertUser(newUser)
+                user = userDao.getUserByEmail(email)
+            }
+
+            if (user == null) {
+                return Result.failure(Exception("Gagal menyinkronkan data akun Google"))
+            }
+
+            userDao.clearAllLogins()
+            userDao.updateLoginStatus(user.userId, true)
+
+            Log.d("AUTH_DEBUG", "GOOGLE LOGIN SUCCESS FOR ${user.userId}")
+            Result.success(user.copy(isLoggedIn = true))
+
+        } catch (e: Exception) {
+            Log.e("AUTH_DEBUG", "ERROR GOOGLE LOGIN", e)
+            Result.failure(e)
+        }
+    }
+
     fun getActiveUser(): Flow<UserEntity?> = userDao.getActiveUser()
+
+    suspend fun updateUser(user: UserEntity): Result<Unit> {
+        return try {
+            userDao.updateUser(user)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun logoutUser() {
         try {
-            firebaseAuth.signOut()
+            firebaseAuth?.signOut()
         } catch (e: Exception) {
             Log.e("AUTH_DEBUG", "Error signing out from Firebase", e)
         }

@@ -1,4 +1,36 @@
 <resources>
+    <!-- Placeholder string -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Edit Profile Strings -->
+    <string name="edit_profile_title">Edit Profil</string>
+    <string name="hint_full_name">Nama Lengkap</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_job_title">Jabatan</string>
+    <string name="job_title_inspector">Inspector</string>
+    <string name="hint_company">Perusahaan</string>
+    <string name="logo_company_label">Logo Perusahaan</string>
+    <string name="upload_logo_title">Upload logo perusahaan</string>
+    <string name="upload_logo_subtitle">Format PNG/JPG, maks. 5MB</string>
+    <string name="btn_save_changes">Simpan Perubahan</string>
+    <string name="btn_cancel">Batal</string>
+    <string name="btn_back_desc">Kembali</string>
+    <string name="btn_change_avatar_desc">Ubah Foto Profil</string>
+
+    <!-- Forgot Password Strings -->
+    <string name="forgot_password_title">Reset Password</string>
+    <string name="forgot_password_subtitle">Lengkapi data untuk memperbarui password Anda</string>
+    <string name="hint_new_password">Password Baru</string>
+    <string name="hint_confirm_new_password">Konfirmasi Password Baru</string>
+    <string name="btn_save_new_password">Simpan Password Baru</string>
+    <string name="back_to_login_prompt">Sudah ingat password? </string>
+    <string name="back_to_login_link">Masuk</string>
+    <string name="req_char_count">Minimal 8 karakter</string>
+    <string name="req_uppercase">Mengandung minimal satu huruf besar</string>
+    <string name="req_lowercase">Mengandung minimal satu huruf kecil</string>
+    <string name="req_number">Mengandung minimal satu angka</string>
+
+    <!-- Main Project Strings (origin/main) -->
     <string name="app_name">InspekPro</string>
     <string name="inspeksi_baru">Inspeksi Baru</string>
     <string name="buat_laporan_inspeksi_baru">Buat laporan inspeksi baru</string>
@@ -29,4 +61,24 @@
     <string name="ringkasan_hasil_inspeksi">Ringkasan hasil inspeksi secara keseluruhan</string>
     <string name="simpan_draft">Simpan Draft</string>
     <string name="selesaikan_inspeksi">Selesaikan Inspeksi</string>
+
+    <!-- Report Module Strings -->
+    <string name="report_title">Laporan Inspeksi</string>
+    <string name="report_subtitle">Kelola dan unduh laporan inspeksi yang telah selesai</string>
+    <string name="no_reports_title">Belum ada laporan inspeksi.</string>
+    <string name="no_reports_subtitle">Silakan selesaikan inspeksi terlebih dahulu.</string>
+    <string name="search_hint">Cari mesin, lokasi, atau inspector...</string>
+    <string name="filter_title">Filter Laporan</string>
+    <string name="filter_reset">Reset</string>
+    <string name="filter_apply">Terapkan Filter</string>
+    <string name="filter_location">Lokasi</string>
+    <string name="filter_date_range">Rentang Tanggal</string>
+    <string name="filter_findings_status">Status Temuan</string>
+    <string name="filter_status_all">Semua</string>
+    <string name="filter_status_has_findings">Ada Temuan</string>
+    <string name="filter_status_no_findings">Tidak Ada Temuan</string>
+    <string name="btn_view">Lihat</string>
+    <string name="btn_pdf">PDF</string>
+    <string name="btn_print">Cetak</string>
+    <string name="btn_download_pdf">Download PDF</string>
 </resources>

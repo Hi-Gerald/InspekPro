@@ -29,8 +29,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -94,20 +97,39 @@ class AddInspectionFragment : Fragment() {
 
     // Activity Results for Media
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { addPhotoToList(it.toString(), isFinding = false) }
+        uri?.let { 
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            } else {
+                addPhotoToList(it.toString(), isFinding = false) 
+            }
+        }
     }
     
     private val pickFindingImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { addPhotoToList(it.toString(), isFinding = true) }
+        uri?.let { 
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto temuan minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            } else {
+                addPhotoToList(it.toString(), isFinding = true) 
+            }
+        }
     }
 
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
-            videoPath = it.toString()
-            addPhotoToList(it.toString(), isFinding = false)
-            binding.tvVideoPath.text = "Video dilampirkan"
-            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
-            updateProgress()
+            val size = getUriSizeInBytes(requireContext(), it.toString())
+            if (size > 0 && size < 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+            } else {
+                videoPath = it.toString()
+                addPhotoToList(it.toString(), isFinding = false)
+                binding.tvVideoPath.text = "Video dilampirkan"
+                binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                updateProgress()
+            }
         }
     }
 
@@ -137,6 +159,12 @@ class AddInspectionFragment : Fragment() {
         observeViewModel()
         setupFragmentResultListeners()
         updateProgress()
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        })
     }
 
     private fun applyWindowInsets() {
@@ -166,6 +194,7 @@ class AddInspectionFragment : Fragment() {
 
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupFragmentResultListeners() {
@@ -175,13 +204,22 @@ class AddInspectionFragment : Fragment() {
             val isVideo = bundle.getBoolean("isVideo")
 
             uri?.let {
+                val size = getUriSizeInBytes(requireContext(), it)
                 if (isVideo) {
-                    videoPath = it
-                    addPhotoToList(it, isFinding = false) // Add video to the main media list
-                    binding.tvVideoPath.text = "Video direkam"
-                    binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    if (size > 0 && size < 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+                    } else {
+                        videoPath = it
+                        addPhotoToList(it, isFinding = false) // Add video to the main media list
+                        binding.tvVideoPath.text = "Video direkam"
+                        binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    }
                 } else {
-                    addPhotoToList(it, isFinding = isFinding)
+                    if (size > 0 && size < 100 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+                    } else {
+                        addPhotoToList(it, isFinding = isFinding)
+                    }
                 }
                 updateProgress()
             }
@@ -200,15 +238,61 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        checklistAdapter = ChecklistItemAdapter { position, text, isChecked ->
-            checklistItems[position] = Pair(text, isChecked)
-            updateProgress()
-        }
+        var itemTouchHelper: ItemTouchHelper? = null
+
+        checklistAdapter = ChecklistItemAdapter(
+            onStartDrag = { viewHolder ->
+                itemTouchHelper?.startDrag(viewHolder)
+            },
+            onItemChanged = { position, text, isChecked ->
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems[position] = Pair(text, isChecked)
+                    updateProgress()
+                }
+            },
+            onItemEmptyAndLostFocus = { position ->
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems.removeAt(position)
+                    checklistAdapter.submitList(checklistItems.toList())
+                    updateProgress()
+                }
+            }
+        )
         binding.rvChecklist.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = checklistAdapter
         }
         checklistAdapter.submitList(checklistItems.toList())
+
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                if (fromPos < 0 || fromPos >= checklistItems.size || toPos < 0 || toPos >= checklistItems.size) return false
+
+                val temp = checklistItems[fromPos]
+                checklistItems[fromPos] = checklistItems[toPos]
+                checklistItems[toPos] = temp
+
+                checklistAdapter.submitList(checklistItems.toList())
+                checklistAdapter.notifyItemMoved(fromPos, toPos)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun isLongPressDragEnabled(): Boolean {
+                return false
+            }
+        }
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(binding.rvChecklist)
 
         photoAdapter = PhotoAdapter(
             onRemoveClick = { position ->
@@ -238,7 +322,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnBack.setOnClickListener { findNavController().popBackStack() }
+        binding.btnBack.setOnClickListener { handleBackNavigation() }
 
         binding.locationInputLayout.setEndIconOnClickListener {
             checkLocationPermissionAndGet()
@@ -263,7 +347,7 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnChecklistAdd.setOnClickListener {
-            checklistItems.add(Pair("", false))
+            checklistItems.add(Pair("", true))
             checklistAdapter.submitList(checklistItems.toList())
             updateProgress()
         }
@@ -355,6 +439,10 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun showMediaOptions(isFinding: Boolean) {
+        if (!isFinding && photos.size >= 3) {
+            Toast.makeText(requireContext(), "Maksimal 3 foto diperbolehkan", Toast.LENGTH_SHORT).show()
+            return
+        }
         val options = arrayOf("Ambil Foto", "Pilih dari Galeri")
         AlertDialog.Builder(requireContext())
             .setTitle("Pilih Foto")
@@ -441,7 +529,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun saveInspection(status: SessionStatus) {
-        if (validateInput()) {
+        if (validateInput(status)) {
             val titleText = binding.etTitle.text.toString().trim()
             val locationText = binding.etLocation.text.toString().trim()
             val inspectorText = binding.etInspector.text.toString().trim()
@@ -461,7 +549,7 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
-    private fun validateInput(): Boolean {
+    private fun validateInput(status: SessionStatus): Boolean {
         var isValid = true
         if (binding.etTitle.text.isNullOrBlank()) { 
             binding.titleInputLayout.error = "Wajib diisi"
@@ -484,6 +572,18 @@ class AddInspectionFragment : Fragment() {
             binding.conclusionInputLayout.error = null
         }
 
+        // Validate min 1 photo and 1 video only when finishing
+        if (status == SessionStatus.COMPLETED) {
+            if (photos.isEmpty()) {
+                Toast.makeText(requireContext(), "Minimal 1 foto wajib dilampirkan", Toast.LENGTH_SHORT).show()
+                isValid = false
+            }
+            if (videoPath == null) {
+                Toast.makeText(requireContext(), "Video wajib dilampirkan", Toast.LENGTH_SHORT).show()
+                isValid = false
+            }
+        }
+        
         if (!isValid) {
             Toast.makeText(requireContext(), "Harap lengkapi semua field wajib (*)", Toast.LENGTH_SHORT).show()
         }
@@ -597,6 +697,53 @@ class AddInspectionFragment : Fragment() {
 
         btnClose.setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+    private fun isFormDirty(): Boolean {
+        val titleText = binding.etTitle.text?.toString() ?: ""
+        val locationText = binding.etLocation.text?.toString() ?: ""
+        val inspectorText = binding.etInspector.text?.toString() ?: ""
+        val conclusionText = binding.etConclusion.text?.toString() ?: ""
+        return titleText.isNotBlank() ||
+                locationText.isNotBlank() ||
+                inspectorText.isNotBlank() ||
+                conclusionText.isNotBlank() ||
+                photos.isNotEmpty() ||
+                videoPath != null
+    }
+
+    private fun handleBackNavigation() {
+        if (isFormDirty()) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Simpan ke Draft?")
+                .setMessage("Anda sedang mengisi form inspeksi. Apakah Anda ingin menyimpannya sebagai draft sebelum keluar?")
+                .setPositiveButton("Simpan Draft") { _, _ ->
+                    saveInspection(SessionStatus.DRAFT)
+                }
+                .setNegativeButton("Keluar") { _, _ ->
+                    findNavController().popBackStack()
+                }
+                .setNeutralButton("Batal", null)
+                .show()
+        } else {
+            findNavController().popBackStack()
+        }
+    }
+
+    private fun getUriSizeInBytes(context: Context, uriString: String): Long {
+        return try {
+            val uri = Uri.parse(uriString)
+            if (uri.scheme == "content" || uri.scheme == "android.resource") {
+                context.contentResolver.openAssetFileDescriptor(uri, "r")?.use {
+                    it.length
+                } ?: 0L
+            } else {
+                val file = java.io.File(uri.path ?: "")
+                if (file.exists()) file.length() else 0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
     }
 
     override fun onDestroyView() {

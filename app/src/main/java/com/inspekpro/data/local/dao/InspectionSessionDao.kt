@@ -96,4 +96,7 @@ interface InspectionSessionDao {
 
     @Query("UPDATE inspection_sessions SET is_synced = 1 WHERE session_id = :sessionId")
     suspend fun markAsSynced(sessionId: Long)
+
+    @Query("UPDATE inspection_sessions SET is_synced = 0 WHERE session_id = :sessionId")
+    suspend fun markAsUnsynced(sessionId: Long)
 }

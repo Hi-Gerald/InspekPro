@@ -15,9 +15,9 @@
     <application
         android:name=".InspekProApp"
         android:allowBackup="true"
-        android:icon="@drawable/ic_logo"
+        android:icon="@drawable/ic_launcher"
         android:label="InspekPro"
-        android:roundIcon="@drawable/ic_logo"
+        android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.InspekPro">
 

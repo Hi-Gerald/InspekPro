@@ -2,12 +2,14 @@ package com.inspekpro.ui.viewmodel
 
 import androidx.lifecycle.*
 import com.inspekpro.data.local.entity.*
+import com.inspekpro.data.local.dao.UserDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.inspekpro.data.remote.model.WeatherInfo
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
 import com.inspekpro.data.repository.FirestoreSyncRepository
+import com.inspekpro.data.repository.AuthRepository
 import com.inspekpro.receiver.AlarmScheduler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -21,7 +23,8 @@ import java.util.*
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
-    private val findingRepo: FindingRepository
+    private val findingRepo: FindingRepository,
+    private val firestoreSyncRepo: FirestoreSyncRepository
 ) : ViewModel() {
 
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
@@ -29,8 +32,22 @@ class DashboardViewModel @Inject constructor(
 
     val totalSessions = sessionRepo.getTotalSessionCount()
     val completedSessions = sessionRepo.getCompletedCount()
-    val activeSessions = sessionRepo.getAllSessions()
-    val recentFindings = findingRepo.getRecentFindings(10)
+
+    val activeSessions = sessionRepo.getAllSessions().map { list ->
+        list.filter { it.status == SessionStatus.IN_PROGRESS }
+            .sortedByDescending { it.scheduledDate }
+            .take(3)
+    }
+    
+    // Recent findings: take(3)
+    val recentFindings = findingRepo.getRecentFindings(10).map { list ->
+        list.take(3)
+    }
+
+    // Dashboard stats observed from Room
+    val dashboardStats = sessionRepo.getAllSessions().mapLatest {
+        sessionRepo.getDashboardStats()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
         viewModelScope.launch {
@@ -46,7 +63,119 @@ class DashboardViewModel @Inject constructor(
     }
 
     private suspend fun populateMockData() {
-        // ... (Kode mock data tetap sama)
+        try {
+            val s1Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 1,
+                    sessionCode = "INS-2026-001",
+                    title = "Turbine Generator Unit 2",
+                    locationName = "Plant A - Section 3",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.IN_PROGRESS,
+                    scheduledDate = System.currentTimeMillis() - 86400000,
+                    totalItems = 4,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s2Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 2,
+                    sessionCode = "INS-2026-002",
+                    title = "Pressure Vessel Tank B-301",
+                    locationName = "Plant B - Section 1",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.DRAFT,
+                    scheduledDate = System.currentTimeMillis(),
+                    totalItems = 10,
+                    passedItems = 3,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            val s3Id = sessionRepo.createSession(
+                InspectionSessionEntity(
+                    sessionId = 3,
+                    sessionCode = "INS-2026-003",
+                    title = "Cooling Tower System",
+                    locationName = "Plant A - Section 5",
+                    inspectorName = "Sofia",
+                    inspectorId = "INS-001",
+                    status = SessionStatus.COMPLETED,
+                    scheduledDate = System.currentTimeMillis() - 172800000,
+                    totalItems = 5,
+                    passedItems = 5,
+                    failedItems = 0,
+                    weatherCondition = "Berawan Sebagian",
+                    weatherTempCelsius = 28.0
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 1,
+                    sessionId = s1Id,
+                    findingCode = "F-001",
+                    category = "Mechanical",
+                    title = "Kebocoran Minor pada Seal Turbine",
+                    description = "Kebocoran oli pelumas pada seal turbine unit 2.",
+                    severity = FindingSeverity.MINOR,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 3600000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 2,
+                    sessionId = s1Id,
+                    findingCode = "F-002",
+                    category = "Corrosion",
+                    title = "Korosi pada Flange Connection",
+                    description = "Korosi permukaan pada flange pipa kondensor.",
+                    severity = FindingSeverity.MAJOR,
+                    status = FindingStatus.IN_PROGRESS,
+                    createdAt = System.currentTimeMillis() - 7200000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 3,
+                    sessionId = s1Id,
+                    findingCode = "F-003",
+                    category = "Vibration",
+                    title = "Getaran Berlebih pada Motor Pump",
+                    description = "Amplitudo getaran melebihi batas toleransi pada motor pompa utama.",
+                    severity = FindingSeverity.CRITICAL,
+                    status = FindingStatus.OPEN,
+                    createdAt = System.currentTimeMillis() - 10800000
+                )
+            )
+
+            findingRepo.addFinding(
+                InspectionFindingEntity(
+                    findingId = 4,
+                    sessionId = s3Id,
+                    findingCode = "F-004",
+                    category = "Structural",
+                    title = "Deformasi Ringan pada Support Beam",
+                    description = "Deformasi kecil terdeteksi pada kaki penyangga tower.",
+                    severity = FindingSeverity.OBSERVATION,
+                    status = FindingStatus.RESOLVED,
+                    createdAt = System.currentTimeMillis() - 14400000
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun loadWeather(lat: Double, lon: Double) {
@@ -57,6 +186,16 @@ class DashboardViewModel @Inject constructor(
                 onSuccess = { _weather.value = WeatherUiState.Success(it) },
                 onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
             )
+        }
+    }
+
+    private val _syncStatus = MutableSharedFlow<Result<Int>>()
+    val syncStatus: SharedFlow<Result<Int>> = _syncStatus.asSharedFlow()
+
+    fun syncNow() {
+        viewModelScope.launch {
+            val result = firestoreSyncRepo.syncUnsyncedSessions()
+            _syncStatus.emit(result)
         }
     }
 }
@@ -283,3 +422,110 @@ class SessionDetailViewModel @Inject constructor(
     fun addFinding(finding: InspectionFindingEntity) { viewModelScope.launch { findingRepo.addFinding(finding) } }
     fun markFindingResult(findingId: Long, result: FindingResult) { viewModelScope.launch { findingRepo.markFindingResult(findingId, result, sessionId) } }
 }
+
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
+
+    val activeUser: StateFlow<UserEntity?> = authRepository.getActiveUser()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    private val _updateResult = MutableStateFlow<ProfileUpdateResult>(ProfileUpdateResult.Idle)
+    val updateResult: StateFlow<ProfileUpdateResult> = _updateResult.asStateFlow()
+
+    fun updateProfile(fullName: String, companyName: String) {
+        viewModelScope.launch {
+            _updateResult.value = ProfileUpdateResult.Loading
+            try {
+                val currentUser = activeUser.value
+                if (currentUser != null) {
+                    val updatedUser = currentUser.copy(
+                        fullName = fullName,
+                        companyName = companyName
+                    )
+                    val result = authRepository.updateUser(updatedUser)
+                    result.fold(
+                        onSuccess = { _updateResult.value = ProfileUpdateResult.Success },
+                        onFailure = { exception -> _updateResult.value = ProfileUpdateResult.Error(exception.message ?: "Gagal memperbarui profil") }
+                    )
+                } else {
+                    _updateResult.value = ProfileUpdateResult.Error("Sesi pengguna tidak ditemukan")
+                }
+            } catch (e: Exception) {
+                _updateResult.value = ProfileUpdateResult.Error(e.message ?: "Gagal memperbarui profil")
+            }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logoutUser()
+        }
+    }
+
+    fun resetResult() {
+        _updateResult.value = ProfileUpdateResult.Idle
+    }
+}
+
+sealed class ProfileUpdateResult {
+    object Idle : ProfileUpdateResult()
+    object Loading : ProfileUpdateResult()
+    object Success : ProfileUpdateResult()
+    data class Error(val message: String) : ProfileUpdateResult()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORGOT PASSWORD VIEW MODEL
+// ─────────────────────────────────────────────────────────────────────────────
+
+@HiltViewModel
+class ForgotPasswordViewModel @Inject constructor(
+    private val userDao: UserDao
+) : ViewModel() {
+
+    private val _resetResult = MutableStateFlow<ResetPasswordResult>(ResetPasswordResult.Idle)
+    val resetResult: StateFlow<ResetPasswordResult> = _resetResult.asStateFlow()
+
+    fun resetPassword(email: String, newPasswordHash: String) {
+        viewModelScope.launch {
+            _resetResult.value = ResetPasswordResult.Loading
+            try {
+                val user = userDao.getUserByEmail(email)
+                if (user == null) {
+                    _resetResult.value = ResetPasswordResult.Error("Email tidak ditemukan.")
+                    return@launch
+                }
+
+                // Hash password
+                val hashedPassword = hashPassword(newPasswordHash)
+                val updatedUser = user.copy(passwordHash = hashedPassword)
+                userDao.updateUser(updatedUser)
+                
+                _resetResult.value = ResetPasswordResult.Success
+            } catch (e: Exception) {
+                _resetResult.value = ResetPasswordResult.Error(e.message ?: "Gagal memperbarui password")
+            }
+        }
+    }
+
+    fun resetResult() {
+        _resetResult.value = ResetPasswordResult.Idle
+    }
+
+    private fun hashPassword(password: String): String {
+        val bytes = password.toByteArray()
+        val md = java.security.MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
+    }
+}
+
+sealed class ResetPasswordResult {
+    object Idle : ResetPasswordResult()
+    object Loading : ResetPasswordResult()
+    object Success : ResetPasswordResult()
+    data class Error(val message: String) : ResetPasswordResult()
+}
+

@@ -27,6 +27,11 @@ class RegisterFragment : Fragment() {
 
     private val viewModel: AuthViewModel by viewModels()
 
+    private var isCharCountValid = false
+    private var isUppercaseValid = false
+    private var isLowercaseValid = false
+    private var isNumberValid = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,8 +43,19 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupClickListeners()
         observeViewModel()
+        setupPasswordValidation()
+    }
+
+    private fun applyWindowInsets() {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupClickListeners() {
@@ -138,6 +154,77 @@ class RegisterFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun setupPasswordValidation() {
+        binding.passwordEditText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val password = s?.toString() ?: ""
+                checkPasswordRequirements(password)
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun checkPasswordRequirements(password: String) {
+        val charCountValid = password.length >= 8
+        if (charCountValid != isCharCountValid) {
+            isCharCountValid = charCountValid
+            animateRequirement(binding.cardReqCharCount, binding.imgReqCharCount, binding.tvReqCharCount, charCountValid)
+        }
+
+        val uppercaseValid = password.any { it.isUpperCase() }
+        if (uppercaseValid != isUppercaseValid) {
+            isUppercaseValid = uppercaseValid
+            animateRequirement(binding.cardReqUppercase, binding.imgReqUppercase, binding.tvReqUppercase, uppercaseValid)
+        }
+
+        val lowercaseValid = password.any { it.isLowerCase() }
+        if (lowercaseValid != isLowercaseValid) {
+            isLowercaseValid = lowercaseValid
+            animateRequirement(binding.cardReqLowercase, binding.imgReqLowercase, binding.tvReqLowercase, lowercaseValid)
+        }
+
+        val numberValid = password.any { it.isDigit() }
+        if (numberValid != isNumberValid) {
+            isNumberValid = numberValid
+            animateRequirement(binding.cardReqNumber, binding.imgReqNumber, binding.tvReqNumber, numberValid)
+        }
+    }
+
+    private fun animateRequirement(
+        card: com.google.android.material.card.MaterialCardView,
+        image: android.widget.ImageView,
+        text: android.widget.TextView,
+        isValid: Boolean
+    ) {
+        val context = requireContext()
+        val inactiveColor = androidx.core.content.ContextCompat.getColor(context, R.color.text_secondary)
+        val activeColor = androidx.core.content.ContextCompat.getColor(context, R.color.status_completed_text)
+
+        val fromColor = if (isValid) inactiveColor else activeColor
+        val toColor = if (isValid) activeColor else inactiveColor
+
+        android.animation.ValueAnimator.ofArgb(fromColor, toColor).apply {
+            duration = 200
+            addUpdateListener { animator ->
+                val animatedColor = animator.animatedValue as Int
+                card.setStrokeColor(android.content.res.ColorStateList.valueOf(animatedColor))
+                text.setTextColor(animatedColor)
+            }
+            start()
+        }
+
+        val targetAlpha = if (isValid) 1f else 0f
+        val targetScale = if (isValid) 1f else 0.9f
+
+        image.animate()
+            .alpha(targetAlpha)
+            .scaleX(targetScale)
+            .scaleY(targetScale)
+            .setDuration(200)
+            .start()
     }
 
     override fun onDestroyView() {
