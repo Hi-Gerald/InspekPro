@@ -550,6 +550,8 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun validateInput(status: SessionStatus): Boolean {
+        if (status == SessionStatus.DRAFT) return true
+
         var isValid = true
         if (binding.etTitle.text.isNullOrBlank()) { 
             binding.titleInputLayout.error = "Wajib diisi"

@@ -262,17 +262,24 @@ class CreateSessionViewModel @Inject constructor(
         manualVideo: String? = null
     ) {
         // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
-        val finalTitle = manualTitle ?: title.value
-        val finalLocation = manualLocation ?: locationName.value
-        val finalInspector = manualInspector ?: inspectorName.value
+        var finalTitle = (manualTitle ?: title.value).trim()
+        val finalLocation = (manualLocation ?: locationName.value).trim()
+        val finalInspector = (manualInspector ?: inspectorName.value).trim()
 
-        if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
-            _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
-            return
+        if (status == SessionStatus.DRAFT && finalTitle.isBlank()) {
+            finalTitle = "Draft Inspeksi"
+        }
+
+        // Allow drafts with missing info; enforce for COMPLETED
+        if (status == SessionStatus.COMPLETED) {
+            if (finalTitle.isBlank() || finalTitle == "Draft Inspeksi" || finalLocation.isBlank() || finalInspector.isBlank()) {
+                _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
+                return
+            }
         }
         
-        // Validasi: Waktu inspeksi tidak boleh kosong atau di masa lalu (only for new sessions)
-        if (_existingSession.value == null) {
+        // Validasi: Waktu inspeksi tidak boleh kosong atau di masa lalu (only for new sessions and not DRAFT)
+        if (_existingSession.value == null && status != SessionStatus.DRAFT) {
             if (scheduledDate.value == 0L) {
                 _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
                 return
@@ -283,6 +290,8 @@ class CreateSessionViewModel @Inject constructor(
             }
         }
 
+        val finalDate = if (scheduledDate.value == 0L) System.currentTimeMillis() else scheduledDate.value
+
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
             try {
@@ -292,10 +301,10 @@ class CreateSessionViewModel @Inject constructor(
                 if (currentExisting != null) {
                     // Update existing
                     val updatedSession = currentExisting.copy(
-                        title         = finalTitle.trim(),
-                        locationName  = finalLocation.trim(),
-                        inspectorName = finalInspector.trim(),
-                        scheduledDate = scheduledDate.value,
+                        title         = finalTitle,
+                        locationName  = finalLocation,
+                        inspectorName = finalInspector,
+                        scheduledDate = finalDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         status        = status,
@@ -313,11 +322,11 @@ class CreateSessionViewModel @Inject constructor(
 
                     val newSession = InspectionSessionEntity(
                         sessionCode   = code,
-                        title         = finalTitle.trim(),
-                        locationName  = finalLocation.trim(),
-                        inspectorName = finalInspector.trim(),
+                        title         = finalTitle,
+                        locationName  = finalLocation,
+                        inspectorName = finalInspector,
                         inspectorId   = inspectorId,
-                        scheduledDate = scheduledDate.value,
+                        scheduledDate = finalDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         totalItems    = 0,
