@@ -343,6 +343,18 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
+                    <TextView
+                        android:id="@+id/tvSwipeHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="💡 Geser item ke kiri/kanan untuk menghapus"
+                        android:textColor="@color/primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
                     <!-- Checklist Items List -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvChecklist"

@@ -67,7 +67,7 @@ class AddInspectionFragment : Fragment() {
     private lateinit var photoAdapter: PhotoAdapter
     private lateinit var findingPhotoAdapter: PhotoAdapter
 
-    private val checklistItems = mutableListOf<Pair<String, Boolean>>()
+    private val checklistItems = mutableListOf<ChecklistItem>()
 
     private val photos = mutableListOf<String>()
     private val findingPhotos = mutableListOf<String>()
@@ -246,14 +246,8 @@ class AddInspectionFragment : Fragment() {
             },
             onItemChanged = { position, text, isChecked ->
                 if (position >= 0 && position < checklistItems.size) {
-                    checklistItems[position] = Pair(text, isChecked)
-                    updateProgress()
-                }
-            },
-            onItemEmptyAndLostFocus = { position ->
-                if (position >= 0 && position < checklistItems.size) {
-                    checklistItems.removeAt(position)
-                    checklistAdapter.submitList(checklistItems.toList())
+                    checklistItems[position].title = text
+                    checklistItems[position].isChecked = isChecked
                     updateProgress()
                 }
             }
@@ -265,7 +259,8 @@ class AddInspectionFragment : Fragment() {
         checklistAdapter.submitList(checklistItems.toList())
 
         val callback = object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -276,16 +271,24 @@ class AddInspectionFragment : Fragment() {
                 val toPos = target.adapterPosition
                 if (fromPos < 0 || fromPos >= checklistItems.size || toPos < 0 || toPos >= checklistItems.size) return false
 
-                val temp = checklistItems[fromPos]
-                checklistItems[fromPos] = checklistItems[toPos]
-                checklistItems[toPos] = temp
-
+                Collections.swap(checklistItems, fromPos, toPos)
                 checklistAdapter.submitList(checklistItems.toList())
                 checklistAdapter.notifyItemMoved(fromPos, toPos)
                 return true
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems.removeAt(position)
+                    checklistAdapter.submitList(checklistItems.toList())
+                    updateProgress()
+                    
+                    if (checklistItems.isEmpty()) {
+                        binding.tvSwipeHint.visibility = View.GONE
+                    }
+                }
+            }
 
             override fun isLongPressDragEnabled(): Boolean {
                 return false
@@ -347,8 +350,9 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnChecklistAdd.setOnClickListener {
-            checklistItems.add(Pair("", true))
+            checklistItems.add(ChecklistItem(title = "", isChecked = true))
             checklistAdapter.submitList(checklistItems.toList())
+            binding.tvSwipeHint.visibility = View.VISIBLE
             updateProgress()
         }
 
@@ -508,7 +512,7 @@ class AddInspectionFragment : Fragment() {
 
         if (checklistItems.isNotEmpty()) {
             totalFields++
-            if (checklistItems.all { it.first.isNotBlank() && it.second }) filledFields++
+            if (checklistItems.all { it.title.isNotBlank() && it.isChecked }) filledFields++
         }
 
         totalFields += 2
