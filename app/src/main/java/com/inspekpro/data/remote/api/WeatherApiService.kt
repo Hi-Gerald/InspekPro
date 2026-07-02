@@ -41,7 +41,7 @@ interface WeatherApiService {
 
     companion object {
         // Ganti dengan API key dari openweathermap.org (free tier cukup)
-        const val API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"
+        const val API_KEY = "e484a00121b86cab16186d0098ae7a7b"
         const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
         const val ICON_BASE_URL = "https://openweathermap.org/img/wn/"
     }

@@ -97,7 +97,10 @@ class DashboardFragment : Fragment() {
 
     private fun setupRecyclerViews() {
         activeInspectionAdapter = ActiveInspectionAdapter { session ->
-            Toast.makeText(requireContext(), "Sesi: ${session.title}", Toast.LENGTH_SHORT).show()
+            val bundle = Bundle().apply {
+                putLong("sessionId", session.sessionId)
+            }
+            findNavController().navigate(R.id.action_dashboardFragment_to_addInspectionFragment, bundle)
         }
         binding.rvActiveInspections.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -181,9 +184,6 @@ class DashboardFragment : Fragment() {
         }
 
         // View All (Lihat Semua) Actions
-        binding.btnLihatSemuaInspeksi.setOnClickListener {
-            Toast.makeText(requireContext(), "Menampilkan semua sesi...", Toast.LENGTH_SHORT).show()
-        }
         binding.btnLihatSemuaTemuan.setOnClickListener {
             Toast.makeText(requireContext(), "Menampilkan semua temuan...", Toast.LENGTH_SHORT).show()
         }

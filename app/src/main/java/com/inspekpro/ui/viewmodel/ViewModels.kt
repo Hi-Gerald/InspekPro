@@ -34,7 +34,7 @@ class DashboardViewModel @Inject constructor(
     val completedSessions = sessionRepo.getCompletedCount()
 
     val activeSessions = sessionRepo.getAllSessions().map { list ->
-        list.filter { it.status == SessionStatus.IN_PROGRESS }
+        list.filter { it.status == SessionStatus.DRAFT }
             .sortedByDescending { it.scheduledDate }
             .take(3)
     }
