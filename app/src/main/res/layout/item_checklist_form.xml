@@ -14,10 +14,10 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_drag"
+        android:contentDescription="Drag Handle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <CheckBox
         android:id="@+id/cbChecklistItem"
@@ -30,15 +30,17 @@
         app:layout_constraintStart_toEndOf="@id/ivDragHandle"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvChecklistItemTitle"
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/etChecklistItemTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Tekan Pompa *"
+        android:hint="Nama Pemeriksaan"
         android:textColor="@color/text_primary"
         android:textSize="14sp"
         android:textStyle="bold"
+        android:background="@null"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/cbChecklistItem"

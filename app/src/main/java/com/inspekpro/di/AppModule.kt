@@ -61,14 +61,29 @@ object AppModule {
     /**
      * Bagian Billy: Provider Firebase Firestore
      * Digunakan untuk sinkronisasi data jadwal inspeksi ke Cloud.
+     * Ditambahkan Try-Catch agar tidak crash jika google-services.json belum ada.
      */
     @Singleton
     @Provides
-    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirestore(): FirebaseFirestore? = try {
+        // Coba ambil instance default, jika gagal (misal: config missing) akan lempar IllegalStateException
+        FirebaseFirestore.getInstance()
+    } catch (e: Exception) {
+        null
+    }
 
+    /**
+     * Bagian Billy: Provider Firebase Auth
+     * Digunakan untuk manajemen login & registrasi ke Cloud.
+     * Ditambahkan Try-Catch agar tidak crash jika google-services.json belum ada.
+     */
     @Singleton
     @Provides
-    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+    fun provideFirebaseAuth(): FirebaseAuth? = try {
+        FirebaseAuth.getInstance()
+    } catch (e: Exception) {
+        null
+    }
 
     // ─── REPOSITORIES ─────────────────────────────────────────────────────────
 
@@ -103,7 +118,7 @@ object AppModule {
     @Provides
     fun provideAuthRepository(
         db: InspekProDatabase,
-        firebaseAuth: FirebaseAuth
+        firebaseAuth: FirebaseAuth?
     ): AuthRepository = AuthRepository(
         userDao = db.userDao(),
         firebaseAuth = firebaseAuth

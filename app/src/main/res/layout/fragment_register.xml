@@ -12,13 +12,14 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <!-- Logo -->
+        <!-- Logo Image -->
         <ImageView
             android:id="@+id/logoImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="160dp"
+            android:layout_height="130dp"
             android:layout_marginTop="16dp"
-            android:src="@drawable/ic_logo"
+            android:src="@drawable/inspeksi_pro"
+            android:scaleType="fitCenter"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -26,30 +27,26 @@
 
         <TextView
             android:id="@+id/logoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="INSPEKSI PRO"
-            android:textColor="@color/primary"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text=""
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/logoImage" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Headings -->
         <TextView
             android:id="@+id/registerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
             android:text="Buat Akun Baru"
             android:textColor="@color/text_primary"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/logoText" />
+            app:layout_constraintTop_toBottomOf="@id/logoImage" />
 
         <TextView
             android:id="@+id/registerSubtitle"
@@ -69,15 +66,17 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:startIconDrawable="@drawable/ic_person"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/registerSubtitle">
@@ -89,7 +88,9 @@
                 android:hint="Nama Lengkap"
                 android:inputType="textPersonName"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Email Field -->
@@ -103,10 +104,12 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:startIconDrawable="@drawable/ic_mail"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/nameInputLayout">
@@ -118,7 +121,9 @@
                 android:hint="Email"
                 android:inputType="textEmailAddress"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Nama Perusahaan Field -->
@@ -132,10 +137,12 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:startIconDrawable="@drawable/ic_company"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/emailInputLayout">
@@ -147,7 +154,9 @@
                 android:hint="Nama Perusahaan"
                 android:inputType="text"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Field -->
@@ -161,12 +170,14 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/gray_icon"
+            app:passwordToggleTint="#8E8E93"
             app:startIconDrawable="@drawable/ic_lock"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/companyInputLayout">
@@ -178,8 +189,188 @@
                 android:hint="Password"
                 android:inputType="textPassword"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password Requirement Panel -->
+        <LinearLayout
+            android:id="@+id/passwordRequirementPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/passwordInputLayout">
+
+            <!-- Req 1: At least 8 characters -->
+            <LinearLayout
+                android:id="@+id/layoutReqCharCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReqCharCount"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    app:cardCornerRadius="7dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1.5dp"
+                    app:strokeColor="#8E8E93">
+
+                    <ImageView
+                        android:id="@+id/imgReqCharCount"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_check"
+                        android:visibility="visible"
+                        android:alpha="0"
+                        app:tint="#27AE60"
+                        tools:ignore="ContentDescription" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvReqCharCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Minimal 8 karakter"
+                    android:textColor="#8E8E93"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Req 2: One uppercase letter -->
+            <LinearLayout
+                android:id="@+id/layoutReqUppercase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReqUppercase"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    app:cardCornerRadius="7dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1.5dp"
+                    app:strokeColor="#8E8E93">
+
+                    <ImageView
+                        android:id="@+id/imgReqUppercase"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_check"
+                        android:visibility="visible"
+                        android:alpha="0"
+                        app:tint="#27AE60"
+                        tools:ignore="ContentDescription" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvReqUppercase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Mengandung minimal satu huruf besar"
+                    android:textColor="#8E8E93"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Req 3: One lowercase letter -->
+            <LinearLayout
+                android:id="@+id/layoutReqLowercase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReqLowercase"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    app:cardCornerRadius="7dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1.5dp"
+                    app:strokeColor="#8E8E93">
+
+                    <ImageView
+                        android:id="@+id/imgReqLowercase"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_check"
+                        android:visibility="visible"
+                        android:alpha="0"
+                        app:tint="#27AE60"
+                        tools:ignore="ContentDescription" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvReqLowercase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Mengandung minimal satu huruf kecil"
+                    android:textColor="#8E8E93"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Req 4: One number -->
+            <LinearLayout
+                android:id="@+id/layoutReqNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReqNumber"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    app:cardCornerRadius="7dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="1.5dp"
+                    app:strokeColor="#8E8E93">
+
+                    <ImageView
+                        android:id="@+id/imgReqNumber"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_check"
+                        android:visibility="visible"
+                        android:alpha="0"
+                        app:tint="#27AE60"
+                        tools:ignore="ContentDescription" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvReqNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Mengandung minimal satu angka"
+                    android:textColor="#8E8E93"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Konfirmasi Password Field -->
         <com.google.android.material.textfield.TextInputLayout
@@ -192,15 +383,17 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/gray_icon"
+            app:passwordToggleTint="#8E8E93"
             app:startIconDrawable="@drawable/ic_lock"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/passwordInputLayout">
+            app:layout_constraintTop_toBottomOf="@id/passwordRequirementPanel">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/confirmPasswordEditText"
@@ -209,7 +402,9 @@
                 android:hint="Konfirmasi Password"
                 android:inputType="textPassword"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Terms & Conditions Checkbox -->
@@ -224,20 +419,38 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/confirmPasswordInputLayout">
 
-            <CheckBox
+            <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/termsCheckbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:buttonTint="@color/primary" />
+                app:buttonTint="@color/primary" />
 
-            <TextView
-                android:id="@+id/termsText"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:layout_marginStart="4dp"
-                android:text="Saya menyetujui syarat dan ketentuan"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Saya menyetujui "
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/termsText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="syarat dan ketentuan"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Register Button -->
@@ -245,11 +458,12 @@
             android:id="@+id/registerBtn"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             android:text="Daftar"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textAllCaps="false"
             app:backgroundTint="@color/primary"
             app:cornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -257,19 +471,36 @@
             app:layout_constraintTop_toBottomOf="@id/termsLayout" />
 
         <!-- Login Link -->
-        <TextView
-            android:id="@+id/loginLinkText"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="32dp"
             android:layout_marginBottom="16dp"
-            android:text="Sudah punya akun? Masuk"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/registerBtn" />
+            app:layout_constraintTop_toBottomOf="@id/registerBtn">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sudah punya akun? "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/loginLinkText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Masuk"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

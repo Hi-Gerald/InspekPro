@@ -8,6 +8,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.FirebaseApp
 import com.inspekpro.worker.FirestoreSyncWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
@@ -26,6 +27,14 @@ class InspekProApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Inisialisasi Firebase secara manual jika plugin google-services tidak aktif
+        try {
+            FirebaseApp.initializeApp(this)
+        } catch (e: Exception) {
+            // Abaikan jika gagal (misal: config missing), AppModule akan menangani null check
+        }
+        
         scheduleSyncWorker()
     }
 

@@ -9,15 +9,27 @@
     <!-- Bagian Billy: Izin untuk fitur Pengingat Jadwal Inspeksi (AlarmManager) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:name=".InspekProApp"
         android:allowBackup="true"
-        android:icon="@drawable/ic_logo"
+        android:icon="@drawable/ic_launcher"
         android:label="InspekPro"
-        android:roundIcon="@drawable/ic_logo"
+        android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.InspekPro">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <activity
             android:name=".MainActivity"

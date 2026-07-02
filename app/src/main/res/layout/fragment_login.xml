@@ -12,50 +12,48 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <!-- Logo -->
+        <!-- Logo Image -->
         <ImageView
             android:id="@+id/logoImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginTop="32dp"
-            android:src="@drawable/ic_logo"
+            android:layout_width="160dp"
+            android:layout_height="130dp"
+            android:layout_marginTop="48dp"
+            android:src="@drawable/inspeksi_pro"
+            android:scaleType="fitCenter"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
 
+        <!-- Unused logoText preserved for ViewBinding compatibility -->
         <TextView
             android:id="@+id/logoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="INSPEKSI PRO"
-            android:textColor="@color/primary"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text=""
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/logoImage" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Headings -->
         <TextView
             android:id="@+id/loginTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             android:text="Masuk ke Akun"
             android:textColor="@color/text_primary"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/logoText" />
+            app:layout_constraintTop_toBottomOf="@id/logoImage" />
 
         <TextView
             android:id="@+id/loginSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:text="Silakan masuk untuk melanjutkan"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
@@ -74,10 +72,12 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:startIconDrawable="@drawable/ic_mail"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/loginSubtitle">
@@ -89,7 +89,9 @@
                 android:hint="Masukkan email"
                 android:inputType="textEmailAddress"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Field -->
@@ -103,12 +105,14 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/box_stroke_selector"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="1.5dp"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/gray_icon"
+            app:passwordToggleTint="#8E8E93"
             app:startIconDrawable="@drawable/ic_lock"
-            app:startIconTint="@color/gray_icon"
+            app:startIconTint="#8E8E93"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/emailInputLayout">
@@ -120,7 +124,9 @@
                 android:hint="Masukkan password"
                 android:inputType="textPassword"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Forgot Password -->
@@ -128,13 +134,14 @@
             android:id="@+id/forgotPasswordText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="Lupa Password?"
             android:textColor="@color/primary"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:clickable="true"
             android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/passwordInputLayout" />
 
@@ -143,11 +150,12 @@
             android:id="@+id/loginBtn"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             android:text="Masuk"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textAllCaps="false"
             app:backgroundTint="@color/primary"
             app:cornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -159,7 +167,7 @@
             android:id="@+id/dividerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
@@ -193,10 +201,11 @@
             android:id="@+id/googleLoginBtn"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/bg_google_btn"
             android:clickable="true"
             android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/dividerLayout">
@@ -229,19 +238,36 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Register Link -->
-        <TextView
-            android:id="@+id/registerLinkText"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="40dp"
             android:layout_marginBottom="16dp"
-            android:text="Belum punya akun? Daftar"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/googleLoginBtn" />
+            app:layout_constraintTop_toBottomOf="@id/googleLoginBtn">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Belum punya akun? "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/registerLinkText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daftar"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
