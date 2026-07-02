@@ -544,7 +544,11 @@ class AddInspectionFragment : Fragment() {
                 manualInspector = inspectorText,
                 manualConclusion = conclusionText,
                 manualPhotos = photos.toList(),
-                manualVideo = videoPath
+                manualVideo = videoPath,
+                findingCategory = if (binding.rbHasFindings.isChecked) binding.etFindingCategory.text.toString().trim() else "",
+                findingPriority = if (binding.rbHasFindings.isChecked) binding.etPriority.text.toString().trim() else "",
+                findingDescription = if (binding.rbHasFindings.isChecked) binding.etFindingDescription.text.toString().trim() else "",
+                findingPhotos = if (binding.rbHasFindings.isChecked) findingPhotos.toList() else emptyList()
             )
         }
     }
