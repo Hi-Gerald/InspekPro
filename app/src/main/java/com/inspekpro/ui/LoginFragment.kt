@@ -58,6 +58,7 @@ class LoginFragment : Fragment() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupClickListeners() {

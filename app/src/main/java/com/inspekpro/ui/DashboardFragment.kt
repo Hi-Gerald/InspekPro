@@ -73,9 +73,7 @@ class DashboardFragment : Fragment() {
             val density = resources.displayMetrics.density
             
             // Handle Bottom Insets
-            binding.bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = systemBars.bottom
-            }
+            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
             
             binding.fabAdd.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 val baseMargin = (32 * density).toInt()
@@ -94,6 +92,7 @@ class DashboardFragment : Fragment() {
             
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupRecyclerViews() {
@@ -179,10 +178,6 @@ class DashboardFragment : Fragment() {
         binding.btnCloudSync.setOnClickListener {
             Toast.makeText(requireContext(), "Mulai sinkronisasi ke Cloud...", Toast.LENGTH_SHORT).show()
             viewModel.syncNow()
-        }
-        
-        binding.btnProfile.setOnClickListener {
-            findNavController().navigate(R.id.profileFragment)
         }
 
         // View All (Lihat Semua) Actions

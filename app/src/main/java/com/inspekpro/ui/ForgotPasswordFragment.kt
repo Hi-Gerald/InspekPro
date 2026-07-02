@@ -46,9 +46,19 @@ class ForgotPasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupClickListeners()
         setupTextWatchers()
         observeViewModel()
+    }
+
+    private fun applyWindowInsets() {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupClickListeners() {

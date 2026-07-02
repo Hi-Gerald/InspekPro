@@ -194,6 +194,7 @@ class AddInspectionFragment : Fragment() {
 
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupFragmentResultListeners() {

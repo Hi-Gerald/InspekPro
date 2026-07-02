@@ -103,8 +103,8 @@ class AuthRepository(
     suspend fun googleSignIn(idToken: String): Result<UserEntity> {
         return try {
             val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
-            val authResult = firebaseAuth.signInWithCredential(credential).await()
-            val firebaseUser = authResult.user ?: return Result.failure(Exception("Gagal masuk dengan Google"))
+            val authResult = firebaseAuth?.signInWithCredential(credential)?.await()
+            val firebaseUser = authResult?.user ?: return Result.failure(Exception("Gagal masuk dengan Google"))
 
             val email = firebaseUser.email ?: "no-email@google.com"
             var user = userDao.getUserByEmail(email)

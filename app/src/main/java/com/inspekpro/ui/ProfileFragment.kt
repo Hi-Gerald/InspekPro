@@ -44,6 +44,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupClickListeners()
         observeViewModel()
 
@@ -59,6 +60,21 @@ class ProfileFragment : Fragment() {
                     findNavController().currentBackStackEntry?.savedStateHandle?.remove<Boolean>("profile_updated")
                 }
             }
+    }
+
+    private fun applyWindowInsets() {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+
+            v.setPadding(0, systemBars.top, 0, 0)
+            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
+            binding.fabAdd.layoutParams = (binding.fabAdd.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                bottomMargin = (32 * density).toInt() + systemBars.bottom
+            }
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupClickListeners() {

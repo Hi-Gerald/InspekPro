@@ -66,6 +66,7 @@ class ReportDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         sessionId = arguments?.getLong("sessionId") ?: -1L
+        applyWindowInsets()
         if (sessionId == -1L) {
             Toast.makeText(requireContext(), "Laporan tidak ditemukan", Toast.LENGTH_SHORT).show()
             findNavController().popBackStack()
@@ -75,6 +76,25 @@ class ReportDetailFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun applyWindowInsets() {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            val density = resources.displayMetrics.density
+
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+            
+            binding.btnBack.layoutParams = (binding.btnBack.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                topMargin = (16 * density).toInt() + systemBars.top
+            }
+            binding.tvStatusBadge.layoutParams = (binding.tvStatusBadge.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                topMargin = (16 * density).toInt() + systemBars.top
+            }
+            
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupRecyclerView() {
