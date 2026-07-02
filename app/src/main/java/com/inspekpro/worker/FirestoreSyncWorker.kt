@@ -22,6 +22,7 @@ class FirestoreSyncWorker @AssistedInject constructor(
         Log.d("SYNC_WORKER", "Memulai sinkronisasi background...")
         return withContext(Dispatchers.IO) {
             try {
+                // 2. Sync sessions and findings
                 val result = firestoreSyncRepository.syncUnsyncedSessions()
                 if (result.isSuccess) {
                     val count = result.getOrDefault(0)

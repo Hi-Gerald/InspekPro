@@ -26,8 +26,10 @@ class InspectionSessionRepository(
     suspend fun createSession(session: InspectionSessionEntity): Long =
         sessionDao.insertSession(session)
 
-    suspend fun updateSession(session: InspectionSessionEntity) =
+    suspend fun updateSession(session: InspectionSessionEntity) {
         sessionDao.updateSession(session)
+        sessionDao.markAsUnsynced(session.sessionId)
+    }
 
     fun getAllSessions(): Flow<List<InspectionSessionEntity>> =
         sessionDao.getAllSessions()
@@ -43,6 +45,7 @@ class InspectionSessionRepository(
 
     suspend fun startSession(sessionId: Long) {
         sessionDao.startSession(sessionId, System.currentTimeMillis())
+        sessionDao.markAsUnsynced(sessionId)
     }
 
     suspend fun completeSession(sessionId: Long) {
@@ -50,8 +53,9 @@ class InspectionSessionRepository(
         refreshSummary(sessionId)
     }
 
-    suspend fun deleteSession(sessionId: Long) =
+    suspend fun deleteSession(sessionId: Long) {
         sessionDao.deleteSessionById(sessionId)
+    }
 
     // ─── WEATHER ───────────────────────────────────────────────────────────────
 
@@ -141,6 +145,9 @@ class InspectionSessionRepository(
                 overallGrade      = grade
             )
         )
+        
+        // Tandai bahwa sesi ini berubah dan butuh disinkronkan lagi
+        sessionDao.markAsUnsynced(sessionId)
     }
 
     // ─── DASHBOARD ─────────────────────────────────────────────────────────────

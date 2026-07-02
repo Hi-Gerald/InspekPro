@@ -23,6 +23,9 @@ interface FindingPhotoDao {
     @Query("SELECT * FROM finding_photos WHERE finding_id = :findingId ORDER BY taken_at ASC")
     fun getPhotosByFinding(findingId: Long): Flow<List<FindingPhotoEntity>>
 
+    @Query("SELECT * FROM finding_photos WHERE finding_id = :findingId ORDER BY taken_at ASC")
+    suspend fun getPhotosByFindingOnce(findingId: Long): List<FindingPhotoEntity>
+
     @Query("SELECT * FROM finding_photos WHERE is_uploaded = 0")
     suspend fun getPendingUploadPhotos(): List<FindingPhotoEntity>
 

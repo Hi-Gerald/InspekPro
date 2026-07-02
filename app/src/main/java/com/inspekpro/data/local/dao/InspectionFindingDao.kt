@@ -29,6 +29,9 @@ interface InspectionFindingDao {
     @Query("SELECT * FROM inspection_findings WHERE session_id = :sessionId ORDER BY created_at ASC")
     fun getFindingsBySession(sessionId: Long): Flow<List<InspectionFindingEntity>>
 
+    @Query("SELECT * FROM inspection_findings WHERE session_id = :sessionId ORDER BY created_at ASC")
+    suspend fun getFindingsBySessionOnce(sessionId: Long): List<InspectionFindingEntity>
+
     @Query("SELECT * FROM inspection_findings WHERE finding_id = :findingId")
     fun getFindingById(findingId: Long): Flow<InspectionFindingEntity?>
 
