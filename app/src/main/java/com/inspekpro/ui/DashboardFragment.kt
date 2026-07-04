@@ -167,6 +167,7 @@ class DashboardFragment : Fragment() {
         }
 
         // Notification Icon
+        @android.annotation.SuppressLint("DiscouragedApi")
         binding.btnNotification.setOnClickListener {
             val resId = resources.getIdentifier("action_dashboardFragment_to_notificationFragment", "id", requireContext().packageName)
             if (resId != 0) {

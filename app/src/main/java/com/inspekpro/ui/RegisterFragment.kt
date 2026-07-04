@@ -131,22 +131,22 @@ class RegisterFragment : Fragment() {
                     when (result) {
                         is AuthResult.Idle -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                         }
                         is AuthResult.Loading -> {
                             binding.registerBtn.isEnabled = false
-                            binding.registerBtn.text = "Mendaftarkan..."
+                            binding.registerBtn.text = "Mendaftarkan…"
                         }
                         is AuthResult.Success -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                             viewModel.resetResults()
                             Toast.makeText(requireContext(), "Pendaftaran berhasil! Silakan masuk.", Toast.LENGTH_LONG).show()
                             findNavController().popBackStack()
                         }
                         is AuthResult.Error -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                             Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                             viewModel.resetResults()
                         }

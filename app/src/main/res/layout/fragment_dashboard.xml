@@ -58,11 +58,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Rabu, 3 Juni 2026"
                 android:textColor="#D0E3FC"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="@id/tvAppName"
-                app:layout_constraintTop_toBottomOf="@id/tvUserGreeting" />
+                app:layout_constraintTop_toBottomOf="@id/tvUserGreeting"
+                tools:text="Rabu, 3 Juni 2026" />
 
             <!-- Notification Bell Icon Card -->
             <com.google.android.material.card.MaterialCardView
@@ -170,22 +170,22 @@
                         android:id="@+id/tvTemperature"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="28°C"
                         android:textColor="@color/primary"
                         android:textSize="28sp"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="@id/tvWeatherLabel"
-                        app:layout_constraintTop_toBottomOf="@id/tvWeatherLabel" />
+                        app:layout_constraintTop_toBottomOf="@id/tvWeatherLabel"
+                        tools:text="28°C" />
 
                     <TextView
                         android:id="@+id/tvWeatherStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Berawan Sebagian"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         app:layout_constraintStart_toStartOf="@id/tvWeatherLabel"
-                        app:layout_constraintTop_toBottomOf="@id/tvTemperature" />
+                        app:layout_constraintTop_toBottomOf="@id/tvTemperature"
+                        tools:text="Berawan Sebagian" />
 
                     <!-- Condition Badge (Right side) -->
                     <ImageView
@@ -203,14 +203,14 @@
                         android:id="@+id/tvConditionMessage"
                         android:layout_width="110dp"
                         android:layout_height="wrap_content"
-                        android:text="Kondisi Baik Untuk Inspeksi Lapangan"
                         android:textColor="#27AE60"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:gravity="end"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Kondisi Baik Untuk Inspeksi Lapangan" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -257,10 +257,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="248"
                             android:textColor="@color/text_primary"
                             android:textSize="26sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="248" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -301,10 +301,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="189"
                             android:textColor="@color/text_primary"
                             android:textSize="26sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="189" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -345,10 +345,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="12"
                             android:textColor="@color/text_primary"
                             android:textSize="26sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="12" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -389,10 +389,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="203"
                             android:textColor="@color/text_primary"
                             android:textSize="26sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="203" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -502,8 +502,9 @@
         android:minHeight="72dp"
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toBottomOf="@id/profileScrollView"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="NotSibling">
 
         <View
             android:id="@+id/bottomNavDivider"

@@ -133,29 +133,18 @@
                     android:textStyle="bold" />
 
                 <!-- Company Info -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvCompany"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_company"
-                        app:tint="@color/text_secondary"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tvCompany"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text=""
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
-                </LinearLayout>
+                    app:drawableStartCompat="@drawable/ic_company"
+                    android:drawablePadding="8dp"
+                    app:drawableTint="@color/text_secondary"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="PT. Pertamina (persero)" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -333,6 +322,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/iconCardJob"
+                        android:layout_marginStart="140dp"
+                        android:gravity="end"
                         android:text="@string/job_title_inspector"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
@@ -460,7 +452,8 @@
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileScrollView"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="NotSibling">
 
         <View
             android:id="@+id/bottomNavDivider"

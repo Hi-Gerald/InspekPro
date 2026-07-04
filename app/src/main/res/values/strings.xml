@@ -67,7 +67,7 @@
     <string name="report_subtitle">Kelola dan unduh laporan inspeksi yang telah selesai</string>
     <string name="no_reports_title">Belum ada laporan inspeksi.</string>
     <string name="no_reports_subtitle">Silakan selesaikan inspeksi terlebih dahulu.</string>
-    <string name="search_hint">Cari mesin, lokasi, atau inspector...</string>
+    <string name="search_hint">Cari mesin, lokasi, atau inspector…</string>
     <string name="filter_title">Filter Laporan</string>
     <string name="filter_reset">Reset</string>
     <string name="filter_apply">Terapkan Filter</string>
