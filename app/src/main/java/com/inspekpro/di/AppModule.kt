@@ -124,6 +124,11 @@ object AppModule {
         firebaseAuth = firebaseAuth
     )
 
+    @Singleton
+    @Provides
+    fun provideWeatherRepository(): com.inspekpro.data.repository.WeatherRepository = 
+        com.inspekpro.data.repository.BmkgWeatherRepositoryImpl()
+
     // ─── UTILS ────────────────────────────────────────────────────────────────
 
     /**

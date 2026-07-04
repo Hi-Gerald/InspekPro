@@ -359,8 +359,50 @@ class DashboardFragment : Fragment() {
                     }
                 }
 
-                // TODO: WeatherRepository integration will be added later by teammate.
-                // Currently preparing weather card visual layout with default state.
+                // Observe Weather
+                launch {
+                    viewModel.weather.collectLatest { state ->
+                        when (state) {
+                            is com.inspekpro.ui.viewmodel.WeatherUiState.Loading -> {
+                                binding.tvTemperature.text = "--°C"
+                                binding.tvWeatherStatus.text = "Memuat..."
+                                binding.tvConditionMessage.text = "Memuat data cuaca..."
+                            }
+                            is com.inspekpro.ui.viewmodel.WeatherUiState.Success -> {
+                                val weather = state.data
+                                binding.tvTemperature.text = "${weather.tempCelsius.toInt()}°C"
+                                binding.tvWeatherStatus.text = weather.conditionDesc
+                                binding.tvWeatherLabel.text = weather.cityName
+                                binding.tvConditionMessage.text = weather.inspectionAdvice
+
+                                val iconRes = when (weather.iconCode) {
+                                    "rain", "thunderstorm" -> R.drawable.ic_cloud_rain
+                                    else -> R.drawable.ic_cloud_rain // Placeholder
+                                }
+                                binding.weatherIcon.setImageResource(iconRes)
+
+                                val colorRes = if (weather.isGoodForInspection) {
+                                    android.graphics.Color.parseColor("#27AE60")
+                                } else {
+                                    android.graphics.Color.parseColor("#E74C3C")
+                                }
+                                binding.tvConditionMessage.setTextColor(colorRes)
+                                binding.weatherTrendIcon.setColorFilter(colorRes)
+                                binding.weatherTrendIcon.setImageResource(
+                                    if (weather.isGoodForInspection) R.drawable.ic_check else R.drawable.ic_warning
+                                )
+                            }
+                            is com.inspekpro.ui.viewmodel.WeatherUiState.Error -> {
+                                binding.tvTemperature.text = "--°C"
+                                binding.tvWeatherStatus.text = "Gagal memuat"
+                                binding.tvConditionMessage.text = state.message
+                                binding.tvConditionMessage.setTextColor(android.graphics.Color.parseColor("#E74C3C"))
+                                binding.weatherTrendIcon.setColorFilter(android.graphics.Color.parseColor("#E74C3C"))
+                                binding.weatherTrendIcon.setImageResource(R.drawable.ic_warning)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

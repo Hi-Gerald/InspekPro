@@ -24,7 +24,8 @@ import java.util.*
 class DashboardViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val findingRepo: FindingRepository,
-    private val firestoreSyncRepo: FirestoreSyncRepository
+    private val firestoreSyncRepo: FirestoreSyncRepository,
+    private val weatherRepo: com.inspekpro.data.repository.WeatherRepository
 ) : ViewModel() {
 
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
@@ -60,6 +61,8 @@ class DashboardViewModel @Inject constructor(
                 e.printStackTrace()
             }
         }
+        // Load default weather
+        loadWeather(0.0, 0.0)
     }
 
     private suspend fun populateMockData() {
@@ -181,7 +184,7 @@ class DashboardViewModel @Inject constructor(
     fun loadWeather(lat: Double, lon: Double) {
         viewModelScope.launch {
             _weather.value = WeatherUiState.Loading
-            val result = sessionRepo.fetchWeatherByCity("Jakarta")
+            val result = weatherRepo.getCurrentWeather()
             result.fold(
                 onSuccess = { _weather.value = WeatherUiState.Success(it) },
                 onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
