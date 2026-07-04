@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+=======
+// Baca local.properties untuk API key (tidak pernah masuk Git)
+val localProperties = java.util.Properties().also { props ->
+    val f = rootProject.file("local.properties")
+    if (f.exists()) props.load(f.inputStream())
+}
+
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -20,8 +29,18 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+<<<<<<< HEAD
         // Catatan: WEATHER_API_KEY (OpenWeatherMap) dihapus — cuaca sekarang 100% via BMKG,
         // yang tidak butuh API key.
+=======
+
+        // Inject API key dari local.properties → BuildConfig.WEATHER_API_KEY
+        buildConfigField(
+            "String",
+            "WEATHER_API_KEY",
+            "\"${localProperties.getProperty("WEATHER_API_KEY", "")}\""
+        )
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
     }
 
     lint {

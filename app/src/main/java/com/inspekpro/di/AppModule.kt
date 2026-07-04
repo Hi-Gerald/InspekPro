@@ -4,6 +4,11 @@ import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.inspekpro.data.local.database.InspekProDatabase
+<<<<<<< HEAD
+=======
+import com.inspekpro.data.remote.api.RetrofitClient
+import com.inspekpro.data.remote.api.WeatherApiService
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
 import com.inspekpro.data.repository.FindingRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
 import com.inspekpro.data.repository.AuthRepository
@@ -50,6 +55,15 @@ object AppModule {
     @Provides
     fun provideUserDao(db: InspekProDatabase) = db.userDao()
 
+<<<<<<< HEAD
+=======
+    // ─── NETWORK ──────────────────────────────────────────────────────────────
+
+    @Singleton
+    @Provides
+    fun provideWeatherApi(): WeatherApiService = RetrofitClient.weatherApiService
+
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
     /**
      * Bagian Billy: Provider Firebase Firestore
      * Digunakan untuk sinkronisasi data jadwal inspeksi ke Cloud.
@@ -87,12 +101,20 @@ object AppModule {
     @Provides
     fun provideSessionRepository(
         db: InspekProDatabase,
+<<<<<<< HEAD
         weatherRepo: com.inspekpro.data.repository.WeatherRepository
+=======
+        weatherApi: WeatherApiService
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
     ): InspectionSessionRepository = InspectionSessionRepository(
         sessionDao  = db.inspectionSessionDao(),
         findingDao  = db.inspectionFindingDao(),
         summaryDao  = db.sessionSummaryDao(),
+<<<<<<< HEAD
         weatherRepo = weatherRepo
+=======
+        weatherApi  = weatherApi
+>>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
     )
 
     @Singleton
