@@ -78,6 +78,10 @@ class AddInspectionFragment : Fragment() {
     private var isCapturingFinding = false
     private var isCapturingVideo = false
     private var isDraftSavedAction = false
+    private var isDialogShowing = false
+    private var currentFilledFields = 0
+    private var currentTotalFields = 0
+    private var isNavigatingBack = false
 
     private val requestCameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
@@ -393,7 +397,9 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnBack.setOnClickListener { handleBackNavigation() }
+        binding.btnBack.setOnClickListener { 
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
 
         binding.locationInputLayout.setEndIconOnClickListener {
             checkLocationPermissionAndGet()
@@ -664,6 +670,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun checkCameraPermissionAndLaunch() {
+        if (!isAdded) return
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             val bundle = Bundle().apply {
                 putBoolean("isVideoButton", isCapturingVideo)
@@ -702,7 +709,11 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun updateProgress() {
-        var totalFields = 6 // Title, Location, Date, Time, Inspector, Conclusion
+        // Base fields (6): Title, Location, Date, Time, Inspector, Conclusion
+        // Checklist (1): Considered 1 section
+        // Media (2): 1 for Photos, 1 for Video
+        // Findings (1): Considered 1 section
+        val totalFields = 10 
         var filledFields = 0
         
         if (binding.etTitle.text?.isNotBlank() == true) filledFields++
@@ -712,23 +723,32 @@ class AddInspectionFragment : Fragment() {
         if (binding.etInspector.text?.isNotBlank() == true) filledFields++
         if (binding.etConclusion.text?.isNotBlank() == true) filledFields++
 
+        // Checklist section (1 field)
         if (checklistItems.isNotEmpty()) {
-            totalFields++
             if (checklistItems.all { it.first.isNotBlank() && it.second }) filledFields++
         }
 
-        totalFields += 2
+        // Photos (1 field)
         if (photos.isNotEmpty()) filledFields++
+        
+        // Video (1 field)
         if (videoPath != null) filledFields++
 
+        // Findings section (1 field)
         if (binding.rbHasFindings.isChecked) {
-            totalFields += 4 // Category, Priority, Desc, Finding Photos
-            if (binding.etFindingCategory.text?.isNotBlank() == true) filledFields++
-            if (binding.etPriority.text?.isNotBlank() == true) filledFields++
-            if (binding.etFindingDescription.text?.isNotBlank() == true) filledFields++
-            if (findingPhotos.isNotEmpty()) filledFields++
+            val categoryFilled = binding.etFindingCategory.text?.isNotBlank() == true
+            val priorityFilled = binding.etPriority.text?.isNotBlank() == true
+            val descFilled = binding.etFindingDescription.text?.isNotBlank() == true
+            val photosFilled = findingPhotos.isNotEmpty()
+            
+            if (categoryFilled && priorityFilled && descFilled && photosFilled) filledFields++
+        } else if (binding.rbNoFindings.isChecked) {
+            // "No Findings" selected counts as "completed" for this section
+            filledFields++
         }
 
+        currentFilledFields = filledFields
+        currentTotalFields = totalFields
         val percent = ((filledFields.toDouble() / totalFields) * 100).toInt().coerceAtMost(100)
         
         binding.tvBadgeProgressFields.text = getString(R.string.inspection_fields_filled, filledFields, totalFields)
@@ -737,6 +757,7 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun saveInspection(status: SessionStatus) {
+        updateProgress() // Final sync before saving
         if (validateInput(status)) {
             val titleText = binding.etTitle.text.toString().trim()
             val locationText = binding.etLocation.text.toString().trim()
@@ -752,7 +773,9 @@ class AddInspectionFragment : Fragment() {
                 manualInspector = inspectorText,
                 manualConclusion = conclusionText,
                 manualPhotos = photos.toList(),
-                manualVideo = videoPath
+                manualVideo = videoPath,
+                manualTotalItems = currentTotalFields,
+                manualPassedItems = currentFilledFields
             )
         }
     }
@@ -876,23 +899,30 @@ class AddInspectionFragment : Fragment() {
                                     com.google.android.material.snackbar.Snackbar.LENGTH_LONG
                                 ).show()
 
-                                binding.root.postDelayed({
-                                    binding.btnSaveDraft.isEnabled = true
-                                    binding.btnFinishInspection.isEnabled = true
-                                    if (isDraftSavedAction) {
-                                        findNavController().popBackStack()
-                                    } else {
-                                        val navOptions = androidx.navigation.NavOptions.Builder()
-                                            .setPopUpTo(R.id.dashboardFragment, false)
-                                            .build()
-                                        findNavController().navigate(R.id.reportFragment, null, navOptions)
+                                viewLifecycleOwner.lifecycleScope.launch {
+                                    kotlinx.coroutines.delay(1500)
+                                    if (isAdded && !isNavigatingBack) {
+                                        binding.btnSaveDraft.isEnabled = true
+                                        binding.btnFinishInspection.isEnabled = true
+                                        if (isDraftSavedAction) {
+                                            isNavigatingBack = true
+                                            findNavController().popBackStack()
+                                        } else {
+                                            isNavigatingBack = true
+                                            val navOptions = androidx.navigation.NavOptions.Builder()
+                                                .setPopUpTo(R.id.dashboardFragment, false)
+                                                .build()
+                                            findNavController().navigate(R.id.reportFragment, null, navOptions)
+                                        }
                                     }
-                                }, 1500)
+                                }
                             }
                             is CreateSessionResult.Error -> {
                                 binding.btnSaveDraft.isEnabled = true
                                 binding.btnFinishInspection.isEnabled = true
-                                Toast.makeText(requireContext(), "Gagal: ${result.message}", Toast.LENGTH_SHORT).show()
+                                context?.let {
+                                    Toast.makeText(it, "Gagal: ${result.message}", Toast.LENGTH_SHORT).show()
+                                }
                             }
                             else -> {}
                         }
@@ -973,21 +1003,37 @@ class AddInspectionFragment : Fragment() {
     }
 
     private fun handleBackNavigation() {
+        if (isDialogShowing || isNavigatingBack) return
+
         if (isFormDirty()) {
+            isDialogShowing = true
             AlertDialog.Builder(requireContext())
                 .setTitle("Simpan ke Draft?")
                 .setMessage("Anda sedang mengisi form inspeksi. Apakah Anda ingin menyimpannya sebagai draft sebelum keluar?")
                 .setPositiveButton("Simpan Draft") { _, _ ->
+                    isDialogShowing = false
                     isDraftSavedAction = true
                     saveInspection(SessionStatus.DRAFT)
                 }
                 .setNegativeButton("Keluar") { _, _ ->
-                    findNavController().popBackStack()
+                    isDialogShowing = false
+                    if (isAdded && !isNavigatingBack) {
+                        isNavigatingBack = true
+                        findNavController().popBackStack()
+                    }
                 }
-                .setNeutralButton("Batal", null)
+                .setNeutralButton("Batal") { _, _ ->
+                    isDialogShowing = false
+                }
+                .setOnCancelListener {
+                    isDialogShowing = false
+                }
                 .show()
         } else {
-            findNavController().popBackStack()
+            if (isAdded && !isNavigatingBack) {
+                isNavigatingBack = true
+                findNavController().popBackStack()
+            }
         }
     }
 

@@ -57,7 +57,8 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val sessions = sessionRepo.getAllSessions().first()
-                if (sessions.isEmpty()) {
+                // Populate if empty OR if we detect old data model (totalItems != 10)
+                if (sessions.isEmpty() || sessions.any { it.sessionId in 1L..3L && it.totalItems != 10 }) {
                     populateMockData()
                 }
             } catch (e: Exception) {
@@ -80,8 +81,8 @@ class DashboardViewModel @Inject constructor(
                     inspectorId = "INS-001",
                     status = SessionStatus.IN_PROGRESS,
                     scheduledDate = System.currentTimeMillis() - 86400000,
-                    totalItems = 4,
-                    passedItems = 3,
+                    totalItems = 10,
+                    passedItems = 8,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -99,7 +100,7 @@ class DashboardViewModel @Inject constructor(
                     status = SessionStatus.DRAFT,
                     scheduledDate = System.currentTimeMillis(),
                     totalItems = 10,
-                    passedItems = 3,
+                    passedItems = 6,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -116,8 +117,8 @@ class DashboardViewModel @Inject constructor(
                     inspectorId = "INS-001",
                     status = SessionStatus.COMPLETED,
                     scheduledDate = System.currentTimeMillis() - 172800000,
-                    totalItems = 5,
-                    passedItems = 5,
+                    totalItems = 10,
+                    passedItems = 10,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -285,7 +286,9 @@ class CreateSessionViewModel @Inject constructor(
         manualInspector: String? = null,
         manualConclusion: String? = null,
         manualPhotos: List<String> = emptyList(),
-        manualVideo: String? = null
+        manualVideo: String? = null,
+        manualTotalItems: Int? = null,
+        manualPassedItems: Int? = null
     ) {
         val finalTitle = manualTitle ?: title.value
         val finalLocation = manualLocation ?: locationName.value
@@ -329,6 +332,8 @@ class CreateSessionViewModel @Inject constructor(
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
+                        totalItems    = manualTotalItems ?: currentExisting.totalItems,
+                        passedItems   = manualPassedItems ?: currentExisting.passedItems,
                         status        = status,
                         updatedAt     = System.currentTimeMillis()
                     )
@@ -348,8 +353,8 @@ class CreateSessionViewModel @Inject constructor(
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
-                        totalItems    = 0,
-                        passedItems   = 0,
+                        totalItems    = manualTotalItems ?: 0,
+                        passedItems   = manualPassedItems ?: 0,
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)

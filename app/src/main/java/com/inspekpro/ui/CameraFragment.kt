@@ -187,7 +187,7 @@ class CameraFragment : Fragment() {
                         putBoolean("isVideo", false)
                     }
                     setFragmentResult("camera_result", resultBundle)
-                    findNavController().popBackStack()
+                    if (isAdded) findNavController().popBackStack()
                 }
             }
         )
@@ -239,7 +239,7 @@ class CameraFragment : Fragment() {
                                 putBoolean("isVideo", true)
                             }
                             setFragmentResult("camera_result", resultBundle)
-                            findNavController().popBackStack()
+                            if (isAdded) findNavController().popBackStack()
                         } else {
                             recording?.close()
                             recording = null

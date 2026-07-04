@@ -42,18 +42,18 @@ class ActiveInspectionAdapter(
             binding.tvSessionDate.text = dateFormat.format(Date(session.scheduledDate))
 
             // Progress calculation
-            val progress = if (session.totalItems > 0) {
-                ((session.passedItems + session.failedItems).toDouble() / session.totalItems * 100).toInt()
+            // For Draft and In Progress, we always use the 10-field model for consistency
+            val total = if (session.status == SessionStatus.COMPLETED) {
+                if (session.totalItems > 0) session.totalItems else 10
             } else {
-                // If it is 0, let's show a simulated progress if status is completed, or standard 0%
-                if (session.status == SessionStatus.COMPLETED) 100 else 0
+                10 // Form always uses 10-field model now
             }
+            
+            val filled = session.passedItems + session.failedItems
+            val progress = ((filled.toDouble() / total) * 100).toInt().coerceAtMost(100)
 
             binding.sessionProgressBar.progress = progress
             binding.tvProgressPercentage.text = "$progress%"
-            
-            val filled = session.passedItems + session.failedItems
-            val total = if (session.totalItems > 0) session.totalItems else 6
             binding.tvProgressDesc.text = "$filled dari $total kolom terisi"
 
             // Badges & Colors based on Status
