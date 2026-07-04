@@ -81,6 +81,16 @@ class EditProfileFragment : Fragment() {
         }
     }
 
+    private val requestCameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            takeAvatarLauncher.launch(null)
+        } else {
+            Toast.makeText(requireContext(), "Izin kamera ditolak. Tidak dapat mengambil foto.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Pick Logo from Gallery
     private val pickLogoLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -292,7 +302,13 @@ class EditProfileFragment : Fragment() {
             
             itemView.setOnClickListener {
                 when (option) {
-                    "Ambil Foto (Camera)" -> takeAvatarLauncher.launch(null)
+                    "Ambil Foto (Camera)" -> {
+                        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            takeAvatarLauncher.launch(null)
+                        } else {
+                            requestCameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        }
+                    }
                     "Pilih dari Gallery" -> pickAvatarLauncher.launch("image/*")
                     "Hapus Foto" -> deleteAvatarPhoto()
                 }
