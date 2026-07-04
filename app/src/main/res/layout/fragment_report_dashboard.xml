@@ -140,16 +140,64 @@
                 tools:visibility="visible"
                 tools:text="Filter aktif: Lokasi: Jakarta • Ada Temuan"/>
 
+            <!-- Reports Header: Total Reports & Sort Option -->
+            <RelativeLayout
+                android:id="@+id/layoutReportsHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="24dp"
+                app:layout_constraintTop_toBottomOf="@id/tvActiveFilters">
+
+                <TextView
+                    android:id="@+id/tvTotalReports"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="Total 0 Laporan"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Urutan: "
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCurrentSort"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Terbaru"
+                        android:textColor="@color/primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </RelativeLayout>
+
             <!-- RecyclerView for Reports -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvReports"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:clipToPadding="false"
-                app:layout_constraintTop_toBottomOf="@id/tvActiveFilters"
+                app:layout_constraintTop_toBottomOf="@id/layoutReportsHeader"
                 tools:listitem="@layout/report_item"/>
 
             <!-- Empty State Container -->
