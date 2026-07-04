@@ -280,14 +280,10 @@ class CreateSessionViewModel @Inject constructor(
             return
         }
         
-        // Validasi: Waktu inspeksi tidak boleh kosong atau di masa lalu (only for new sessions)
+        // Validasi: Waktu inspeksi tidak boleh kosong
         if (_existingSession.value == null) {
             if (scheduledDate.value == 0L) {
                 _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
-                return
-            }
-            if (scheduledDate.value < System.currentTimeMillis() - 60000) { 
-                _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
                 return
             }
         }
