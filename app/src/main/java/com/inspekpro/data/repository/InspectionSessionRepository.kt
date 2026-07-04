@@ -8,7 +8,6 @@ import com.inspekpro.data.local.entity.SessionSummaryEntity
 import com.inspekpro.data.local.entity.InspectionSessionEntity
 import com.inspekpro.data.remote.model.WeatherInfo
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 
 /**
  * Bagian Anom: Repository Sesi Inspeksi
@@ -83,32 +82,6 @@ class InspectionSessionRepository(
         return result
     }
 
-    /**
-     * Fetch cuaca berdasarkan koordinat tanpa menyimpan ke sesi.
-     * Dipakai oleh DashboardViewModel untuk menampilkan cuaca saat ini.
-     */
-    suspend fun fetchWeatherByCoordinates(lat: Double, lon: Double): Result<WeatherInfo> =
-        weatherRepo.getWeatherByCoords(lat, lon)
-
-    /**
-     * Menyematkan info cuaca hasil query kota ke dalam data sesi di database lokal.
-     * Dibutuhkan sebagai pelengkap proses fallback di CreateSessionViewModel.
-     */
-    suspend fun attachWeatherToSession(sessionId: Long, info: WeatherInfo) {
-        try {
-            sessionDao.updateWeather(
-                sessionId = sessionId,
-                condition = info.conditionDesc,
-                tempC    = info.tempCelsius,
-                humidity = info.humidity,
-                windSpeed = info.windSpeedMs,
-                icon     = info.iconCode
-            )
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     // ─── SUMMARY ───────────────────────────────────────────────────────────────
 
     fun getSessionSummary(sessionId: Long): Flow<SessionSummaryEntity?> =
@@ -161,9 +134,6 @@ class InspectionSessionRepository(
     }
 
     // ─── DASHBOARD ─────────────────────────────────────────────────────────────
-
-    fun getActiveSessions(): Flow<List<InspectionSessionEntity>> =
-        sessionDao.getSessionsByStatus(SessionStatus.IN_PROGRESS)
 
     suspend fun getDashboardStats() = summaryDao.getDashboardStats()
 
