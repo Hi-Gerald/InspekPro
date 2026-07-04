@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.InspekPro" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+
+        <!-- Customize your light theme here. -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+         <!-- Set the splash screen background, animated icon, and animation duration. -->
+         <item name="windowSplashScreenBackground">#E6F4FF</item>
+         <!-- Use an animated icon or standard vector drawable here -->
+         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+         <!-- Post-splash theme -->
+         <item name="postSplashScreenTheme">@style/Theme.InspekPro</item>
+     </style>
+</resources>

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "690974321994",
+    "project_id": "inspekpro-a9ea9",
+    "storage_bucket": "inspekpro-a9ea9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690974321994:android:78fe3f19ddc07f3f0f25b3",
+        "android_client_info": {
+          "package_name": "com.inspekpro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "690974321994-tfggp6ffhv6rie9a0e5to2mqgc7i4unu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inspekpro",
+            "certificate_hash": "7a79f2cc8759c58bfc42b85d9d85ca3c01bfebfd"
+          }
+        },
+        {
+          "client_id": "690974321994-nlisjf1cep5m7usvs7jvvemnai10vrsl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7l9RVVhf7awjOwI6NQj-ZzUxfPJ-oZEk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "690974321994-nlisjf1cep5m7usvs7jvvemnai10vrsl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

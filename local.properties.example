@@ -1,0 +1,6 @@
+# Salin file ini menjadi local.properties (di root project), lalu isi lokasi SDK-mu.
+# File local.properties TIDAK boleh di-commit ke Git (sudah ada di .gitignore).
+#
+# Catatan: fitur cuaca memakai BMKG (data.bmkg.go.id) dan TIDAK butuh API key.
+
+sdk.dir=/Users/NAMA_KAMU/Library/Android/sdk
