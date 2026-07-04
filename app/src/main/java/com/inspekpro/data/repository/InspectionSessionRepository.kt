@@ -4,10 +4,6 @@ import com.inspekpro.data.local.dao.InspectionFindingDao
 import com.inspekpro.data.local.dao.InspectionSessionDao
 import com.inspekpro.data.local.dao.SessionSummaryDao
 import com.inspekpro.data.local.entity.*
-<<<<<<< HEAD
-=======
-import com.inspekpro.data.remote.api.WeatherApiService
->>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
 import com.inspekpro.data.remote.model.WeatherInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -16,23 +12,16 @@ import kotlinx.coroutines.flow.firstOrNull
  * Bagian Anom: Repository Sesi Inspeksi
  * Fitur: Manajemen data jadwal inspeksi, integrasi cuaca, dan pembuatan ringkasan laporan.
  * Tujuan: Sebagai sumber data utama untuk fitur jadwal inspeksi di seluruh aplikasi.
-<<<<<<< HEAD
  *
  * Catatan merge: sumber cuaca disatukan ke BMKG (WeatherRepository) — gratis, tanpa API key,
  * dan konsisten dengan yang dipakai DashboardViewModel. Sebelumnya kelas ini masih memanggil
  * WeatherApiService (OpenWeatherMap) padahal komentar & DashboardViewModel sudah pindah ke BMKG.
-=======
->>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
  */
 class InspectionSessionRepository(
     private val sessionDao: InspectionSessionDao,
     private val findingDao: InspectionFindingDao,
     private val summaryDao: SessionSummaryDao,
-<<<<<<< HEAD
     private val weatherRepo: WeatherRepository
-=======
-    private val weatherApi: WeatherApiService
->>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
 ) {
 
     // ─── SESSION CRUD ──────────────────────────────────────────────────────────
@@ -78,7 +67,6 @@ class InspectionSessionRepository(
      * Dipanggil saat "Buat Sesi Baru" setelah user pilih lokasi.
      */
     suspend fun fetchAndAttachWeather(sessionId: Long, lat: Double, lon: Double): Result<WeatherInfo> {
-<<<<<<< HEAD
         val result = weatherRepo.getWeatherByCoords(lat, lon)
         result.onSuccess { info ->
             sessionDao.updateWeather(
@@ -91,64 +79,14 @@ class InspectionSessionRepository(
             )
         }
         return result
-=======
-        return try {
-            val response = weatherApi.getWeatherByCoordinates(lat, lon)
-            if (response.isSuccessful) {
-                val body = response.body()!!
-                val info = WeatherInfo.fromResponse(body)
-                sessionDao.updateWeather(
-                    sessionId = sessionId,
-                    condition = info.conditionDesc,
-                    tempC    = info.tempCelsius,
-                    humidity = info.humidity,
-                    windSpeed = info.windSpeedMs,
-                    icon     = info.iconCode
-                )
-                Result.success(info)
-            } else {
-                Result.failure(Exception("Weather API error: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
->>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
     }
 
     /**
      * Fetch cuaca berdasarkan koordinat tanpa menyimpan ke sesi.
      * Dipakai oleh DashboardViewModel untuk menampilkan cuaca saat ini.
      */
-<<<<<<< HEAD
     suspend fun fetchWeatherByCoordinates(lat: Double, lon: Double): Result<WeatherInfo> =
         weatherRepo.getWeatherByCoords(lat, lon)
-=======
-    suspend fun fetchWeatherByCoordinates(lat: Double, lon: Double): Result<WeatherInfo> {
-        return try {
-            val response = weatherApi.getWeatherByCoordinates(lat, lon)
-            if (response.isSuccessful) {
-                Result.success(WeatherInfo.fromResponse(response.body()!!))
-            } else {
-                Result.failure(Exception("Weather API error: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun fetchWeatherByCity(cityName: String): Result<WeatherInfo> {
-        return try {
-            val response = weatherApi.getWeatherByCity(cityName)
-            if (response.isSuccessful) {
-                Result.success(WeatherInfo.fromResponse(response.body()!!))
-            } else {
-                Result.failure(Exception("City not found"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
->>>>>>> 7fbb84acde950e4fdc1c6617dc2a9cf6ad421f54
 
     /**
      * Menyematkan info cuaca hasil query kota ke dalam data sesi di database lokal.

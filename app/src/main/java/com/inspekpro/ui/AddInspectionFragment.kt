@@ -97,6 +97,12 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
+    private val requestNotificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(requireContext(), "Notifikasi dinonaktifkan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Activity Results for Media
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
@@ -461,6 +467,14 @@ class AddInspectionFragment : Fragment() {
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ))
+        }
+    }
+
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
