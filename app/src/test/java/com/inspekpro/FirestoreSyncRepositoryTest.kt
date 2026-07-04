@@ -24,6 +24,8 @@ class FirestoreSyncRepositoryTest {
 
     private lateinit var syncRepository: FirestoreSyncRepository
     private val sessionDao = mock(InspectionSessionDao::class.java)
+    private val findingDao = mock(com.inspekpro.data.local.dao.InspectionFindingDao::class.java)
+    private val photoDao = mock(com.inspekpro.data.local.dao.FindingPhotoDao::class.java)
     private val firestore = mock(FirebaseFirestore::class.java)
     private val collectionRef = mock(CollectionReference::class.java)
     private val documentRef = mock(DocumentReference::class.java)
@@ -35,7 +37,7 @@ class FirestoreSyncRepositoryTest {
         `when`(collectionRef.document(anyString())).thenReturn(documentRef)
         `when`(documentRef.set(any())).thenReturn(task)
         
-        syncRepository = FirestoreSyncRepository(sessionDao, firestore)
+        syncRepository = FirestoreSyncRepository(sessionDao, findingDao, photoDao, firestore)
     }
 
     @Test

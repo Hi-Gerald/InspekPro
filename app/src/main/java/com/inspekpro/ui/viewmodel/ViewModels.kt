@@ -294,6 +294,12 @@ class CreateSessionViewModel @Inject constructor(
         val finalLocation = manualLocation ?: locationName.value
         val finalInspector = manualInspector ?: inspectorName.value
 
+        // Validasi: Waktu inspeksi tidak boleh di masa lalu
+        if (scheduledDate.value != 0L && scheduledDate.value < System.currentTimeMillis() - 60000) {
+            _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
+            return
+        }
+
         if (status == SessionStatus.COMPLETED) {
             if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
                 _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
@@ -487,7 +493,8 @@ sealed class WeatherUiState {
 
 @HiltViewModel
 class SessionListViewModel @Inject constructor(
-    private val sessionRepo: InspectionSessionRepository
+    private val sessionRepo: InspectionSessionRepository,
+    private val authRepo: com.inspekpro.data.repository.AuthRepository
 ) : ViewModel() {
     private val _filter = MutableStateFlow(DateFilter.TODAY)
     val filter: StateFlow<DateFilter> = _filter.asStateFlow()
@@ -495,7 +502,17 @@ class SessionListViewModel @Inject constructor(
     private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
     val selectedDateMillis: StateFlow<Long> = _selectedDateMillis.asStateFlow()
 
-    val allSessions = sessionRepo.getAllSessions()
+    val allSessions = combine(
+        sessionRepo.getAllSessions(),
+        authRepo.getActiveUser()
+    ) { sessions, user ->
+        if (user != null) {
+            val userIdString = user.userId.toString()
+            sessions.filter { it.inspectorId == userIdString }
+        } else {
+            sessions
+        }
+    }
 
     val filteredSessions: StateFlow<List<InspectionSessionEntity>> = 
         combine(allSessions, _selectedDateMillis) { sessions, date ->

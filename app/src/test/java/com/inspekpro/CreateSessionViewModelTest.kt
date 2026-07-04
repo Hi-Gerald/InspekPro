@@ -28,11 +28,13 @@ class CreateSessionViewModelTest {
     private val repository = mock(InspectionSessionRepository::class.java)
     private val alarmScheduler = mock(AlarmScheduler::class.java)
     private val firestoreSyncRepo = mock(FirestoreSyncRepository::class.java)
+    private val findingRepo = mock(com.inspekpro.data.repository.FindingRepository::class.java)
+    private val authRepo = mock(com.inspekpro.data.repository.AuthRepository::class.java)
 
     @Before
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        viewModel = CreateSessionViewModel(repository, alarmScheduler, firestoreSyncRepo)
+        viewModel = CreateSessionViewModel(repository, alarmScheduler, firestoreSyncRepo, findingRepo, authRepo)
     }
 
     @Test
@@ -63,7 +65,7 @@ class CreateSessionViewModelTest {
         viewModel.locationName.value = "Loc Test"
         viewModel.inspectorName.value = "Billy"
         
-        viewModel.createSession("USER-001", 3, 3)
+        viewModel.createSession("USER-001", com.inspekpro.data.local.entity.SessionStatus.DRAFT)
         
         val result = viewModel.createResult.value
         assertTrue(result is CreateSessionResult.Error)
