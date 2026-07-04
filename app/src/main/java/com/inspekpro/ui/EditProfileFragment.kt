@@ -19,6 +19,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -161,14 +162,20 @@ class EditProfileFragment : Fragment() {
                             binding.etEmail.setText(user.email)
                             binding.etCompanyName.setText(user.companyName)
 
-                            // Load Existing Avatar Photo from filesDir
-                            val photoFile = File(requireContext().filesDir, "profile_photo_${user.userId}.jpg")
-                            if (photoFile.exists()) {
-                                Glide.with(this@EditProfileFragment)
-                                    .load(photoFile)
-                                    .circleCrop()
-                                    .into(binding.ivEditAvatar)
-                            }
+                             // Load Existing Avatar Photo from filesDir
+                             val photoFile = File(requireContext().filesDir, "profile_photo_${user.userId}.jpg")
+                             if (photoFile.exists()) {
+                                 binding.ivEditAvatar.setPadding(0, 0, 0, 0)
+                                 binding.ivEditAvatar.imageTintList = null
+                                 Glide.with(this@EditProfileFragment)
+                                     .load(photoFile)
+                                     .circleCrop()
+                                     .into(binding.ivEditAvatar)
+                             } else {
+                                 val paddingPx = (16 * resources.displayMetrics.density).toInt()
+                                 binding.ivEditAvatar.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                                 binding.ivEditAvatar.imageTintList = android.content.res.ColorStateList.valueOf(Color.WHITE)
+                             }
 
                             // Load Existing Company Logo from filesDir
                             val logoFile = File(requireContext().filesDir, "company_logo_${user.userId}.jpg")
@@ -300,6 +307,9 @@ class EditProfileFragment : Fragment() {
 
     private fun deleteAvatarPhoto() {
         selectedAvatarBitmap = null
+        val paddingPx = (16 * resources.displayMetrics.density).toInt()
+        binding.ivEditAvatar.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+        binding.ivEditAvatar.imageTintList = android.content.res.ColorStateList.valueOf(Color.WHITE)
         Glide.with(this)
             .load(R.drawable.ic_person)
             .circleCrop()
@@ -358,10 +368,16 @@ class EditProfileFragment : Fragment() {
         // Handle Avatar File Saving
         val avatarBitmap = selectedAvatarBitmap
         if (avatarBitmap != null) {
+            val tempFile = File(requireContext().filesDir, "profile_photo_${userId}_temp.jpg")
             val photoFile = File(requireContext().filesDir, "profile_photo_${userId}.jpg")
             try {
-                FileOutputStream(photoFile).use { out ->
-                    avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                if (tempFile.exists()) {
+                    tempFile.copyTo(photoFile, overwrite = true)
+                    tempFile.delete()
+                } else {
+                    FileOutputStream(photoFile).use { out ->
+                        avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -369,6 +385,10 @@ class EditProfileFragment : Fragment() {
         } else if (originalUserEntity != null) {
             // If they clicked "Hapus Foto"
             val photoFile = File(requireContext().filesDir, "profile_photo_${userId}.jpg")
+            val tempFile = File(requireContext().filesDir, "profile_photo_${userId}_temp.jpg")
+            if (tempFile.exists()) {
+                tempFile.delete()
+            }
             if (photoFile.exists() && binding.ivEditAvatar.drawable?.constantState == ContextCompat.getDrawable(requireContext(), R.drawable.ic_person)?.constantState) {
                 photoFile.delete()
             }
@@ -403,16 +423,24 @@ class EditProfileFragment : Fragment() {
     }
 
     private fun handleCancelOrBack() {
+        val userId = originalUserEntity?.userId ?: 0
+        val tempFile = File(requireContext().filesDir, "profile_photo_${userId}_temp.jpg")
         if (isDataChanged()) {
             AlertDialog.Builder(requireContext())
                 .setTitle("Batalkan Perubahan?")
                 .setMessage("Perubahan yang belum disimpan akan hilang.")
                 .setPositiveButton("Lanjut Edit", null)
                 .setNegativeButton("Tetap Keluar") { _, _ ->
+                    if (tempFile.exists()) {
+                        tempFile.delete()
+                    }
                     findNavController().navigateUp()
                 }
                 .show()
         } else {
+            if (tempFile.exists()) {
+                tempFile.delete()
+            }
             findNavController().navigateUp()
         }
     }
@@ -447,8 +475,8 @@ class EditProfileFragment : Fragment() {
     private fun showCropDialog(bitmap: Bitmap) {
         val context = requireContext()
         val dialog = AlertDialog.Builder(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen).create()
-        
-        val frameLayout = FrameLayout(context).apply {
+
+        val rootLayout = FrameLayout(context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
@@ -456,203 +484,123 @@ class EditProfileFragment : Fragment() {
             setBackgroundColor(Color.BLACK)
         }
 
-        val imageView = ImageView(context).apply {
+        val cropView = CropView(context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
-            scaleType = ImageView.ScaleType.MATRIX
             setImageBitmap(bitmap)
-            setOnTouchListener(CropTouchListener())
         }
-        frameLayout.addView(imageView)
+        rootLayout.addView(cropView)
 
-        val overlayView = object : View(context) {
-            private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.parseColor("#99000000")
-            }
-            private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.WHITE
-                style = Paint.Style.STROKE
-                strokeWidth = 4f
-            }
-
-            override fun onDraw(canvas: Canvas) {
-                super.onDraw(canvas)
-                val w = width.toFloat()
-                val h = height.toFloat()
-                val radius = minOf(w, h) * 0.4f
-                
-                canvas.save()
-                canvas.clipOutRect(w/2 - radius, h/2 - radius, w/2 + radius, h/2 + radius)
-                canvas.drawRect(0f, 0f, w, h, paint)
-                canvas.restore()
-                
-                canvas.drawCircle(w/2, h/2, radius, borderPaint)
-            }
-        }
-        overlayView.layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-        frameLayout.addView(overlayView)
-
-        val tvInstruction = TextView(context).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                topMargin = 96
-            }
-            text = "Geser & Cubit untuk Mengatur Posisi"
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-        }
-        frameLayout.addView(tvInstruction)
-
-        val buttonLayout = LinearLayout(context).apply {
+        val bottomBar = RelativeLayout(context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 gravity = Gravity.BOTTOM
-                bottomMargin = 64
+                bottomMargin = (32 * resources.displayMetrics.density).toInt()
             }
-            orientation = LinearLayout.HORIZONTAL
-            weightSum = 2f
-            setPadding(48, 0, 48, 0)
+            setPadding(
+                (24 * resources.displayMetrics.density).toInt(),
+                0,
+                (24 * resources.displayMetrics.density).toInt(),
+                0
+            )
         }
 
-        val btnCancel = MaterialButton(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1f
+        val btnCancel = TextView(context).apply {
+            id = View.generateViewId()
+            layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
             ).apply {
-                rightMargin = 24
+                addRule(RelativeLayout.ALIGN_PARENT_START)
+                addRule(RelativeLayout.CENTER_VERTICAL)
             }
             text = "Batal"
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.parseColor("#44FFFFFF"))
-            cornerRadius = 24
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setPadding(16, 16, 16, 16)
+            isClickable = true
+            isFocusable = true
+            setBackgroundResource(android.R.drawable.list_selector_background)
+            setOnClickListener {
+                dialog.dismiss()
+            }
         }
+        bottomBar.addView(btnCancel)
 
-        val btnCrop = MaterialButton(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1f
+        val btnRotate = ImageView(context).apply {
+            id = View.generateViewId()
+            layoutParams = RelativeLayout.LayoutParams(
+                (48 * resources.displayMetrics.density).toInt(),
+                (48 * resources.displayMetrics.density).toInt()
             ).apply {
-                leftMargin = 24
+                addRule(RelativeLayout.CENTER_IN_PARENT)
             }
-            text = "Crop"
-            setTextColor(Color.WHITE)
-            setBackgroundColor(ContextCompat.getColor(context, R.color.primary))
-            cornerRadius = 24
-        }
-
-        buttonLayout.addView(btnCancel)
-        buttonLayout.addView(btnCrop)
-        frameLayout.addView(buttonLayout)
-
-        dialog.setView(frameLayout)
-
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnCrop.setOnClickListener {
-            try {
-                val cropped = cropBitmap(imageView, bitmap)
-                binding.ivEditAvatar.setImageBitmap(cropped)
-                selectedAvatarBitmap = cropped
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(context, "Gagal memotong gambar", Toast.LENGTH_SHORT).show()
+            setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_rotate))
+            setPadding(12, 12, 12, 12)
+            setColorFilter(Color.WHITE)
+            isClickable = true
+            isFocusable = true
+            setBackgroundResource(android.R.drawable.list_selector_background)
+            setOnClickListener {
+                cropView.rotateImage()
             }
-            dialog.dismiss()
         }
+        bottomBar.addView(btnRotate)
 
-        dialog.show()
-    }
-
-    private fun cropBitmap(imageView: ImageView, originalBitmap: Bitmap): Bitmap {
-        val width = imageView.width
-        val height = imageView.height
-        val cropSize = minOf(width.toFloat(), height.toFloat()) * 0.8f
-        val cropLeft = (width - cropSize) / 2
-        val cropTop = (height - cropSize) / 2
-        
-        val croppedBitmap = Bitmap.createBitmap(cropSize.toInt(), cropSize.toInt(), Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(croppedBitmap)
-        
-        val matrix = Matrix(imageView.imageMatrix)
-        matrix.postTranslate(-cropLeft, -cropTop)
-        
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
-        canvas.drawBitmap(originalBitmap, matrix, paint)
-        
-        return Bitmap.createScaledBitmap(croppedBitmap, 360, 360, true)
-    }
-
-    private class CropTouchListener : View.OnTouchListener {
-        private var mode = 0
-        private val matrix = Matrix()
-        private val savedMatrix = Matrix()
-        private val start = PointF()
-        private val mid = PointF()
-        private var oldDist = 1f
-
-        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-            val view = v as? ImageView ?: return false
-            val ev = event ?: return false
-            when (ev.action and MotionEvent.ACTION_MASK) {
-                MotionEvent.ACTION_DOWN -> {
-                    savedMatrix.set(view.imageMatrix)
-                    start.set(ev.x, ev.y)
-                    mode = 1
-                }
-                MotionEvent.ACTION_POINTER_DOWN -> {
-                    oldDist = spacing(ev)
-                    if (oldDist > 10f) {
-                        savedMatrix.set(view.imageMatrix)
-                        midPoint(mid, ev)
-                        mode = 2
-                    }
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
-                    mode = 0
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    if (mode == 1) {
-                        matrix.set(savedMatrix)
-                        matrix.postTranslate(ev.x - start.x, ev.y - start.y)
-                    } else if (mode == 2) {
-                        val newDist = spacing(ev)
-                        if (newDist > 10f) {
-                            matrix.set(savedMatrix)
-                            val scale = newDist / oldDist
-                            matrix.postScale(scale, scale, mid.x, mid.y)
+        val btnDone = TextView(context).apply {
+            id = View.generateViewId()
+            layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                addRule(RelativeLayout.ALIGN_PARENT_END)
+                addRule(RelativeLayout.CENTER_VERTICAL)
+            }
+            text = "Selesai"
+            setTextColor(ContextCompat.getColor(context, R.color.primary))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setPadding(16, 16, 16, 16)
+            isClickable = true
+            isFocusable = true
+            setBackgroundResource(android.R.drawable.list_selector_background)
+            setOnClickListener {
+                try {
+                    val cropped = cropView.getCroppedBitmap()
+                    if (cropped != null) {
+                        // Save to temporary file first
+                        val userId = originalUserEntity?.userId ?: 0
+                        val tempFile = File(context.filesDir, "profile_photo_${userId}_temp.jpg")
+                        FileOutputStream(tempFile).use { out ->
+                            cropped.compress(Bitmap.CompressFormat.JPEG, 90, out)
                         }
+
+                        // Set bitmap in UI only after successful generation and save to temp file
+                        binding.ivEditAvatar.setPadding(0, 0, 0, 0)
+                        binding.ivEditAvatar.imageTintList = null
+                        binding.ivEditAvatar.setImageBitmap(cropped)
+                        selectedAvatarBitmap = cropped
+                    } else {
+                        Toast.makeText(context, "Gagal memotong gambar", Toast.LENGTH_SHORT).show()
                     }
-                    view.imageMatrix = matrix
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(context, "Gagal memotong gambar", Toast.LENGTH_SHORT).show()
                 }
+                dialog.dismiss()
             }
-            return true
         }
+        bottomBar.addView(btnDone)
 
-        private fun spacing(event: MotionEvent): Float {
-            val x = event.getX(0) - event.getX(1)
-            val y = event.getY(0) - event.getY(1)
-            return kotlin.math.sqrt(x * x + y * y)
-        }
-
-        private fun midPoint(point: PointF, event: MotionEvent) {
-            val x = event.getX(0) + event.getX(1)
-            val y = event.getY(0) + event.getY(1)
-            point.set(x / 2, y / 2)
-        }
+        rootLayout.addView(bottomBar)
+        dialog.setView(rootLayout)
+        dialog.window?.setWindowAnimations(android.R.style.Animation_Dialog)
+        dialog.show()
     }
 
     override fun onDestroyView() {

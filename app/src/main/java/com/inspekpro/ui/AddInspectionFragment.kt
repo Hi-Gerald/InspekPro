@@ -67,7 +67,7 @@ class AddInspectionFragment : Fragment() {
     private lateinit var photoAdapter: PhotoAdapter
     private lateinit var findingPhotoAdapter: PhotoAdapter
 
-    private val checklistItems = mutableListOf<ChecklistItem>()
+    private val checklistItems = mutableListOf<Pair<String, Boolean>>()
 
     private val photos = mutableListOf<String>()
     private val findingPhotos = mutableListOf<String>()
@@ -77,6 +77,7 @@ class AddInspectionFragment : Fragment() {
     // Temp URIs for Camera Capture
     private var isCapturingFinding = false
     private var isCapturingVideo = false
+    private var isDraftSavedAction = false
 
     private val requestCameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
@@ -99,8 +100,8 @@ class AddInspectionFragment : Fragment() {
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
             val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 0 && size < 100 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            if (size > 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
                 addPhotoToList(it.toString(), isFinding = false) 
             }
@@ -110,8 +111,8 @@ class AddInspectionFragment : Fragment() {
     private val pickFindingImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
             val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 0 && size < 100 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto temuan minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            if (size > 100 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto temuan maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
                 addPhotoToList(it.toString(), isFinding = true) 
             }
@@ -121,13 +122,13 @@ class AddInspectionFragment : Fragment() {
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
             val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 0 && size < 1024 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+            if (size > 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
             } else {
                 videoPath = it.toString()
-                addPhotoToList(it.toString(), isFinding = false)
                 binding.tvVideoPath.text = "Video dilampirkan"
                 binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                binding.btnVideoDelete.visibility = View.VISIBLE
                 updateProgress()
             }
         }
@@ -159,6 +160,8 @@ class AddInspectionFragment : Fragment() {
         observeViewModel()
         setupFragmentResultListeners()
         updateProgress()
+        setupTouchClearFocus(binding.root)
+        setupKeyboardDismissOnScroll()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -206,17 +209,17 @@ class AddInspectionFragment : Fragment() {
             uri?.let {
                 val size = getUriSizeInBytes(requireContext(), it)
                 if (isVideo) {
-                    if (size > 0 && size < 1024 * 1024) {
-                        Toast.makeText(requireContext(), "Ukuran video minimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+                    if (size > 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
                     } else {
                         videoPath = it
-                        addPhotoToList(it, isFinding = false) // Add video to the main media list
                         binding.tvVideoPath.text = "Video direkam"
                         binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                        binding.btnVideoDelete.visibility = View.VISIBLE
                     }
                 } else {
-                    if (size > 0 && size < 100 * 1024) {
-                        Toast.makeText(requireContext(), "Ukuran foto minimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+                    if (size > 100 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran foto maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
                     } else {
                         addPhotoToList(it, isFinding = isFinding)
                     }
@@ -235,19 +238,21 @@ class AddInspectionFragment : Fragment() {
         
         binding.rbNoFindings.isChecked = true
         binding.findingDetailsContainer.visibility = View.GONE
+        binding.btnVideoDelete.visibility = View.GONE
     }
 
     private fun setupRecyclerViews() {
-        var itemTouchHelper: ItemTouchHelper? = null
-
         checklistAdapter = ChecklistItemAdapter(
-            onStartDrag = { viewHolder ->
-                itemTouchHelper?.startDrag(viewHolder)
-            },
             onItemChanged = { position, text, isChecked ->
                 if (position >= 0 && position < checklistItems.size) {
-                    checklistItems[position].title = text
-                    checklistItems[position].isChecked = isChecked
+                    checklistItems[position] = Pair(text, isChecked)
+                    updateProgress()
+                }
+            },
+            onItemEmptyAndLostFocus = { position ->
+                if (position >= 0 && position < checklistItems.size) {
+                    checklistItems.removeAt(position)
+                    checklistAdapter.submitList(checklistItems.toList())
                     updateProgress()
                 }
             }
@@ -258,43 +263,99 @@ class AddInspectionFragment : Fragment() {
         }
         checklistAdapter.submitList(checklistItems.toList())
 
-        val callback = object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT
         ) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
-            ): Boolean {
-                val fromPos = viewHolder.adapterPosition
-                val toPos = target.adapterPosition
-                if (fromPos < 0 || fromPos >= checklistItems.size || toPos < 0 || toPos >= checklistItems.size) return false
-
-                Collections.swap(checklistItems, fromPos, toPos)
-                checklistAdapter.submitList(checklistItems.toList())
-                checklistAdapter.notifyItemMoved(fromPos, toPos)
-                return true
-            }
+            ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 if (position >= 0 && position < checklistItems.size) {
+                    val deletedItem = checklistItems[position]
                     checklistItems.removeAt(position)
                     checklistAdapter.submitList(checklistItems.toList())
                     updateProgress()
-                    
-                    if (checklistItems.isEmpty()) {
-                        binding.tvSwipeHint.visibility = View.GONE
-                    }
+
+                    com.google.android.material.snackbar.Snackbar.make(
+                        binding.root,
+                        "Pemeriksaan dihapus",
+                        com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                    ).setAction("Undo") {
+                        if (position <= checklistItems.size) {
+                            checklistItems.add(position, deletedItem)
+                            checklistAdapter.submitList(checklistItems.toList())
+                            updateProgress()
+                        }
+                    }.show()
                 }
             }
 
-            override fun isLongPressDragEnabled(): Boolean {
-                return false
+            override fun onChildDraw(
+                c: android.graphics.Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX < 0) {
+                    val itemView = viewHolder.itemView
+                    val density = resources.displayMetrics.density
+                    
+                    val marginVertical = 4f * density
+                    val marginHorizontal = 8f * density
+                    val cornerRadius = 12f * density
+
+                    // Paint for rounded rect background
+                    val paint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.parseColor("#E53935") // Elegant Material Red
+                        isAntiAlias = true
+                    }
+
+                    val rectLeft = itemView.right.toFloat() + dX
+                    val rectRight = itemView.right.toFloat() - marginHorizontal
+
+                    if (rectLeft < rectRight) {
+                        c.drawRoundRect(
+                            rectLeft,
+                            itemView.top.toFloat() + marginVertical,
+                            rectRight,
+                            itemView.bottom.toFloat() - marginVertical,
+                            cornerRadius,
+                            cornerRadius,
+                            paint
+                        )
+
+                        val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)
+                        icon?.let {
+                            val iconSize = (24 * density).toInt()
+                            val iconMargin = (itemView.height - iconSize) / 2
+                            val iconTop = itemView.top + iconMargin
+                            val iconBottom = iconTop + iconSize
+                            
+                            // Stationed delete icon position
+                            val iconRight = (itemView.right - marginHorizontal - (16 * density)).toInt()
+                            val iconLeft = iconRight - iconSize
+
+                            // Fade-in animation based on swipe depth
+                            val swipeProgress = Math.min(1f, Math.abs(dX) / (itemView.width / 3f))
+                            it.alpha = (swipeProgress * 255).toInt()
+                            
+                            it.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                            it.setTint(android.graphics.Color.WHITE)
+                            it.draw(c)
+                        }
+                    }
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
-        itemTouchHelper = ItemTouchHelper(callback)
+        val itemTouchHelper = ItemTouchHelper(swipeCallback)
         itemTouchHelper.attachToRecyclerView(binding.rvChecklist)
 
         photoAdapter = PhotoAdapter(
@@ -350,9 +411,8 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.btnChecklistAdd.setOnClickListener {
-            checklistItems.add(ChecklistItem(title = "", isChecked = true))
+            checklistItems.add(Pair("", true))
             checklistAdapter.submitList(checklistItems.toList())
-            binding.tvSwipeHint.visibility = View.VISIBLE
             updateProgress()
         }
 
@@ -366,8 +426,21 @@ class AddInspectionFragment : Fragment() {
             updateProgress()
         }
 
-        binding.btnSaveDraft.setOnClickListener { saveInspection(SessionStatus.DRAFT) }
-        binding.btnFinishInspection.setOnClickListener { saveInspection(SessionStatus.COMPLETED) }
+        binding.btnSaveDraft.setOnClickListener {
+            isDraftSavedAction = true
+            saveInspection(SessionStatus.DRAFT)
+        }
+        binding.btnFinishInspection.setOnClickListener {
+            isDraftSavedAction = false
+            saveInspection(SessionStatus.COMPLETED)
+        }
+        binding.btnVideoDelete.setOnClickListener {
+            videoPath = null
+            binding.tvVideoPath.text = "Belum ada video dipilih"
+            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
+            binding.btnVideoDelete.visibility = View.GONE
+            updateProgress()
+        }
     }
 
     private fun checkLocationPermissionAndGet() {
@@ -430,16 +503,94 @@ class AddInspectionFragment : Fragment() {
     private fun setupFormWatchers() {
         val watcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { updateProgress() }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { 
+                updateProgress() 
+            }
             override fun afterTextChanged(s: Editable?) {}
         }
         binding.etTitle.addTextChangedListener(watcher)
         binding.etLocation.addTextChangedListener(watcher)
+        binding.etDate.addTextChangedListener(watcher)
+        binding.etTime.addTextChangedListener(watcher)
         binding.etInspector.addTextChangedListener(watcher)
         binding.etConclusion.addTextChangedListener(watcher)
         binding.etFindingCategory.addTextChangedListener(watcher)
         binding.etPriority.addTextChangedListener(watcher)
         binding.etFindingDescription.addTextChangedListener(watcher)
+
+        // Clear error outline programmatically as user types
+        binding.etTitle.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.titleInputLayout.error = null
+                binding.titleInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etLocation.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.locationInputLayout.error = null
+                binding.locationInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etDate.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.dateInputLayout.error = null
+                binding.dateInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etTime.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.timeInputLayout.error = null
+                binding.timeInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etInspector.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.inspectorInputLayout.error = null
+                binding.inspectorInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etConclusion.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.conclusionInputLayout.error = null
+                binding.conclusionInputLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etFindingCategory.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.findingCategoryLayout.error = null
+                binding.findingCategoryLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etPriority.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.priorityLayout.error = null
+                binding.priorityLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        binding.etFindingDescription.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.findingDescriptionLayout.error = null
+                binding.findingDescriptionLayout.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
 
     private fun showMediaOptions(isFinding: Boolean) {
@@ -512,7 +663,7 @@ class AddInspectionFragment : Fragment() {
 
         if (checklistItems.isNotEmpty()) {
             totalFields++
-            if (checklistItems.all { it.title.isNotBlank() && it.isChecked }) filledFields++
+            if (checklistItems.all { it.first.isNotBlank() && it.second }) filledFields++
         }
 
         totalFields += 2
@@ -528,8 +679,10 @@ class AddInspectionFragment : Fragment() {
         }
 
         val percent = ((filledFields.toDouble() / totalFields) * 100).toInt().coerceAtMost(100)
+        
+        binding.tvBadgeProgressFields.text = "$filledFields/$totalFields diisi"
         binding.tvBadgeProgressPercent.text = "$percent%"
-        binding.circularProgress.progress = percent
+        binding.circularProgress.setProgress(percent, true)
     }
 
     private fun saveInspection(status: SessionStatus) {
@@ -557,43 +710,65 @@ class AddInspectionFragment : Fragment() {
         if (status == SessionStatus.DRAFT) return true
 
         var isValid = true
-        if (binding.etTitle.text.isNullOrBlank()) { 
-            binding.titleInputLayout.error = "Wajib diisi"
-            isValid = false 
-        } else {
-            binding.titleInputLayout.error = null
-        }
-        
-        if (binding.etLocation.text.isNullOrBlank()) { 
-            binding.locationInputLayout.error = "Wajib diisi"
-            isValid = false 
-        } else {
-            binding.locationInputLayout.error = null
-        }
-        
-        if (binding.etConclusion.text.isNullOrBlank()) { 
-            binding.conclusionInputLayout.error = "Wajib diisi"
-            isValid = false 
-        } else {
-            binding.conclusionInputLayout.error = null
+        var firstInvalidView: View? = null
+
+        fun checkField(layout: com.google.android.material.textfield.TextInputLayout, editText: android.widget.EditText) {
+            if (editText.text.isNullOrBlank()) {
+                layout.error = "Field ini wajib diisi"
+                layout.isErrorEnabled = true
+                if (isValid) {
+                    isValid = false
+                    firstInvalidView = layout
+                }
+            } else {
+                layout.error = null
+                layout.isErrorEnabled = false
+            }
         }
 
-        // Validate min 1 photo and 1 video only when finishing
-        if (status == SessionStatus.COMPLETED) {
-            if (photos.isEmpty()) {
-                Toast.makeText(requireContext(), "Minimal 1 foto wajib dilampirkan", Toast.LENGTH_SHORT).show()
+        // 1. Informasi Dasar
+        checkField(binding.titleInputLayout, binding.etTitle)
+        checkField(binding.locationInputLayout, binding.etLocation)
+        checkField(binding.dateInputLayout, binding.etDate)
+        checkField(binding.timeInputLayout, binding.etTime)
+        checkField(binding.inspectorInputLayout, binding.etInspector)
+
+        // 3. Dokumentasi Foto
+        if (photos.isEmpty()) {
+            Toast.makeText(requireContext(), "Minimal 1 foto wajib dilampirkan", Toast.LENGTH_SHORT).show()
+            if (isValid) {
                 isValid = false
-            }
-            if (videoPath == null) {
-                Toast.makeText(requireContext(), "Video wajib dilampirkan", Toast.LENGTH_SHORT).show()
-                isValid = false
+                firstInvalidView = binding.cardPhotos
             }
         }
-        
+
+        // 4. Temuan (jika Ya)
+        if (binding.rbHasFindings.isChecked) {
+            checkField(binding.findingCategoryLayout, binding.etFindingCategory)
+            checkField(binding.priorityLayout, binding.etPriority)
+            checkField(binding.findingDescriptionLayout, binding.etFindingDescription)
+            if (findingPhotos.isEmpty()) {
+                Toast.makeText(requireContext(), "Minimal 1 foto temuan wajib dilampirkan", Toast.LENGTH_SHORT).show()
+                if (isValid) {
+                    isValid = false
+                    firstInvalidView = binding.rvFindingPhotos
+                }
+            }
+        }
+
+        // 5. Kesimpulan
+        checkField(binding.conclusionInputLayout, binding.etConclusion)
+
         if (!isValid) {
+            firstInvalidView?.let { view ->
+                view.requestFocus()
+                binding.nestedScrollView.post {
+                    binding.nestedScrollView.smoothScrollTo(0, view.top)
+                }
+            }
             Toast.makeText(requireContext(), "Harap lengkapi semua field wajib (*)", Toast.LENGTH_SHORT).show()
         }
-        
+
         return isValid
     }
 
@@ -610,13 +785,19 @@ class AddInspectionFragment : Fragment() {
                             
                             val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
                             val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                            binding.etDate.setText(dateFormat.format(Date(it.scheduledDate)))
-                            binding.etTime.setText(timeFormat.format(Date(it.scheduledDate)))
+                            if (it.scheduledDate != 0L) {
+                                binding.etDate.setText(dateFormat.format(Date(it.scheduledDate)))
+                                binding.etTime.setText(timeFormat.format(Date(it.scheduledDate)))
+                            } else {
+                                binding.etDate.setText("")
+                                binding.etTime.setText("")
+                            }
                             
                             it.reportVideoPath?.let { path ->
                                 videoPath = path
                                 binding.tvVideoPath.text = "Video dilampirkan"
                                 binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                                binding.btnVideoDelete.visibility = View.VISIBLE
                             }
                             
                             updateProgress()
@@ -632,8 +813,30 @@ class AddInspectionFragment : Fragment() {
                                 binding.btnFinishInspection.isEnabled = false
                             }
                             is CreateSessionResult.Success -> {
-                                Toast.makeText(requireContext(), "Laporan berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                                findNavController().popBackStack()
+                                val message = if (isDraftSavedAction) {
+                                    "Draft berhasil disimpan."
+                                } else {
+                                    "Inspeksi berhasil diselesaikan."
+                                }
+
+                                com.google.android.material.snackbar.Snackbar.make(
+                                    binding.root,
+                                    message,
+                                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                                ).show()
+
+                                binding.root.postDelayed({
+                                    binding.btnSaveDraft.isEnabled = true
+                                    binding.btnFinishInspection.isEnabled = true
+                                    if (isDraftSavedAction) {
+                                        findNavController().popBackStack()
+                                    } else {
+                                        val navOptions = androidx.navigation.NavOptions.Builder()
+                                            .setPopUpTo(R.id.dashboardFragment, false)
+                                            .build()
+                                        findNavController().navigate(R.id.reportFragment, null, navOptions)
+                                    }
+                                }, 1500)
                             }
                             is CreateSessionResult.Error -> {
                                 binding.btnSaveDraft.isEnabled = true
@@ -724,6 +927,7 @@ class AddInspectionFragment : Fragment() {
                 .setTitle("Simpan ke Draft?")
                 .setMessage("Anda sedang mengisi form inspeksi. Apakah Anda ingin menyimpannya sebagai draft sebelum keluar?")
                 .setPositiveButton("Simpan Draft") { _, _ ->
+                    isDraftSavedAction = true
                     saveInspection(SessionStatus.DRAFT)
                 }
                 .setNegativeButton("Keluar") { _, _ ->
@@ -749,6 +953,39 @@ class AddInspectionFragment : Fragment() {
             }
         } catch (e: Exception) {
             0L
+        }
+    }
+
+    private fun setupTouchClearFocus(view: View) {
+        // Set up touch listener for non-textbox views to hide keyboard and clear focus
+        if (view !is android.widget.EditText) {
+            view.setOnTouchListener { _, _ ->
+                hideKeyboard()
+                false
+            }
+        }
+
+        // If a view group, iterate over children
+        if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                val child = view.getChildAt(i)
+                setupTouchClearFocus(child)
+            }
+        }
+    }
+
+    private fun setupKeyboardDismissOnScroll() {
+        binding.nestedScrollView.setOnScrollChangeListener { _, _, _, _, _ ->
+            hideKeyboard()
+        }
+    }
+
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        val currentFocus = activity?.currentFocus
+        if (currentFocus != null) {
+            imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+            currentFocus.clearFocus()
         }
     }
 

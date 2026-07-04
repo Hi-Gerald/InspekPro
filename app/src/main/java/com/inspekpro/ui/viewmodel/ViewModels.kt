@@ -34,7 +34,7 @@ class DashboardViewModel @Inject constructor(
     val completedSessions = sessionRepo.getCompletedCount()
 
     val activeSessions = sessionRepo.getAllSessions().map { list ->
-        list.filter { it.status == SessionStatus.DRAFT }
+        list.filter { it.status == SessionStatus.IN_PROGRESS || it.status == SessionStatus.DRAFT }
             .sortedByDescending { it.scheduledDate }
             .take(3)
     }
@@ -262,49 +262,43 @@ class CreateSessionViewModel @Inject constructor(
         manualVideo: String? = null
     ) {
         // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
-        var finalTitle = (manualTitle ?: title.value).trim()
-        val finalLocation = (manualLocation ?: locationName.value).trim()
-        val finalInspector = (manualInspector ?: inspectorName.value).trim()
+        val finalTitle = manualTitle ?: title.value
+        val finalLocation = manualLocation ?: locationName.value
+        val finalInspector = manualInspector ?: inspectorName.value
 
-        if (status == SessionStatus.DRAFT && finalTitle.isBlank()) {
-            finalTitle = "Draft Inspeksi"
-        }
-
-        // Allow drafts with missing info; enforce for COMPLETED
         if (status == SessionStatus.COMPLETED) {
-            if (finalTitle.isBlank() || finalTitle == "Draft Inspeksi" || finalLocation.isBlank() || finalInspector.isBlank()) {
+            if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
                 _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
                 return
             }
-        }
-        
-        // Validasi: Waktu inspeksi tidak boleh kosong atau di masa lalu (only for new sessions and not DRAFT)
-        if (_existingSession.value == null && status != SessionStatus.DRAFT) {
-            if (scheduledDate.value == 0L) {
-                _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
-                return
-            }
-            if (scheduledDate.value < System.currentTimeMillis() - 60000) { 
-                _createResult.value = CreateSessionResult.Error("Waktu inspeksi harus di masa depan")
-                return
+            
+            // Validasi: Waktu inspeksi tidak boleh kosong
+            if (_existingSession.value == null) {
+                if (scheduledDate.value == 0L) {
+                    _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+                    return
+                }
             }
         }
-
-        val finalDate = if (scheduledDate.value == 0L) System.currentTimeMillis() else scheduledDate.value
 
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
             try {
                 val currentExisting = _existingSession.value
                 val sessionId: Long
+                val finalScheduledDate = if (scheduledDate.value == 0L) {
+                    System.currentTimeMillis()
+                } else {
+                    scheduledDate.value
+                }
 
                 if (currentExisting != null) {
                     // Update existing
                     val updatedSession = currentExisting.copy(
-                        title         = finalTitle,
-                        locationName  = finalLocation,
-                        inspectorName = finalInspector,
-                        scheduledDate = finalDate,
+                        title         = finalTitle.trim(),
+                        locationName  = finalLocation.trim(),
+                        inspectorName = finalInspector.trim(),
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         status        = status,
@@ -312,9 +306,6 @@ class CreateSessionViewModel @Inject constructor(
                     )
                     sessionRepo.updateSession(updatedSession)
                     sessionId = updatedSession.sessionId
-                    
-                    // Reschedule alarm
-                    alarmScheduler.schedule(updatedSession)
                 } else {
                     // Create new
                     val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
@@ -322,11 +313,11 @@ class CreateSessionViewModel @Inject constructor(
 
                     val newSession = InspectionSessionEntity(
                         sessionCode   = code,
-                        title         = finalTitle,
-                        locationName  = finalLocation,
-                        inspectorName = finalInspector,
+                        title         = finalTitle.trim(),
+                        locationName  = finalLocation.trim(),
+                        inspectorName = finalInspector.trim(),
                         inspectorId   = inspectorId,
-                        scheduledDate = finalDate,
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         totalItems    = 0,
@@ -334,7 +325,6 @@ class CreateSessionViewModel @Inject constructor(
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)
-                    alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
                 }
 
                 _createResult.value = CreateSessionResult.Success(sessionId)

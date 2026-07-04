@@ -65,7 +65,7 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_person"
-                    android:background="#4F46E5"
+                    android:background="@color/primary"
                     android:padding="16dp"
                     app:tint="@color/white"
                     tools:ignore="ContentDescription" />
@@ -92,7 +92,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_visibility"
+                    android:src="@drawable/ic_camera"
                     app:tint="@color/text_secondary"
                     tools:ignore="ContentDescription" />
             </com.google.android.material.card.MaterialCardView>
@@ -153,6 +153,8 @@
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/box_stroke_selector"
+                app:boxBackgroundColor="#F9FAFB"
                 app:startIconDrawable="@drawable/ic_mail"
                 app:startIconTint="@color/text_secondary">
 
@@ -161,9 +163,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
-                    android:enabled="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:cursorVisible="false"
+                    android:clickable="false"
                     android:importantForAutofill="no"
-                    android:textColor="#98A2B3"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     tools:ignore="TextContrastCheck" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -182,6 +187,8 @@
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/box_stroke_selector"
+                app:boxBackgroundColor="#F9FAFB"
                 app:startIconDrawable="@drawable/ic_report"
                 app:startIconTint="@color/text_secondary">
 
@@ -190,9 +197,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
-                    android:enabled="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:cursorVisible="false"
+                    android:clickable="false"
                     android:importantForAutofill="no"
-                    android:textColor="#98A2B3"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:text="@string/job_title_inspector"
                     tools:ignore="TextContrastCheck" />
@@ -282,7 +292,7 @@
                         android:layout_gravity="center"
                         android:src="@drawable/ic_company"
                         android:scaleType="fitCenter"
-                        app:tint="#6366F1"
+                        app:tint="@color/primary"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -293,7 +303,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_cloud_sync"
-                    app:tint="#6366F1"
+                    app:tint="@color/primary"
                     tools:ignore="ContentDescription" />
 
                 <LinearLayout

@@ -83,9 +83,10 @@
                 android:layout_marginEnd="8dp">
 
                 <TextView
+                    android:id="@+id/tvBadgeProgressFields"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Progress"
+                    android:text="0/0 diisi"
                     android:textColor="@color/white"
                     android:textSize="10sp"
                     android:alpha="0.8" />
@@ -100,20 +101,23 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <ProgressBar
+            <com.google.android.material.progressindicator.CircularProgressIndicator
                 android:id="@+id/circularProgress"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:indeterminate="false"
                 android:max="100"
                 android:progress="0"
-                android:progressTint="@color/white" />
+                app:indicatorSize="24dp"
+                app:trackThickness="3dp"
+                app:indicatorColor="@color/white"
+                app:trackColor="#30FFFFFF" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Scrollable Form Container -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
@@ -387,11 +391,23 @@
                             app:layout_constraintTop_toTopOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
+                    <!-- Swipe to Delete Helper Note -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Swipe ke kiri pada item untuk menghapus."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="italic" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 3: 3. Dokumentasi Foto & Video -->
+            <!-- Card 3A: 3A. Dokumentasi Foto -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPhotos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -413,7 +429,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="3. Dokumentasi Foto &amp; Video "
+                            android:text="3A. Dokumentasi Foto "
                             android:textColor="@color/text_primary"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -430,7 +446,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="• Foto: Minimal 1, Maksimal 3 (.jpg, .png | Min 100KB)\n• Video: Minimal 1, Maksimal 1 (.mp4 | Min 1MB)"
+                        android:text="• Minimal 1 foto\n• Maksimal 3 foto\n• Format JPG / PNG\n• Ukuran maksimal 100 KB per foto"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -488,22 +504,80 @@
                         </com.google.android.material.card.MaterialCardView>
 
                     </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Tambah Video Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnVideoAdd"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+            <!-- Card 3B: 3B. Dokumentasi Video -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardVideo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3B. Dokumentasi Video"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="• Maksimal 1 video\n• Format MP4\n• Ukuran maksimal 1 MB\n• Durasi maksimal 5 menit"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                    <!-- Video Actions -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Lampirkan Video Laporan"
-                        app:icon="@drawable/ic_video" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Tambah Video Button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnVideoAdd"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Lampirkan Video Laporan"
+                            app:icon="@drawable/ic_video"
+                            app:cornerRadius="8dp" />
+                            
+                        <!-- Delete/Clear Video Button (Only visible if video is attached) -->
+                        <ImageButton
+                            android:id="@+id/btnVideoDelete"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginStart="8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_delete"
+                            app:tint="#FF3B30"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvVideoPath"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="8dp"
                         android:text="Belum ada video dipilih"
                         android:textColor="@color/text_secondary"
                         android:textSize="11sp"
@@ -818,32 +892,31 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSaveDraft"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="64dp"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="Simpan Draft"
-                    android:textColor="@color/primary"
-                    android:textSize="13sp"
+                    android:textColor="@color/status_completed_text"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_report" />
+                    app:backgroundTint="@color/status_completed_bg"
+                    app:cornerRadius="12dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFinishInspection"
                     style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="64dp"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="Selesaikan Inspeksi"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:backgroundTint="@color/primary"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_check" />
+                    app:cornerRadius="12dp" />
             </LinearLayout>
 
         </LinearLayout>
