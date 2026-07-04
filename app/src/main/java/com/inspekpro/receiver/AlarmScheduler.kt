@@ -17,8 +17,8 @@ class AlarmScheduler(private val context: Context) {
 
     fun schedule(session: InspectionSessionEntity) {
         val intent = Intent(context, InspectionReminderReceiver::class.java).apply {
-            putExtra("EXTRA_TITLE", "Jadwal Inspeksi: ${session.title}")
-            putExtra("EXTRA_MESSAGE", "Lokasi: ${session.locationName}")
+            putExtra("EXTRA_TITLE", "Upcoming Schedule: ${session.title}")
+            putExtra("EXTRA_MESSAGE", "Inspeksi akan dimulai dalam 15 menit - Lokasi: ${session.locationName}")
             putExtra("EXTRA_SESSION_ID", session.sessionId)
         }
 
@@ -31,7 +31,7 @@ class AlarmScheduler(private val context: Context) {
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            session.scheduledDate,
+            session.scheduledDate - 15 * 60 * 1000L,
             pendingIntent
         )
     }
