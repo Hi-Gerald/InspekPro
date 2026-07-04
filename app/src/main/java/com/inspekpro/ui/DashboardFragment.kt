@@ -384,18 +384,12 @@ class DashboardFragment : Fragment() {
                                     android.graphics.Color.parseColor("#E74C3C")
                                 }
                                 binding.tvConditionMessage.setTextColor(colorRes)
-                                binding.weatherTrendIcon.setColorFilter(colorRes)
-                                binding.weatherTrendIcon.setImageResource(
-                                    if (weather.isGoodForInspection) R.drawable.ic_check else R.drawable.ic_warning
-                                )
                             }
                             is com.inspekpro.ui.viewmodel.WeatherUiState.Error -> {
                                 binding.tvTemperature.text = "--°C"
                                 binding.tvWeatherStatus.text = "Gagal memuat"
                                 binding.tvConditionMessage.text = state.message
                                 binding.tvConditionMessage.setTextColor(android.graphics.Color.parseColor("#E74C3C"))
-                                binding.weatherTrendIcon.setColorFilter(android.graphics.Color.parseColor("#E74C3C"))
-                                binding.weatherTrendIcon.setImageResource(R.drawable.ic_warning)
                             }
                         }
                     }

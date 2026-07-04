@@ -10,6 +10,8 @@ import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -58,6 +60,8 @@ import java.util.*
 @AndroidEntryPoint
 class AddInspectionFragment : Fragment() {
 
+    private var isDataLoadedFromDb = false
+    private var isFindingsLoadedFromDb = false
     private var _binding: FragmentAddInspectionBinding? = null
     private val binding get() = _binding!!
 
@@ -114,8 +118,8 @@ class AddInspectionFragment : Fragment() {
                 return@let
             }
             val size = getUriSizeInBytes(requireContext(), originalUri)
-            if (size > 4 * 1024 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            if (size > 50 * 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto maksimal 50 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
                 val localPath = copyUriToLocalFiles(originalUri, "inspekpro_photo", "jpg")
                 if (localPath != null) {
@@ -135,8 +139,8 @@ class AddInspectionFragment : Fragment() {
                 return@let
             }
             val size = getUriSizeInBytes(requireContext(), originalUri)
-            if (size > 4 * 1024 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto temuan maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            if (size > 50 * 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto temuan maksimal 50 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
                 val localPath = copyUriToLocalFiles(originalUri, "inspekpro_photo_finding", "jpg")
                 if (localPath != null) {
@@ -290,8 +294,8 @@ class AddInspectionFragment : Fragment() {
                         }
                     }
                 } else {
-                    if (size > 4 * 1024 * 1024) {
-                        Toast.makeText(requireContext(), "Ukuran foto maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+                    if (size > 50 * 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran foto maksimal 50 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
                     } else {
                         val prefix = if (isFinding) "inspekpro_photo_cam_finding" else "inspekpro_photo_cam"
                         val localPath = copyUriToLocalFiles(originalUri, prefix, "jpg")
@@ -859,6 +863,7 @@ private fun setupFormDefaults() {
                 manualInspector = inspectorText,
                 manualConclusion = conclusionText,
                 manualPhotos = photos.toList(),
+                manualChecklist = checklistItems.toList(),
                 manualVideo = videoPath,
                 hasFindings = hasFindings,
                 findingCategory = if (hasFindings) findingCategory else null,
@@ -941,6 +946,8 @@ private fun setupFormDefaults() {
                 launch {
                     viewModel.existingSession.collectLatest { session ->
                         session?.let {
+                            if (isDataLoadedFromDb) return@collectLatest
+                            
                             binding.etTitle.setText(it.title)
                             binding.etLocation.setText(it.locationName)
                             binding.etInspector.setText(it.inspectorName)
@@ -979,8 +986,21 @@ private fun setupFormDefaults() {
                             if (!it.description.isNullOrBlank()) {
                                 try {
                                     val gson = com.google.gson.Gson()
-                                    val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
-                                    val parsedPhotos: List<String> = gson.fromJson(it.description, type)
+                                    var parsedPhotos: List<String> = emptyList()
+                                    var parsedChecklist: List<Pair<String, Boolean>> = emptyList()
+                                    
+                                    try {
+                                        val payload = gson.fromJson(it.description, com.inspekpro.ui.viewmodel.SessionPayload::class.java)
+                                        if (payload != null) {
+                                            if (payload.photos != null) parsedPhotos = payload.photos
+                                            if (payload.checklist != null) parsedChecklist = payload.checklist.map { item -> Pair(item.text, item.isChecked) }
+                                        }
+                                    } catch (e: Exception) {
+                                        // Fallback for old format (List<String>)
+                                        val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                                        parsedPhotos = gson.fromJson(it.description, type) ?: emptyList()
+                                    }
+
                                     photos.clear()
                                     photos.addAll(parsedPhotos)
                                     photoAdapter.submitList(photos.toList())
@@ -989,19 +1009,25 @@ private fun setupFormDefaults() {
                                     parsedPhotos.forEach { path ->
                                         localToOriginalUriMap[path] = path
                                     }
+
+                                    checklistItems.clear()
+                                    checklistItems.addAll(parsedChecklist)
+                                    checklistAdapter.submitList(checklistItems.toList())
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
                             }
                             
                             updateProgress()
+                            isDataLoadedFromDb = true
                         }
                     }
                 }
 
                 launch {
                     viewModel.existingFindings.collectLatest { findings ->
-                        if (findings.isNotEmpty()) {
+                        if (findings.isNotEmpty() && !isFindingsLoadedFromDb) {
+                            isFindingsLoadedFromDb = true
                             val finding = findings.first()
                             binding.rbHasFindings.isChecked = true
                             binding.findingDetailsContainer.visibility = View.VISIBLE
@@ -1217,11 +1243,45 @@ private fun setupFormDefaults() {
                 inputStream.copyTo(outputStream)
             }
             val localPath = destFile.absolutePath
+            if (extension.equals("jpg", ignoreCase = true) || extension.equals("png", ignoreCase = true)) {
+                compressImageFile(destFile)
+            }
             localToOriginalUriMap[localPath] = uriString
             localPath
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    private fun compressImageFile(file: java.io.File) {
+        try {
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(file.absolutePath, options)
+            var scale = 1
+            while (options.outWidth / scale / 2 >= 1920 || options.outHeight / scale / 2 >= 1920) {
+                scale *= 2
+            }
+            val decodeOptions = BitmapFactory.Options()
+            decodeOptions.inSampleSize = scale
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, decodeOptions) ?: return
+            
+            // Save to temporary file first to avoid corruption if compression fails
+            val tempFile = java.io.File(file.absolutePath + ".tmp")
+            val out = java.io.FileOutputStream(tempFile)
+            val success = bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            out.flush()
+            out.close()
+            bitmap.recycle()
+            
+            if (success) {
+                tempFile.renameTo(file)
+            } else {
+                tempFile.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

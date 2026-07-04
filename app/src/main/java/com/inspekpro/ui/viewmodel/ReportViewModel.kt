@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.inspekpro.data.local.entity.InspectionSessionEntity
 import com.inspekpro.data.local.entity.SessionStatus
 import com.inspekpro.data.repository.FindingRepository
+import com.inspekpro.data.repository.AuthRepository
 import com.inspekpro.data.repository.InspectionSessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -13,7 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ReportViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
-    private val findingRepo: FindingRepository
+    private val findingRepo: FindingRepository,
+    private val authRepo: AuthRepository
 ) : ViewModel() {
 
     val searchQuery = MutableStateFlow("")
@@ -35,7 +37,8 @@ class ReportViewModel @Inject constructor(
         filterStartDate,
         filterEndDate,
         filterFindingStatus,
-        sortOption
+        sortOption,
+        authRepo.getActiveUser()
     ) { flowsArray ->
         @Suppress("UNCHECKED_CAST")
         val sessions = flowsArray[0] as List<InspectionSessionEntity>
@@ -45,8 +48,14 @@ class ReportViewModel @Inject constructor(
         val end = flowsArray[4] as Long?
         val finding = flowsArray[5] as String
         val sort = flowsArray[6] as String
+        val user = flowsArray[7] as com.inspekpro.data.local.entity.UserEntity?
 
         var list = sessions
+
+        if (user != null) {
+            val userIdString = user.userId.toString()
+            list = list.filter { it.inspectorId == userIdString }
+        }
 
         // Realtime Search (Machine Name / Title, Location, Inspector)
         if (query.isNotBlank()) {

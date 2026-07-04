@@ -394,6 +394,10 @@
             android:layout_marginEnd="8dp"
             android:text="Cetak"
             android:textColor="@color/primary"
+            android:maxLines="1"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="14sp"
             app:strokeColor="@color/primary"
             app:cornerRadius="12dp" />
 
@@ -403,12 +407,17 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Download PDF"
+            android:text="Unduh PDF"
             android:textColor="@color/white"
+            android:maxLines="1"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="14sp"
             app:backgroundTint="@color/primary"
             app:cornerRadius="12dp"
             app:icon="@drawable/ic_download"
             app:iconTint="@color/white"
+            app:iconPadding="4dp"
             app:iconGravity="textStart" />
     </LinearLayout>
 

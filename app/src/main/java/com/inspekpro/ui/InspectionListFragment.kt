@@ -218,10 +218,7 @@ class InspectionListFragment : Fragment() {
                 // Observe Stats
                 launch {
                     viewModel.sessionsByStatus.collectLatest { stats ->
-                        binding.tvTotalCount.text = stats.total.toString()
-                        binding.tvActiveCount.text = stats.proses.toString()
-                        binding.tvCompletedCount.text = stats.selesai.toString()
-                        binding.tvDraftCount.text = stats.tertunda.toString()
+
                     }
                 }
             }

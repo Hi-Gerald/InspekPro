@@ -446,7 +446,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="• Minimal 1 foto\n• Maksimal 3 foto\n• Format JPG / PNG\n• Ukuran maksimal 4 MB per foto"
+                        android:text="• Minimal 1 foto\n• Maksimal 3 foto\n• Format JPG / PNG\n• Ukuran maksimal 10 MB per foto"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -933,8 +933,13 @@
                     android:layout_marginEnd="8dp"
                     android:text="Simpan Draft"
                     android:textColor="@color/status_completed_text"
-                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:textSize="12sp"
                     android:textStyle="bold"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
                     app:backgroundTint="@color/status_completed_bg"
                     app:cornerRadius="12dp" />
 
@@ -947,8 +952,13 @@
                     android:layout_marginStart="8dp"
                     android:text="Selesaikan Inspeksi"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:textSize="12sp"
                     android:textStyle="bold"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
                     app:backgroundTint="@color/primary"
                     app:cornerRadius="12dp" />
             </LinearLayout>

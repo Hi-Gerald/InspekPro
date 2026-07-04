@@ -265,86 +265,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Stats Horizontal List -->
-            <LinearLayout
-                android:id="@+id/statsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:weightSum="4"
-                app:layout_constraintTop_toBottomOf="@id/calendarCard">
 
-                <!-- Total -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp" android:gravity="center">
-                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_inspection" app:tint="@color/primary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textSize="10sp" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvTotalCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="12" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="inspeksi" android:textSize="8sp" android:textColor="@color/text_secondary"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Berjalan -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp" android:gravity="center">
-                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_clock" app:tint="#F2994A"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Berjalan" android:textSize="10sp" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvActiveCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="8" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="inspeksi" android:textSize="8sp" android:textColor="@color/text_secondary"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Selesai -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp" android:gravity="center">
-                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_check" app:tint="#27AE60"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Selesai" android:textSize="10sp" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvCompletedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="inspeksi" android:textSize="8sp" android:textColor="@color/text_secondary"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Draft -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp" android:gravity="center">
-                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_report" app:tint="#BB6BD9"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Draft" android:textSize="10sp" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvDraftCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="inspeksi" android:textSize="8sp" android:textColor="@color/text_secondary"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
 
             <!-- Inspeksi Aktif Section Header -->
             <TextView
@@ -358,7 +279,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/statsContainer" />
+                app:layout_constraintTop_toBottomOf="@id/calendarCard" />
 
             <!-- Inspeksi List -->
             <androidx.recyclerview.widget.RecyclerView

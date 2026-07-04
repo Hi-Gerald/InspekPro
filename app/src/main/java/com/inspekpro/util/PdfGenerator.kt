@@ -238,9 +238,31 @@ object PdfGenerator {
 
         // Draw general report photos gallery
         // Extract photos from findings
-        val photoPaths = findings.flatMap { finding ->
+        val findingPhotos = findings.flatMap { finding ->
             parsePhotoPaths(finding.photoPaths)
-        }.distinct()
+        }
+        
+        // Extract photos from general inspection (from description column)
+        var generalPhotos: List<String> = emptyList()
+        if (!session.description.isNullOrBlank()) {
+            try {
+                val gson = com.google.gson.Gson()
+                try {
+                    val payload = gson.fromJson(session.description, com.inspekpro.ui.viewmodel.SessionPayload::class.java)
+                    if (payload?.photos != null) {
+                        generalPhotos = payload.photos
+                    }
+                } catch (e: Exception) {
+                    // Fallback for old format
+                    val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                    generalPhotos = gson.fromJson(session.description, type) ?: emptyList()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        val photoPaths = (generalPhotos + findingPhotos).distinct()
 
         if (photoPaths.isNotEmpty()) {
             // Divider

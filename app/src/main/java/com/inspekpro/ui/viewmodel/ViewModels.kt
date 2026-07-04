@@ -214,7 +214,8 @@ class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val alarmScheduler: AlarmScheduler,
     private val firestoreSyncRepo: FirestoreSyncRepository,
-    private val findingRepo: FindingRepository
+    private val findingRepo: FindingRepository,
+    private val authRepo: AuthRepository
 ) : ViewModel() {
 
     val title = MutableStateFlow("")
@@ -281,6 +282,7 @@ class CreateSessionViewModel @Inject constructor(
         manualInspector: String? = null,
         manualConclusion: String? = null,
         manualPhotos: List<String> = emptyList(),
+        manualChecklist: List<Pair<String, Boolean>> = emptyList(),
         manualVideo: String? = null,
         hasFindings: Boolean = false,
         findingCategory: String? = null,
@@ -324,7 +326,38 @@ class CreateSessionViewModel @Inject constructor(
                 // TODO: Storing serialized photos JSON inside the description column is a temporary workaround to avoid database schema migrations.
                 // In the next database version, this should be normalized into a separate InspectionSessionPhoto table.
                 val gson = com.google.gson.Gson()
-                val photosJson = gson.toJson(manualPhotos)
+                val payload = SessionPayload(
+                    photos = manualPhotos,
+                    checklist = manualChecklist.map { SessionPayloadChecklistItem(it.first, it.second) }
+                )
+                val photosJson = gson.toJson(payload)
+
+                var totalFields = 6 // Title, Location, Date, Time, Inspector, Conclusion
+                var filledFields = 0
+                
+                if (finalTitle.isNotBlank()) filledFields++
+                if (finalLocation.isNotBlank()) filledFields++
+                if (finalScheduledDate != 0L) filledFields += 2 // Date and Time are counted as 2
+                if (finalInspector.isNotBlank()) filledFields++
+                val finalConclusion = manualConclusion ?: notes.value.trim()
+                if (finalConclusion.isNotBlank()) filledFields++
+
+                if (manualChecklist.isNotEmpty()) {
+                    totalFields++
+                    if (manualChecklist.all { it.first.isNotBlank() && it.second }) filledFields++
+                }
+
+                totalFields += 2
+                if (manualPhotos.isNotEmpty()) filledFields++
+                if (manualVideo != null) filledFields++
+
+                if (hasFindings) {
+                    totalFields += 4 // Category, Priority, Desc, Finding Photos
+                    if (!findingCategory.isNullOrBlank()) filledFields++
+                    if (!findingPriority.isNullOrBlank()) filledFields++
+                    if (!findingDescription.isNullOrBlank()) filledFields++
+                    if (findingPhotos.isNotEmpty()) filledFields++
+                }
 
                 if (currentExisting != null) {
                     // Update existing
@@ -333,9 +366,11 @@ class CreateSessionViewModel @Inject constructor(
                         locationName  = finalLocation.trim(),
                         inspectorName = finalInspector.trim(),
                         scheduledDate = finalScheduledDate,
-                        notes         = manualConclusion ?: notes.value.trim(),
+                        notes         = finalConclusion,
                         description   = photosJson,
                         reportVideoPath = manualVideo ?: videoPath.value,
+                        totalItems    = totalFields,
+                        passedItems   = filledFields,
                         status        = status,
                         updatedAt     = System.currentTimeMillis()
                     )
@@ -346,18 +381,22 @@ class CreateSessionViewModel @Inject constructor(
                     val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
                     val code = "INS-$dateStr"
 
+                    val user = authRepo.getActiveUser().firstOrNull()
+                    val actualInspectorId = user?.userId?.toString() ?: inspectorId
+                    val actualInspectorName = user?.fullName ?: finalInspector.trim()
+
                     val newSession = InspectionSessionEntity(
                         sessionCode   = code,
                         title         = finalTitle.trim(),
                         locationName  = finalLocation.trim(),
-                        inspectorName = finalInspector.trim(),
-                        inspectorId   = inspectorId,
+                        inspectorName = actualInspectorName,
+                        inspectorId   = actualInspectorId,
                         scheduledDate = finalScheduledDate,
-                        notes         = manualConclusion ?: notes.value.trim(),
+                        notes         = finalConclusion,
                         description   = photosJson,
                         reportVideoPath = manualVideo ?: videoPath.value,
-                        totalItems    = 0,
-                        passedItems   = 0,
+                        totalItems    = totalFields,
+                        passedItems   = filledFields,
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)
@@ -607,3 +646,10 @@ sealed class ResetPasswordResult {
     object Success : ResetPasswordResult()
     data class Error(val message: String) : ResetPasswordResult()
 }
+
+data class SessionPayloadChecklistItem(val text: String, val isChecked: Boolean)
+
+data class SessionPayload(
+    val photos: List<String> = emptyList(),
+    val checklist: List<SessionPayloadChecklistItem> = emptyList()
+)
