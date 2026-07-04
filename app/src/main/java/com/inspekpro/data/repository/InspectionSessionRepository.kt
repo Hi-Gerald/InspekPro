@@ -44,6 +44,14 @@ class InspectionSessionRepository(
     fun getSessionsByStatus(status: SessionStatus): Flow<List<InspectionSessionEntity>> =
         sessionDao.getSessionsByStatus(status)
 
+    fun getUpcomingSessions(daysToAdd: Int = 7): Flow<List<InspectionSessionEntity>> {
+        val startDate = System.currentTimeMillis()
+        val calendar = java.util.Calendar.getInstance()
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, daysToAdd)
+        val endDate = calendar.timeInMillis
+        return sessionDao.getSessionsByDateRange(startDate, endDate)
+    }
+
     suspend fun startSession(sessionId: Long) {
         sessionDao.startSession(sessionId, System.currentTimeMillis())
         sessionDao.markAsUnsynced(sessionId)
