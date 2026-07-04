@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 
 /**
- * Bagian Billy: Repository Sesi Inspeksi
+ * Bagian Anom: Repository Sesi Inspeksi
  * Fitur: Manajemen data jadwal inspeksi, integrasi cuaca, dan pembuatan ringkasan laporan.
- * Tujuan: Sebagai sumber data utama untuk fitur jadwal inspeksi Billy di seluruh aplikasi.
+ * Tujuan: Sebagai sumber data utama untuk fitur jadwal inspeksi di seluruh aplikasi.
  */
 class InspectionSessionRepository(
     private val sessionDao: InspectionSessionDao,
@@ -86,6 +86,23 @@ class InspectionSessionRepository(
         }
     }
 
+    /**
+     * Fetch cuaca berdasarkan koordinat tanpa menyimpan ke sesi.
+     * Dipakai oleh DashboardViewModel untuk menampilkan cuaca saat ini.
+     */
+    suspend fun fetchWeatherByCoordinates(lat: Double, lon: Double): Result<WeatherInfo> {
+        return try {
+            val response = weatherApi.getWeatherByCoordinates(lat, lon)
+            if (response.isSuccessful) {
+                Result.success(WeatherInfo.fromResponse(response.body()!!))
+            } else {
+                Result.failure(Exception("Weather API error: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun fetchWeatherByCity(cityName: String): Result<WeatherInfo> {
         return try {
             val response = weatherApi.getWeatherByCity(cityName)
@@ -96,6 +113,25 @@ class InspectionSessionRepository(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Menyematkan info cuaca hasil query kota ke dalam data sesi di database lokal.
+     * Dibutuhkan sebagai pelengkap proses fallback di CreateSessionViewModel.
+     */
+    suspend fun attachWeatherToSession(sessionId: Long, info: WeatherInfo) {
+        try {
+            sessionDao.updateWeather(
+                sessionId = sessionId,
+                condition = info.conditionDesc,
+                tempC    = info.tempCelsius,
+                humidity = info.humidity,
+                windSpeed = info.windSpeedMs,
+                icon     = info.iconCode
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -130,14 +166,14 @@ class InspectionSessionRepository(
         summaryDao.insertOrUpdateSummary(
             SessionSummaryEntity(
                 sessionId         = sessionId,
-                totalFindings     = raw.totalFindings,
-                criticalCount     = raw.criticalCount,
+                totalFindings      = raw.totalFindings,
+                criticalCount      = raw.criticalCount,
                 majorCount        = raw.majorCount,
                 minorCount        = raw.minorCount,
                 observationCount  = raw.observationCount,
-                passCount         = raw.passCount,
-                failCount         = raw.failCount,
-                naCount           = raw.naCount,
+                passCount          = raw.passCount,
+                failCount          = raw.failCount,
+                naCount            = raw.naCount,
                 complianceScore   = score,
                 openFindings      = raw.totalFindings - raw.failCount,
                 resolvedFindings  = raw.passCount,

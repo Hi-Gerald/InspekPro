@@ -31,6 +31,9 @@ class DashboardViewModel @Inject constructor(
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val weather: StateFlow<WeatherUiState> = _weather.asStateFlow()
 
+    // Guard: mencegah pemanggilan ganda (rotasi layar, GPS callback berulang, dll.)
+    private var isLoadingWeather = false
+
     val totalSessions = sessionRepo.getTotalSessionCount()
     val completedSessions = sessionRepo.getCompletedCount()
 
@@ -182,13 +185,23 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun loadWeather(lat: Double, lon: Double) {
+        // Abaikan jika request sebelumnya masih berjalan → cegah loop
+        if (isLoadingWeather) return
+
         viewModelScope.launch {
+            isLoadingWeather = true
             _weather.value = WeatherUiState.Loading
-            val result = weatherRepo.getCurrentWeather()
-            result.fold(
-                onSuccess = { _weather.value = WeatherUiState.Success(it) },
-                onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
-            )
+            try {
+                // Gunakan koordinat GPS untuk memilih provinsi BMKG yang tepat
+                val result = weatherRepo.getWeatherByCoords(lat, lon)
+                result.fold(
+                    onSuccess = { _weather.value = WeatherUiState.Success(it) },
+                    onFailure = { _weather.value = WeatherUiState.Error(it.message ?: "Gagal memuat cuaca") }
+                )
+            } finally {
+                // Selalu reset flag, bahkan kalau ada exception tak terduga
+                isLoadingWeather = false
+            }
         }
     }
 
@@ -204,7 +217,7 @@ class DashboardViewModel @Inject constructor(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Bagian Billy: Create Session ViewModel
+// Bagian Anom: Create Session ViewModel
 // Fitur: Validasi input jadwal, Integrasi AlarmManager, & Sync Firestore
 // Untuk: Menangani logika bisnis pembuatan jadwal inspeksi baru dan sinkronisasi data.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -224,6 +237,10 @@ class CreateSessionViewModel @Inject constructor(
     val videoPath = MutableStateFlow<String?>(null)
     val hasFindings = MutableStateFlow(false)
 
+    // TAMBAHAN ANOM: Field untuk menyimpan koordinat GPS temporer
+    private var lastLat: Double? = null
+    private var lastLon: Double? = null
+
     private val _createResult = MutableStateFlow<CreateSessionResult>(CreateSessionResult.Idle)
     val createResult: StateFlow<CreateSessionResult> = _createResult.asStateFlow()
 
@@ -233,6 +250,12 @@ class CreateSessionViewModel @Inject constructor(
     val isFormValid: StateFlow<Boolean> = combine(title, locationName, inspectorName) { t, l, i ->
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+
+    // Fungsi dipanggil dari Fragment setelah mendapatkan GPS
+    fun setGpsCoordinates(lat: Double, lon: Double) {
+        lastLat = lat
+        lastLon = lon
+    }
 
     fun loadSession(sessionId: Long) {
         if (sessionId == -1L) {
@@ -255,7 +278,7 @@ class CreateSessionViewModel @Inject constructor(
     }
 
     fun createSession(
-        inspectorId: String, 
+        inspectorId: String,
         status: SessionStatus = SessionStatus.DRAFT,
         manualTitle: String? = null,
         manualLocation: String? = null,
@@ -264,7 +287,6 @@ class CreateSessionViewModel @Inject constructor(
         manualPhotos: List<String> = emptyList(),
         manualVideo: String? = null
     ) {
-        // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
         val finalTitle = manualTitle ?: title.value
         val finalLocation = manualLocation ?: locationName.value
         val finalInspector = manualInspector ?: inspectorName.value
@@ -281,6 +303,9 @@ class CreateSessionViewModel @Inject constructor(
                 return
             }
         }
+
+        // Mencegah trigger ganda/dobel submit saat loading berjalan
+        if (_createResult.value is CreateSessionResult.Loading) return
 
         viewModelScope.launch {
             _createResult.value = CreateSessionResult.Loading
@@ -329,8 +354,26 @@ class CreateSessionViewModel @Inject constructor(
 
                 _createResult.value = CreateSessionResult.Success(sessionId)
 
+                // Fetch cuaca dari BMKG di background berdasarkan koordinat GPS
+                val lat = lastLat
+                val lon = lastLon
                 launch {
-                    firestoreSyncRepo.syncUnsyncedSessions()
+                    try {
+                        if (lat != null && lon != null) {
+                            sessionRepo.fetchAndAttachWeather(sessionId, lat, lon)
+                        }
+                    } catch (weatherError: Exception) {
+                        weatherError.printStackTrace()
+                    }
+                }
+
+                // Sinkron ke Cloud di background
+                launch {
+                    try {
+                        firestoreSyncRepo.syncUnsyncedSessions()
+                    } catch (syncError: Exception) {
+                        syncError.printStackTrace()
+                    }
                 }
             } catch (e: Exception) {
                 _createResult.value = CreateSessionResult.Error(e.message ?: "Gagal memproses sesi")
@@ -345,6 +388,8 @@ class CreateSessionViewModel @Inject constructor(
         inspectorName.value = ""
         notes.value = ""
         videoPath.value = null
+        lastLat = null
+        lastLon = null
         scheduledDate.value = 0L
         _createResult.value = CreateSessionResult.Idle
     }
@@ -496,12 +541,9 @@ class ForgotPasswordViewModel @Inject constructor(
                     _resetResult.value = ResetPasswordResult.Error("Email tidak ditemukan.")
                     return@launch
                 }
-
-                // Hash password
                 val hashedPassword = hashPassword(newPasswordHash)
                 val updatedUser = user.copy(passwordHash = hashedPassword)
                 userDao.updateUser(updatedUser)
-                
                 _resetResult.value = ResetPasswordResult.Success
             } catch (e: Exception) {
                 _resetResult.value = ResetPasswordResult.Error(e.message ?: "Gagal memperbarui password")
@@ -527,4 +569,3 @@ sealed class ResetPasswordResult {
     object Success : ResetPasswordResult()
     data class Error(val message: String) : ResetPasswordResult()
 }
-

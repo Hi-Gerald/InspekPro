@@ -52,6 +52,7 @@ import java.util.*
  * Bagian Billy: UI Tambah Jadwal Inspeksi
  * Fitur: Form input jadwal, validasi input, lampiran foto & video, serta progres checklist.
  * Update: Real-time Camera capture (Photo & Video), Dynamic progress calculation, Editable checklist, Map integration.
+ * Integrasi Anom: FusedLocationProviderClient untuk fetch koordinat cuaca otomatis saat menyimpan sesi.
  */
 @AndroidEntryPoint
 class AddInspectionFragment : Fragment() {
@@ -145,13 +146,14 @@ class AddInspectionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        
+
         if (inspectionId != -1L) {
             binding.tvHeaderTitle.text = "Edit Inspeksi"
             viewModel.loadSession(inspectionId)
         }
 
         applyWindowInsets()
+        checkNotificationPermission()
         setupFormDefaults()
         setupRecyclerViews()
         setupClickListeners()
@@ -338,12 +340,28 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.etTime.setOnClickListener {
+<<<<<<< HEAD
             TimePickerDialog(requireContext(), { _, h, m ->
                 calendar.set(Calendar.HOUR_OF_DAY, h)
                 calendar.set(Calendar.MINUTE, m)
                 binding.etTime.setText(SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time))
                 updateProgress()
             }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+=======
+            TimePickerDialog(
+                requireContext(),
+                { _, hourOfDay, minute ->
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    calendar.set(Calendar.MINUTE, minute)
+                    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    binding.etTime.setText(timeFormat.format(calendar.time))
+                    viewModel.scheduledDate.value = calendar.timeInMillis
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                true
+            ).show()
+>>>>>>> 6c06a0071e45db51a139cc6ea6d0fc08e72385d2
         }
 
         binding.btnChecklistAdd.setOnClickListener {
@@ -352,6 +370,7 @@ class AddInspectionFragment : Fragment() {
             updateProgress()
         }
 
+<<<<<<< HEAD
         binding.btnPhotoAdd.setOnClickListener { showMediaOptions(isFinding = false) }
         binding.btnFindingPhotoAdd.setOnClickListener { showMediaOptions(isFinding = true) }
         binding.btnVideoAdd.setOnClickListener { showVideoOptions() }
@@ -374,6 +393,33 @@ class AddInspectionFragment : Fragment() {
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ))
+        }
+    }
+
+    /**
+     * Dapatkan koordinat GPS dari perangkat, kirim ke ViewModel, lalu simpan sesi.
+     * Ini menggabungkan fitur GPS Anom dengan validasi Billy.
+     */
+    private fun injectGpsAndSave(status: SessionStatus) {
+        if (!validateInput(status)) return
+
+        val hasLocationPermission = ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasLocationPermission) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    viewModel.setGpsCoordinates(location.latitude, location.longitude)
+                }
+                saveInspection(status)
+            }.addOnFailureListener {
+                saveInspection(status) // Fallback: simpan tanpa GPS
+            }
+        } else {
+            saveInspection(status) // Tidak ada izin lokasi, simpan langsung
         }
     }
 
