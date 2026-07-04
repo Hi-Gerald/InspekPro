@@ -35,6 +35,7 @@ class InspectionListFragment : Fragment() {
 
     private val viewModel: SessionListViewModel by viewModels()
     private lateinit var adapter: ActiveInspectionAdapter
+    private lateinit var scheduleTodayAdapter: ScheduleTodayAdapter
 
     private val weekDays = mutableListOf<Calendar>()
 
@@ -124,6 +125,17 @@ class InspectionListFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             this.adapter = this@InspectionListFragment.adapter
         }
+
+        scheduleTodayAdapter = ScheduleTodayAdapter { session ->
+            val bundle = Bundle().apply {
+                putLong("sessionId", session.sessionId)
+            }
+            findNavController().navigate(R.id.action_inspectionListFragment_to_addInspectionFragment, bundle)
+        }
+        binding.rvScheduleToday.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = scheduleTodayAdapter
+        }
     }
 
     private fun setupClickListeners() {
@@ -195,6 +207,7 @@ class InspectionListFragment : Fragment() {
                 launch {
                     viewModel.filteredSessions.collectLatest { sessions ->
                         adapter.submitList(sessions)
+                        scheduleTodayAdapter.submitList(sessions)
                         
                         val sdf = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
                         val dateStr = sdf.format(Date(viewModel.selectedDateMillis.value))
