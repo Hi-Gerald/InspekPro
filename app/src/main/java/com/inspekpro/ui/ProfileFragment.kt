@@ -1,11 +1,27 @@
 package com.inspekpro.ui
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ScaleGestureDetector
+import android.view.MotionEvent
+import android.view.Gravity
+import android.view.KeyEvent
+import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -135,6 +151,8 @@ class ProfileFragment : Fragment() {
                         // Load Custom Profile Photo (circular)
                         val photoFile = File(requireContext().filesDir, "profile_photo_${user.userId}.jpg")
                         if (photoFile.exists()) {
+                            binding.ivAvatar.setPadding(0, 0, 0, 0)
+                            binding.ivAvatar.imageTintList = null
                             Glide.with(this@ProfileFragment)
                                 .load(photoFile)
                                 .signature(ObjectKey(photoFile.lastModified().toString()))
@@ -142,16 +160,174 @@ class ProfileFragment : Fragment() {
                                 .circleCrop()
                                 .into(binding.ivAvatar)
                         } else {
+                            val paddingPx = (16 * resources.displayMetrics.density).toInt()
+                            binding.ivAvatar.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                            binding.ivAvatar.imageTintList = android.content.res.ColorStateList.valueOf(Color.WHITE)
                             Glide.with(this@ProfileFragment)
                                 .load(R.drawable.ic_person)
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .circleCrop()
                                 .into(binding.ivAvatar)
                         }
+
+                        // Avatar Click Preview (WhatsApp behavior, only if custom photo exists)
+                        binding.ivAvatar.setOnClickListener {
+                            if (photoFile.exists()) {
+                                showPhotoPreview(photoFile)
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun showPhotoPreview(photoFile: File) {
+        val context = requireContext()
+        val dialog = Dialog(context, android.R.style.Theme_Black_NoTitleBar)
+
+        val rootLayout = RelativeLayout(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(Color.BLACK)
+            alpha = 0f
+            setOnClickListener {
+                dismissWithFade(dialog, this)
+            }
+        }
+
+        // 1. Top Bar Layout (WhatsApp Style)
+        val topBar = LinearLayout(context).apply {
+            id = View.generateViewId()
+            layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                (56 * resources.displayMetrics.density).toInt()
+            ).apply {
+                addRule(RelativeLayout.ALIGN_PARENT_TOP)
+                // Add top margin to prevent overlapping system bar/notch area when FLAG_LAYOUT_NO_LIMITS is used
+                topMargin = (28 * resources.displayMetrics.density).toInt()
+            }
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding((16 * resources.displayMetrics.density).toInt(), 0, (16 * resources.displayMetrics.density).toInt(), 0)
+            setOnClickListener {
+                // Prevent click on top bar from dismissing
+            }
+        }
+
+        // Back button (ImageView)
+        val btnBack = ImageView(context).apply {
+            val size = (40 * resources.displayMetrics.density).toInt()
+            layoutParams = LinearLayout.LayoutParams(size, size)
+            val padding = (8 * resources.displayMetrics.density).toInt()
+            setPadding(padding, padding, padding, padding)
+            setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_back))
+            setColorFilter(Color.WHITE)
+            isClickable = true
+            isFocusable = true
+            setBackgroundResource(android.R.drawable.list_selector_background)
+            setOnClickListener {
+                dismissWithFade(dialog, rootLayout)
+            }
+        }
+        topBar.addView(btnBack)
+
+        // Title (TextView)
+        val tvTitle = TextView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginStart = (16 * resources.displayMetrics.density).toInt()
+            }
+            text = "Foto profil"
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        topBar.addView(tvTitle)
+        rootLayout.addView(topBar)
+
+        // 2. Centered Zoomable ImageView
+        val imageView = ImageView(context).apply {
+            layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT
+            ).apply {
+                addRule(RelativeLayout.BELOW, topBar.id)
+                addRule(RelativeLayout.CENTER_IN_PARENT)
+            }
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            
+            Glide.with(this@ProfileFragment)
+                .load(photoFile)
+                .signature(ObjectKey(photoFile.lastModified().toString()))
+                .into(this)
+
+            setOnClickListener {
+                // Prevent click on image from dismissing
+            }
+        }
+
+        val scaleGestureDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            var scaleFactor = 1.0f
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                scaleFactor *= detector.scaleFactor
+                scaleFactor = scaleFactor.coerceIn(1.0f, 5.0f)
+                imageView.scaleX = scaleFactor
+                imageView.scaleY = scaleFactor
+                return true
+            }
+        })
+
+        imageView.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            true
+        }
+        rootLayout.addView(imageView)
+
+        dialog.setContentView(rootLayout)
+        dialog.window?.apply {
+            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            setBackgroundDrawable(ColorDrawable(Color.BLACK))
+            // Draw edge-to-edge (behind status bar) while keeping status bar icons visible to prevent layout jumps
+            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            
+            statusBarColor = Color.TRANSPARENT
+            navigationBarColor = Color.BLACK
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+            setWindowAnimations(0) // Disable default scale animations
+        }
+
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                dismissWithFade(dialog, rootLayout)
+                true
+            } else {
+                false
+            }
+        }
+
+        dialog.show()
+        rootLayout.animate().alpha(1f).setDuration(200).start()
+    }
+
+    private fun dismissWithFade(dialog: Dialog, rootLayout: View) {
+        rootLayout.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction {
+                dialog.dismiss()
+            }
+            .start()
     }
 
     override fun onDestroyView() {
