@@ -85,11 +85,11 @@ interface InspectionSessionDao {
         now: Long = System.currentTimeMillis()
     )
 
-    @Query("SELECT COUNT(*) FROM inspection_sessions")
-    fun getTotalSessionCount(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM inspection_sessions WHERE inspector_id = :inspectorId")
+    fun getTotalSessionCount(inspectorId: String): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM inspection_sessions WHERE status = :status")
-    fun getSessionCountByStatus(status: SessionStatus): Flow<Int>
+    @Query("SELECT COUNT(*) FROM inspection_sessions WHERE status = :status AND inspector_id = :inspectorId")
+    fun getSessionCountByStatus(status: SessionStatus, inspectorId: String): Flow<Int>
 
     @Query("SELECT * FROM inspection_sessions WHERE is_synced = 0")
     suspend fun getUnsyncedSessions(): List<InspectionSessionEntity>

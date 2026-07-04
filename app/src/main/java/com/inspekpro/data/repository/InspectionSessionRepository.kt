@@ -38,6 +38,9 @@ class InspectionSessionRepository(
     fun getAllSessions(): Flow<List<InspectionSessionEntity>> =
         sessionDao.getAllSessions()
 
+    fun getSessionsByInspector(inspectorId: String): Flow<List<InspectionSessionEntity>> =
+        sessionDao.getSessionsByInspector(inspectorId)
+
     fun getSessionById(id: Long): Flow<InspectionSessionEntity?> =
         sessionDao.getSessionById(id)
 
@@ -140,10 +143,10 @@ class InspectionSessionRepository(
 
     // ─── DASHBOARD ─────────────────────────────────────────────────────────────
 
-    suspend fun getDashboardStats() = summaryDao.getDashboardStats()
+    suspend fun getDashboardStats(inspectorId: String) = summaryDao.getDashboardStats(inspectorId)
 
-    fun getTotalSessionCount(): Flow<Int> = sessionDao.getTotalSessionCount()
+    fun getTotalSessionCount(inspectorId: String): Flow<Int> = sessionDao.getTotalSessionCount(inspectorId)
 
-    fun getCompletedCount(): Flow<Int> =
-        sessionDao.getSessionCountByStatus(SessionStatus.COMPLETED)
+    fun getCompletedCount(inspectorId: String): Flow<Int> =
+        sessionDao.getSessionCountByStatus(SessionStatus.COMPLETED, inspectorId)
 }

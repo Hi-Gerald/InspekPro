@@ -25,8 +25,11 @@ class DashboardViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val findingRepo: FindingRepository,
     private val firestoreSyncRepo: FirestoreSyncRepository,
-    private val weatherRepo: com.inspekpro.data.repository.WeatherRepository
+    private val weatherRepo: com.inspekpro.data.repository.WeatherRepository,
+    private val authRepo: AuthRepository
 ) : ViewModel() {
+
+    private val currentUser = authRepo.getActiveUser().filterNotNull()
 
     private val _weather = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val weather: StateFlow<WeatherUiState> = _weather.asStateFlow()
@@ -34,23 +37,39 @@ class DashboardViewModel @Inject constructor(
     // Guard: mencegah pemanggilan ganda (rotasi layar, GPS callback berulang, dll.)
     private var isLoadingWeather = false
 
-    val totalSessions = sessionRepo.getTotalSessionCount()
-    val completedSessions = sessionRepo.getCompletedCount()
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val totalSessions = currentUser.flatMapLatest { user ->
+        sessionRepo.getTotalSessionCount(user.userId.toString())
+    }
 
-    val activeSessions = sessionRepo.getAllSessions().map { list ->
-        list.filter { it.status == SessionStatus.IN_PROGRESS || it.status == SessionStatus.DRAFT }
-            .sortedByDescending { it.scheduledDate }
-            .take(3)
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val completedSessions = currentUser.flatMapLatest { user ->
+        sessionRepo.getCompletedCount(user.userId.toString())
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val activeSessions = currentUser.flatMapLatest { user ->
+        sessionRepo.getSessionsByInspector(user.userId.toString()).map { list ->
+            list.filter { it.status == SessionStatus.IN_PROGRESS || it.status == SessionStatus.DRAFT }
+                .sortedByDescending { it.scheduledDate }
+                .take(3)
+        }
     }
     
     // Recent findings: take(3)
-    val recentFindings = findingRepo.getRecentFindings(10).map { list ->
-        list.take(3)
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val recentFindings = currentUser.flatMapLatest { user ->
+        findingRepo.getRecentFindings(10, user.userId.toString()).map { list ->
+            list.take(3)
+        }
     }
 
     // Dashboard stats observed from Room
-    val dashboardStats = sessionRepo.getAllSessions().mapLatest {
-        sessionRepo.getDashboardStats()
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val dashboardStats = currentUser.flatMapLatest { user ->
+        sessionRepo.getSessionsByInspector(user.userId.toString()).mapLatest {
+            sessionRepo.getDashboardStats(user.userId.toString())
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {

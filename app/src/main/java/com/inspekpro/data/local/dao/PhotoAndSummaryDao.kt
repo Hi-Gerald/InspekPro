@@ -67,6 +67,7 @@ interface SessionSummaryDao {
             SUM(COALESCE(sm.critical_count, 0)) as totalCritical
         FROM inspection_sessions s
         LEFT JOIN session_summaries sm ON s.session_id = sm.session_id
+        WHERE s.inspector_id = :inspectorId
     """)
-    suspend fun getDashboardStats(): DashboardStats
+    suspend fun getDashboardStats(inspectorId: String): DashboardStats
 }
