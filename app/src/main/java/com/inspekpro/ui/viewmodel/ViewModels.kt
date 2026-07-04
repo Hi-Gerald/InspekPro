@@ -38,7 +38,7 @@ class DashboardViewModel @Inject constructor(
     val completedSessions = sessionRepo.getCompletedCount()
 
     val activeSessions = sessionRepo.getAllSessions().map { list ->
-        list.filter { it.status == SessionStatus.IN_PROGRESS }
+        list.filter { it.status == SessionStatus.IN_PROGRESS || it.status == SessionStatus.DRAFT }
             .sortedByDescending { it.scheduledDate }
             .take(3)
     }
@@ -291,16 +291,18 @@ class CreateSessionViewModel @Inject constructor(
         val finalLocation = manualLocation ?: locationName.value
         val finalInspector = manualInspector ?: inspectorName.value
 
-        if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
-            _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
-            return
-        }
-        
-        // Validasi: Waktu inspeksi tidak boleh kosong
-        if (_existingSession.value == null) {
-            if (scheduledDate.value == 0L) {
-                _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+        if (status == SessionStatus.COMPLETED) {
+            if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
+                _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
                 return
+            }
+            
+            // Validasi: Waktu inspeksi tidak boleh kosong
+            if (_existingSession.value == null) {
+                if (scheduledDate.value == 0L) {
+                    _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+                    return
+                }
             }
         }
 
@@ -312,6 +314,11 @@ class CreateSessionViewModel @Inject constructor(
             try {
                 val currentExisting = _existingSession.value
                 val sessionId: Long
+                val finalScheduledDate = if (scheduledDate.value == 0L) {
+                    System.currentTimeMillis()
+                } else {
+                    scheduledDate.value
+                }
 
                 if (currentExisting != null) {
                     // Update existing
@@ -319,7 +326,7 @@ class CreateSessionViewModel @Inject constructor(
                         title         = finalTitle.trim(),
                         locationName  = finalLocation.trim(),
                         inspectorName = finalInspector.trim(),
-                        scheduledDate = scheduledDate.value,
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         status        = status,
@@ -327,9 +334,6 @@ class CreateSessionViewModel @Inject constructor(
                     )
                     sessionRepo.updateSession(updatedSession)
                     sessionId = updatedSession.sessionId
-                    
-                    // Reschedule alarm
-                    alarmScheduler.schedule(updatedSession)
                 } else {
                     // Create new
                     val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
@@ -341,7 +345,7 @@ class CreateSessionViewModel @Inject constructor(
                         locationName  = finalLocation.trim(),
                         inspectorName = finalInspector.trim(),
                         inspectorId   = inspectorId,
-                        scheduledDate = scheduledDate.value,
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         totalItems    = 0,
@@ -349,7 +353,6 @@ class CreateSessionViewModel @Inject constructor(
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)
-                    alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
                 }
 
                 _createResult.value = CreateSessionResult.Success(sessionId)

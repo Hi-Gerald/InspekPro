@@ -9,16 +9,6 @@
     android:paddingBottom="8dp"
     android:background="@color/white">
 
-    <ImageView
-        android:id="@+id/ivDragHandle"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_drag"
-        android:contentDescription="Drag Handle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <CheckBox
         android:id="@+id/cbChecklistItem"
         android:layout_width="wrap_content"
@@ -27,7 +17,7 @@
         android:buttonTint="#27AE60"
         android:checked="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/ivDragHandle"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputEditText
