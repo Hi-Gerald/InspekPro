@@ -57,7 +57,11 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val sessions = sessionRepo.getAllSessions().first()
-                if (sessions.isEmpty()) {
+                // Migration: Force re-populate if totalItems is wrong OR if mock sessions have inconsistent passedItems (e.g. != 6)
+                val needsRepopulate = sessions.isEmpty() || sessions.any { 
+                    (it.status != SessionStatus.COMPLETED) && (it.totalItems != 10 || it.passedItems != 6) 
+                }
+                if (needsRepopulate) {
                     populateMockData()
                 }
             } catch (e: Exception) {
@@ -70,6 +74,8 @@ class DashboardViewModel @Inject constructor(
 
     private suspend fun populateMockData() {
         try {
+            // Standardizing mock data to 6/10 fields: Title, Loc, Date, Time, Inspector, Conclusion.
+            // Findings section (No Findings) is not yet counted in 'filledFields' until UI state is settled.
             val s1Id = sessionRepo.createSession(
                 InspectionSessionEntity(
                     sessionId = 1,
@@ -80,8 +86,8 @@ class DashboardViewModel @Inject constructor(
                     inspectorId = "INS-001",
                     status = SessionStatus.IN_PROGRESS,
                     scheduledDate = System.currentTimeMillis() - 86400000,
-                    totalItems = 4,
-                    passedItems = 3,
+                    totalItems = 10,
+                    passedItems = 6,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -99,7 +105,7 @@ class DashboardViewModel @Inject constructor(
                     status = SessionStatus.DRAFT,
                     scheduledDate = System.currentTimeMillis(),
                     totalItems = 10,
-                    passedItems = 3,
+                    passedItems = 6,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -116,8 +122,8 @@ class DashboardViewModel @Inject constructor(
                     inspectorId = "INS-001",
                     status = SessionStatus.COMPLETED,
                     scheduledDate = System.currentTimeMillis() - 172800000,
-                    totalItems = 5,
-                    passedItems = 5,
+                    totalItems = 10,
+                    passedItems = 10,
                     failedItems = 0,
                     weatherCondition = "Berawan Sebagian",
                     weatherTempCelsius = 28.0
@@ -285,7 +291,9 @@ class CreateSessionViewModel @Inject constructor(
         manualInspector: String? = null,
         manualConclusion: String? = null,
         manualPhotos: List<String> = emptyList(),
-        manualVideo: String? = null
+        manualVideo: String? = null,
+        manualTotalItems: Int? = null,
+        manualPassedItems: Int? = null
     ) {
         val finalTitle = manualTitle ?: title.value
         val finalLocation = manualLocation ?: locationName.value
@@ -329,6 +337,8 @@ class CreateSessionViewModel @Inject constructor(
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
+                        totalItems    = manualTotalItems ?: currentExisting.totalItems,
+                        passedItems   = manualPassedItems ?: currentExisting.passedItems,
                         status        = status,
                         updatedAt     = System.currentTimeMillis()
                     )
@@ -348,8 +358,8 @@ class CreateSessionViewModel @Inject constructor(
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
-                        totalItems    = 0,
-                        passedItems   = 0,
+                        totalItems    = manualTotalItems ?: 0,
+                        passedItems   = manualPassedItems ?: 0,
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)

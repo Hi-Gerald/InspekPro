@@ -24,7 +24,6 @@ class ActiveInspectionAdapter(
         return ViewHolder(binding)
      }
 
-    // Correct Kotlin ListAdapter binding
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val session = getItem(position)
         holder.bind(session, onItemClick)
