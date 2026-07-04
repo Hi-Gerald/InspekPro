@@ -68,51 +68,51 @@ class RegisterFragment : Fragment() {
             val isTermsAccepted = binding.termsCheckbox.isChecked
 
             if (name.isEmpty()) {
-                binding.nameInputLayout.error = "Nama Lengkap tidak boleh kosong"
+                binding.nameInputLayout.error = getString(R.string.error_name_empty)
                 return@setOnClickListener
             } else {
                 binding.nameInputLayout.error = null
             }
 
             if (email.isEmpty()) {
-                binding.emailInputLayout.error = "Email tidak boleh kosong"
+                binding.emailInputLayout.error = getString(R.string.error_email_empty)
                 return@setOnClickListener
             } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                binding.emailInputLayout.error = "Format email tidak valid"
+                binding.emailInputLayout.error = getString(R.string.error_email_invalid)
                 return@setOnClickListener
             } else {
                 binding.emailInputLayout.error = null
             }
 
             if (company.isEmpty()) {
-                binding.companyInputLayout.error = "Nama Perusahaan tidak boleh kosong"
+                binding.companyInputLayout.error = getString(R.string.error_company_empty)
                 return@setOnClickListener
             } else {
                 binding.companyInputLayout.error = null
             }
 
             if (password.isEmpty()) {
-                binding.passwordInputLayout.error = "Password tidak boleh kosong"
+                binding.passwordInputLayout.error = getString(R.string.error_password_empty)
                 return@setOnClickListener
-            } else if (password.length < 6) {
-                binding.passwordInputLayout.error = "Password minimal 6 karakter"
+            } else if (!isCharCountValid || !isUppercaseValid || !isLowercaseValid || !isNumberValid) {
+                binding.passwordInputLayout.error = getString(R.string.error_password_security)
                 return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
             }
 
             if (confirmPassword.isEmpty()) {
-                binding.confirmPasswordInputLayout.error = "Konfirmasi Password tidak boleh kosong"
+                binding.confirmPasswordInputLayout.error = getString(R.string.error_confirm_password_empty)
                 return@setOnClickListener
             } else if (password != confirmPassword) {
-                binding.confirmPasswordInputLayout.error = "Password tidak cocok"
+                binding.confirmPasswordInputLayout.error = getString(R.string.error_password_mismatch)
                 return@setOnClickListener
             } else {
                 binding.confirmPasswordInputLayout.error = null
             }
 
             if (!isTermsAccepted) {
-                Toast.makeText(requireContext(), "Anda harus menyetujui syarat & ketentuan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.error_terms_required, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -131,22 +131,22 @@ class RegisterFragment : Fragment() {
                     when (result) {
                         is AuthResult.Idle -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                         }
                         is AuthResult.Loading -> {
                             binding.registerBtn.isEnabled = false
-                            binding.registerBtn.text = "Mendaftarkan..."
+                            binding.registerBtn.text = getString(R.string.btn_register_loading)
                         }
                         is AuthResult.Success -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                             viewModel.resetResults()
-                            Toast.makeText(requireContext(), "Pendaftaran berhasil! Silakan masuk.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(requireContext(), R.string.toast_register_success, Toast.LENGTH_LONG).show()
                             findNavController().popBackStack()
                         }
                         is AuthResult.Error -> {
                             binding.registerBtn.isEnabled = true
-                            binding.registerBtn.text = "Daftar"
+                            binding.registerBtn.text = getString(R.string.btn_register)
                             Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                             viewModel.resetResults()
                         }
