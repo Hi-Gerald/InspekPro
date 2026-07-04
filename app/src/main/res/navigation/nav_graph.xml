@@ -185,6 +185,14 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
+            android:id="@+id/action_inspectionListFragment_to_scheduleFragment"
+            app:destination="@id/scheduleFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
             android:id="@+id/action_inspectionListFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
         <action
@@ -234,4 +242,9 @@
             app:argType="long" />
     </fragment>
 
+    <fragment
+        android:id="@+id/scheduleFragment"
+        android:name="com.inspekpro.ui.ScheduleFragment"
+        android:label="Jadwal Inspeksi"
+        tools:layout="@layout/fragment_schedule" />
 </navigation>

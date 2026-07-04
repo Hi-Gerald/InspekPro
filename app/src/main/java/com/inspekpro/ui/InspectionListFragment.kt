@@ -148,7 +148,7 @@ class InspectionListFragment : Fragment() {
         }
 
         binding.btnNewSchedule.setOnClickListener {
-            createNewCalendarEvent()
+            findNavController().navigate(R.id.action_inspectionListFragment_to_scheduleFragment)
         }
     }
 
