@@ -81,13 +81,7 @@ class ProfileFragment : Fragment() {
     private fun applyWindowInsets() {
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            val density = resources.displayMetrics.density
-
             v.setPadding(0, systemBars.top, 0, 0)
-            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
-            binding.fabAdd.layoutParams = (binding.fabAdd.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                bottomMargin = (32 * density).toInt() + systemBars.bottom
-            }
             insets
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
@@ -110,23 +104,6 @@ class ProfileFragment : Fragment() {
                 }
                 .setNegativeButton("Batal", null)
                 .show()
-        }
-
-        // Bottom Navigation Bar Tab Clicks
-        binding.tabDashboard.setOnClickListener {
-            findNavController().popBackStack(R.id.dashboardFragment, false)
-        }
-        binding.tabInspeksi.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_inspectionListFragment)
-        }
-        binding.tabLaporan.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_reportFragment)
-        }
-        binding.tabAkun.setOnClickListener {
-            // Already on profile screen, no action needed
-        }
-        binding.fabAdd.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_addInspectionFragment)
         }
     }
 

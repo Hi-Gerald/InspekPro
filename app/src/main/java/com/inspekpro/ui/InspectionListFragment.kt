@@ -61,13 +61,6 @@ class InspectionListFragment : Fragment() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val density = resources.displayMetrics.density
 
-            // Bottom Insets
-            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
-            binding.fabAdd.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
-                val baseMargin = (32 * density).toInt()
-                bottomMargin = baseMargin + systemBars.bottom
-            }
-
             // Top Insets
             binding.tvAppName.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
                 val baseMargin = (24 * density).toInt()
@@ -127,22 +120,6 @@ class InspectionListFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.fabAdd.setOnClickListener {
-            findNavController().navigate(R.id.action_inspectionListFragment_to_addInspectionFragment)
-        }
-
-        binding.tabDashboard.setOnClickListener {
-            findNavController().navigate(R.id.action_inspectionListFragment_to_dashboardFragment)
-        }
-
-        binding.tabLaporan.setOnClickListener {
-            findNavController().navigate(R.id.action_inspectionListFragment_to_reportFragment)
-        }
-
-        binding.tabAkun.setOnClickListener {
-            findNavController().navigate(R.id.action_inspectionListFragment_to_profileFragment)
-        }
-
         binding.btnViewCalendar.setOnClickListener {
             openSystemCalendar()
         }

@@ -37,8 +37,6 @@ class DashboardFragment : Fragment() {
     private lateinit var activeInspectionAdapter: ActiveInspectionAdapter
     private lateinit var newFindingAdapter: NewFindingAdapter
 
-    private var currentSelectedTabId = R.id.tabDashboard
-
     private val requestPermissionLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
     ) { _ ->
@@ -58,7 +56,6 @@ class DashboardFragment : Fragment() {
         applyWindowInsets()
         setupRecyclerViews()
         setupClickListeners()
-        setupBottomNavigation()
         observeViewModel()
         checkAndRequestPermissions()
         setupDateAndGreeting()
@@ -71,14 +68,6 @@ class DashboardFragment : Fragment() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val density = resources.displayMetrics.density
             
-            // Handle Bottom Insets
-            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
-            
-            binding.fabAdd.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                val baseMargin = (32 * density).toInt()
-                bottomMargin = baseMargin + systemBars.bottom
-            }
-
             // Handle Top Insets (Status Bar)
             binding.tvAppName.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 val baseMargin = (24 * density).toInt()
@@ -161,11 +150,6 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        // Floating Action Button
-        binding.fabAdd.setOnClickListener {
-            findNavController().navigate(R.id.action_dashboardFragment_to_addInspectionFragment)
-        }
-
         // Notification Icon
         @android.annotation.SuppressLint("DiscouragedApi")
         binding.btnNotification.setOnClickListener {
@@ -187,80 +171,6 @@ class DashboardFragment : Fragment() {
         binding.btnLihatSemuaTemuan.setOnClickListener {
             Toast.makeText(requireContext(), "Menampilkan semua temuan...", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun setupBottomNavigation() {
-        val clickListener = View.OnClickListener { v ->
-            val clickedTabId = v.id
-            if (clickedTabId == currentSelectedTabId) return@OnClickListener
-
-            when (clickedTabId) {
-                R.id.tabDashboard -> {
-                    animateTabTransition(clickedTabId)
-                }
-                R.id.tabInspeksi -> {
-                    animateTabTransition(clickedTabId)
-                    findNavController().navigate(R.id.action_dashboardFragment_to_inspectionListFragment)
-                }
-                R.id.tabLaporan -> {
-                    animateTabTransition(clickedTabId)
-                    findNavController().navigate(R.id.action_dashboardFragment_to_reportFragment)
-                }
-                R.id.tabAkun -> {
-                    animateTabTransition(clickedTabId)
-                    findNavController().navigate(R.id.action_dashboardFragment_to_profileFragment)
-                }
-            }
-        }
-
-        binding.tabDashboard.setOnClickListener(clickListener)
-        binding.tabInspeksi.setOnClickListener(clickListener)
-        binding.tabLaporan.setOnClickListener(clickListener)
-        binding.tabAkun.setOnClickListener(clickListener)
-    }
-
-    private fun animateTabTransition(newTabId: Int) {
-        if (newTabId == currentSelectedTabId) return
-
-        val context = requireContext()
-        val grayColor = androidx.core.content.ContextCompat.getColor(context, R.color.text_secondary)
-        val blueColor = androidx.core.content.ContextCompat.getColor(context, R.color.primary)
-
-        val tabs = listOf(
-            Triple(R.id.tabDashboard, binding.ivTabDashboard, binding.tvTabDashboard),
-            Triple(R.id.tabInspeksi, binding.ivTabInspeksi, binding.tvTabInspeksi),
-            Triple(R.id.tabLaporan, binding.ivTabLaporan, binding.tvTabLaporan),
-            Triple(R.id.tabAkun, binding.ivTabAkun, binding.tvTabAkun)
-        )
-
-        for (tab in tabs) {
-            val (id, imageView, textView) = tab
-            if (id == newTabId) {
-                android.animation.ValueAnimator.ofArgb(grayColor, blueColor).apply {
-                    duration = 250
-                    addUpdateListener { animator ->
-                        val color = animator.animatedValue as Int
-                        imageView.setColorFilter(color)
-                        textView.setTextColor(color)
-                    }
-                    start()
-                }
-                textView.setTypeface(null, android.graphics.Typeface.BOLD)
-            } else if (id == currentSelectedTabId) {
-                android.animation.ValueAnimator.ofArgb(blueColor, grayColor).apply {
-                    duration = 250
-                    addUpdateListener { animator ->
-                        val color = animator.animatedValue as Int
-                        imageView.setColorFilter(color)
-                        textView.setTextColor(color)
-                    }
-                    start()
-                }
-                textView.setTypeface(null, android.graphics.Typeface.NORMAL)
-            }
-        }
-
-        currentSelectedTabId = newTabId
     }
 
     private fun navigateSafely(actionId: Int) {

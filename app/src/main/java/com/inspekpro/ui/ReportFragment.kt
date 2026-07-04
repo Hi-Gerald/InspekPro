@@ -67,10 +67,6 @@ class ReportFragment : Fragment() {
             binding.tvTitle.layoutParams = (binding.tvTitle.layoutParams as ViewGroup.MarginLayoutParams).apply {
                 topMargin = (24 * density).toInt() + systemBars.top
             }
-            binding.bottomNavContainer.setPadding(0, 0, 0, systemBars.bottom)
-            binding.fabAdd.layoutParams = (binding.fabAdd.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                bottomMargin = (32 * density).toInt() + systemBars.bottom
-            }
             insets
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
@@ -148,21 +144,6 @@ class ReportFragment : Fragment() {
                 }
             }
             popup.show()
-        }
-
-        // Bottom Navigation Bar click bindings
-        binding.tabDashboard.setOnClickListener {
-            findNavController().navigate(R.id.action_reportFragment_to_dashboardFragment)
-        }
-        binding.tabInspeksi.setOnClickListener {
-            findNavController().navigate(R.id.action_reportFragment_to_inspectionListFragment)
-        }
-        binding.tabAkun.setOnClickListener {
-            findNavController().navigate(R.id.action_reportFragment_to_profileFragment)
-        }
-        binding.fabAdd.setOnClickListener {
-            val bundle = Bundle().apply { putLong("sessionId", -1L) }
-            findNavController().navigate(R.id.action_reportFragment_to_addInspectionFragment, bundle)
         }
     }
 
