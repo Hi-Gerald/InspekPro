@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -16,7 +15,6 @@ import com.inspekpro.databinding.ItemChecklistFormBinding
  * Fitur: Menampilkan daftar item pemeriksaan dinamis pada form tambah jadwal.
  */
 class ChecklistItemAdapter(
-    private val onStartDrag: (RecyclerView.ViewHolder) -> Unit,
     private val onItemChanged: (Int, String, Boolean) -> Unit,
     private val onItemEmptyAndLostFocus: (Int) -> Unit
 ) : ListAdapter<Pair<String, Boolean>, ChecklistItemAdapter.ViewHolder>(DiffCallback) {
@@ -30,7 +28,7 @@ class ChecklistItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, position, onStartDrag, onItemChanged, onItemEmptyAndLostFocus)
+        holder.bind(item, position, onItemChanged, onItemEmptyAndLostFocus)
     }
 
     class ViewHolder(private val binding: ItemChecklistFormBinding) :
@@ -42,7 +40,6 @@ class ChecklistItemAdapter(
         fun bind(
             item: Pair<String, Boolean>,
             position: Int,
-            onStartDrag: (RecyclerView.ViewHolder) -> Unit,
             onItemChanged: (Int, String, Boolean) -> Unit,
             onItemEmptyAndLostFocus: (Int) -> Unit
         ) {
@@ -73,13 +70,6 @@ class ChecklistItemAdapter(
                         onItemEmptyAndLostFocus(adapterPosition)
                     }
                 }
-            }
-
-            binding.ivDragHandle.setOnTouchListener { _, event ->
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    onStartDrag(this)
-                }
-                false
             }
         }
     }

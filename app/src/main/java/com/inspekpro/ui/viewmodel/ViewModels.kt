@@ -34,7 +34,7 @@ class DashboardViewModel @Inject constructor(
     val completedSessions = sessionRepo.getCompletedCount()
 
     val activeSessions = sessionRepo.getAllSessions().map { list ->
-        list.filter { it.status == SessionStatus.IN_PROGRESS }
+        list.filter { it.status == SessionStatus.IN_PROGRESS || it.status == SessionStatus.DRAFT }
             .sortedByDescending { it.scheduledDate }
             .take(3)
     }
@@ -128,7 +128,6 @@ class DashboardViewModel @Inject constructor(
                     description = "Kebocoran oli pelumas pada seal turbine unit 2.",
                     severity = FindingSeverity.MINOR,
                     status = FindingStatus.OPEN,
-                    photoPaths = "[\"android.resource://com.inspekpro/drawable/logo_aplikasi\"]",
                     createdAt = System.currentTimeMillis() - 3600000
                 )
             )
@@ -143,7 +142,6 @@ class DashboardViewModel @Inject constructor(
                     description = "Korosi permukaan pada flange pipa kondensor.",
                     severity = FindingSeverity.MAJOR,
                     status = FindingStatus.IN_PROGRESS,
-                    photoPaths = "[\"android.resource://com.inspekpro/drawable/inspeksi_pro\"]",
                     createdAt = System.currentTimeMillis() - 7200000
                 )
             )
@@ -158,7 +156,6 @@ class DashboardViewModel @Inject constructor(
                     description = "Amplitudo getaran melebihi batas toleransi pada motor pompa utama.",
                     severity = FindingSeverity.CRITICAL,
                     status = FindingStatus.OPEN,
-                    photoPaths = "[\"android.resource://com.inspekpro/drawable/logo_aplikasi\", \"android.resource://com.inspekpro/drawable/inspeksi_pro\"]",
                     createdAt = System.currentTimeMillis() - 10800000
                 )
             )
@@ -173,7 +170,6 @@ class DashboardViewModel @Inject constructor(
                     description = "Deformasi kecil terdeteksi pada kaki penyangga tower.",
                     severity = FindingSeverity.OBSERVATION,
                     status = FindingStatus.RESOLVED,
-                    photoPaths = "[\"android.resource://com.inspekpro/drawable/logo_aplikasi\"]",
                     createdAt = System.currentTimeMillis() - 14400000
                 )
             )
@@ -213,7 +209,6 @@ class DashboardViewModel @Inject constructor(
 @HiltViewModel
 class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
-    private val findingRepo: FindingRepository,
     private val alarmScheduler: AlarmScheduler,
     private val firestoreSyncRepo: FirestoreSyncRepository
 ) : ViewModel() {
@@ -264,27 +259,25 @@ class CreateSessionViewModel @Inject constructor(
         manualInspector: String? = null,
         manualConclusion: String? = null,
         manualPhotos: List<String> = emptyList(),
-        manualVideo: String? = null,
-        findingCategory: String? = null,
-        findingPriority: String? = null,
-        findingDescription: String? = null,
-        findingPhotos: List<String> = emptyList()
+        manualVideo: String? = null
     ) {
         // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
         val finalTitle = manualTitle ?: title.value
         val finalLocation = manualLocation ?: locationName.value
         val finalInspector = manualInspector ?: inspectorName.value
 
-        if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
-            _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
-            return
-        }
-        
-        // Validasi: Waktu inspeksi tidak boleh kosong
-        if (_existingSession.value == null) {
-            if (scheduledDate.value == 0L) {
-                _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+        if (status == SessionStatus.COMPLETED) {
+            if (finalTitle.isBlank() || finalLocation.isBlank() || finalInspector.isBlank()) {
+                _createResult.value = CreateSessionResult.Error("Lengkapi nama objek, lokasi, dan inspektor")
                 return
+            }
+            
+            // Validasi: Waktu inspeksi tidak boleh kosong
+            if (_existingSession.value == null) {
+                if (scheduledDate.value == 0L) {
+                    _createResult.value = CreateSessionResult.Error("Pilih tanggal dan waktu inspeksi")
+                    return
+                }
             }
         }
 
@@ -293,6 +286,11 @@ class CreateSessionViewModel @Inject constructor(
             try {
                 val currentExisting = _existingSession.value
                 val sessionId: Long
+                val finalScheduledDate = if (scheduledDate.value == 0L) {
+                    System.currentTimeMillis()
+                } else {
+                    scheduledDate.value
+                }
 
                 if (currentExisting != null) {
                     // Update existing
@@ -300,7 +298,7 @@ class CreateSessionViewModel @Inject constructor(
                         title         = finalTitle.trim(),
                         locationName  = finalLocation.trim(),
                         inspectorName = finalInspector.trim(),
-                        scheduledDate = scheduledDate.value,
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         status        = status,
@@ -308,9 +306,6 @@ class CreateSessionViewModel @Inject constructor(
                     )
                     sessionRepo.updateSession(updatedSession)
                     sessionId = updatedSession.sessionId
-                    
-                    // Reschedule alarm
-                    alarmScheduler.schedule(updatedSession)
                 } else {
                     // Create new
                     val dateStr = SimpleDateFormat("yyyyMMdd-HHmm", Locale.getDefault()).format(Date())
@@ -322,7 +317,7 @@ class CreateSessionViewModel @Inject constructor(
                         locationName  = finalLocation.trim(),
                         inspectorName = finalInspector.trim(),
                         inspectorId   = inspectorId,
-                        scheduledDate = scheduledDate.value,
+                        scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
                         reportVideoPath = manualVideo ?: videoPath.value,
                         totalItems    = 0,
@@ -330,56 +325,6 @@ class CreateSessionViewModel @Inject constructor(
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)
-                    alarmScheduler.schedule(newSession.copy(sessionId = sessionId))
-                }
-
-                // Delete existing findings for this session to update with fresh values
-                try {
-                    val existingFindings = findingRepo.getFindingsBySession(sessionId).firstOrNull() ?: emptyList()
-                    for (f in existingFindings) {
-                        findingRepo.deleteFinding(f.findingId, sessionId)
-                    }
-                } catch (e: Exception) {
-                    // Ignore delete errors if none exist
-                }
-
-                // Save new finding if present
-                if (!findingDescription.isNullOrBlank() || findingPhotos.isNotEmpty()) {
-                    val severityVal = when (findingPriority?.trim()?.lowercase()) {
-                        "critical", "kritis", "gawat" -> FindingSeverity.CRITICAL
-                        "major", "mayor", "tinggi" -> FindingSeverity.MAJOR
-                        "minor", "sedang" -> FindingSeverity.MINOR
-                        "observation", "observasi", "rendah" -> FindingSeverity.OBSERVATION
-                        else -> FindingSeverity.MINOR
-                    }
-                    findingRepo.addFinding(
-                        InspectionFindingEntity(
-                            sessionId = sessionId,
-                            findingCode = "F-${System.currentTimeMillis()}",
-                            category = findingCategory?.ifBlank { "Mechanical" } ?: "Mechanical",
-                            title = findingCategory?.ifBlank { "Temuan Inspeksi" } ?: "Temuan Inspeksi",
-                            description = findingDescription ?: "",
-                            severity = severityVal,
-                            status = FindingStatus.OPEN,
-                            photoPaths = org.json.JSONArray(findingPhotos).toString()
-                        )
-                    )
-                }
-
-                // Save general photos as a documentation finding so they appear in reports
-                if (manualPhotos.isNotEmpty()) {
-                    findingRepo.addFinding(
-                        InspectionFindingEntity(
-                            sessionId = sessionId,
-                            findingCode = "F-GEN-${System.currentTimeMillis()}",
-                            category = "Dokumentasi",
-                            title = "Dokumentasi Umum Sesi",
-                            description = "Foto dokumentasi umum selama sesi inspeksi.",
-                            severity = FindingSeverity.OBSERVATION,
-                            status = FindingStatus.RESOLVED,
-                            photoPaths = org.json.JSONArray(manualPhotos).toString()
-                        )
-                    )
                 }
 
                 _createResult.value = CreateSessionResult.Success(sessionId)
