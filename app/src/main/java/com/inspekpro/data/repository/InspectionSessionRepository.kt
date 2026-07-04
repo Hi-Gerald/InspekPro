@@ -44,9 +44,6 @@ class InspectionSessionRepository(
     fun getSessionsByStatus(status: SessionStatus): Flow<List<InspectionSessionEntity>> =
         sessionDao.getSessionsByStatus(status)
 
-    fun searchSessions(query: String): Flow<List<InspectionSessionEntity>> =
-        sessionDao.searchSessions(query)
-
     suspend fun startSession(sessionId: Long) {
         sessionDao.startSession(sessionId, System.currentTimeMillis())
         sessionDao.markAsUnsynced(sessionId)
