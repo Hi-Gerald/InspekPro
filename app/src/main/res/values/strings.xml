@@ -144,4 +144,15 @@
     <string name="error_password_empty">Password tidak boleh kosong</string>
     <string name="error_confirm_password_empty">Konfirmasi Password tidak boleh kosong</string>
     <string name="error_password_mismatch">Password tidak cocok</string>
+
+    <!-- Add Inspection Fragment Strings -->
+    <string name="video_attached">Video dilampirkan</string>
+    <string name="video_recorded">Video direkam</string>
+    <string name="edit_inspection">Edit Inspeksi</string>
+    <string name="inspection_fields_filled">%1$d/%2$d diisi</string>
+    <string name="progress_percentage">%1$d%%</string>
+    <string name="location_coord_format">%1$.4f, %2$.4f</string>
+    <string name="error_address_conversion">Gagal konversi alamat, menggunakan koordinat</string>
+    <string name="searching_location">Mencari lokasi…</string>
+    <string name="error_location_not_found">Gagal mendapatkan lokasi. Pastikan GPS aktif.</string>
 </resources>

@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.net.Uri
@@ -13,13 +12,14 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
@@ -133,7 +133,7 @@ class AddInspectionFragment : Fragment() {
                 Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
             } else {
                 videoPath = it.toString()
-                binding.tvVideoPath.text = "Video dilampirkan"
+                binding.tvVideoPath.text = getString(R.string.video_attached)
                 binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
                 binding.btnVideoDelete.visibility = View.VISIBLE
                 updateProgress()
@@ -155,7 +155,7 @@ class AddInspectionFragment : Fragment() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         if (inspectionId != -1L) {
-            binding.tvHeaderTitle.text = "Edit Inspeksi"
+            binding.tvHeaderTitle.text = getString(R.string.edit_inspection)
             viewModel.loadSession(inspectionId)
         }
 
@@ -205,7 +205,7 @@ class AddInspectionFragment : Fragment() {
 
             insets
         }
-        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupFragmentResultListeners() {
@@ -221,7 +221,7 @@ class AddInspectionFragment : Fragment() {
                         Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
                     } else {
                         videoPath = it
-                        binding.tvVideoPath.text = "Video direkam"
+                        binding.tvVideoPath.text = getString(R.string.video_recorded)
                         binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
                         binding.btnVideoDelete.visibility = View.VISIBLE
                     }
@@ -321,7 +321,7 @@ class AddInspectionFragment : Fragment() {
 
                     // Paint for rounded rect background
                     val paint = android.graphics.Paint().apply {
-                        color = android.graphics.Color.parseColor("#E53935") // Elegant Material Red
+                        color = "#E53935".toColorInt() // Elegant Material Red
                         isAntiAlias = true
                     }
 
@@ -452,7 +452,7 @@ class AddInspectionFragment : Fragment() {
         }
         binding.btnVideoDelete.setOnClickListener {
             videoPath = null
-            binding.tvVideoPath.text = "Belum ada video dipilih"
+            binding.tvVideoPath.text = getString(R.string.belum_ada_video)
             binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
             binding.btnVideoDelete.visibility = View.GONE
             updateProgress()
@@ -511,13 +511,13 @@ class AddInspectionFragment : Fragment() {
             return
         }
 
-        Toast.makeText(requireContext(), "Mencari lokasi...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.searching_location), Toast.LENGTH_SHORT).show()
         
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 getAddressFromLocation(location.latitude, location.longitude)
             } else {
-                Toast.makeText(requireContext(), "Gagal mendapatkan lokasi. Pastikan GPS aktif.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.error_location_not_found), Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
             Toast.makeText(requireContext(), "Error: ${it.message}", Toast.LENGTH_SHORT).show()
@@ -538,6 +538,7 @@ class AddInspectionFragment : Fragment() {
                     }
                 }
             } else {
+                @Suppress("DEPRECATION")
                 val addresses = geocoder.getFromLocation(lat, lon, 1)
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0].getAddressLine(0)
@@ -545,9 +546,9 @@ class AddInspectionFragment : Fragment() {
                     updateProgress()
                 }
             }
-        } catch (e: Exception) {
-            binding.etLocation.setText("$lat, $lon")
-            Toast.makeText(requireContext(), "Gagal konversi alamat, menggunakan koordinat", Toast.LENGTH_SHORT).show()
+        } catch (_: Exception) {
+            binding.etLocation.setText(getString(R.string.location_coord_format, lat, lon))
+            Toast.makeText(requireContext(), getString(R.string.error_address_conversion), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -731,8 +732,8 @@ class AddInspectionFragment : Fragment() {
 
         val percent = ((filledFields.toDouble() / totalFields) * 100).toInt().coerceAtMost(100)
         
-        binding.tvBadgeProgressFields.text = "$filledFields/$totalFields diisi"
-        binding.tvBadgeProgressPercent.text = "$percent%"
+        binding.tvBadgeProgressFields.text = getString(R.string.inspection_fields_filled, filledFields, totalFields)
+        binding.tvBadgeProgressPercent.text = getString(R.string.progress_percentage, percent)
         binding.circularProgress.setProgress(percent, true)
     }
 
@@ -846,7 +847,7 @@ class AddInspectionFragment : Fragment() {
                             
                             it.reportVideoPath?.let { path ->
                                 videoPath = path
-                                binding.tvVideoPath.text = "Video dilampirkan"
+                                binding.tvVideoPath.text = getString(R.string.video_attached)
                                 binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
                                 binding.btnVideoDelete.visibility = View.VISIBLE
                             }
@@ -931,7 +932,7 @@ class AddInspectionFragment : Fragment() {
             videoView.visibility = View.VISIBLE
             
             try {
-                videoView.setVideoURI(Uri.parse(path))
+                videoView.setVideoURI(path.toUri())
                 videoView.setOnPreparedListener { mp ->
                     mp.isLooping = true
                     mp.start()
@@ -942,7 +943,7 @@ class AddInspectionFragment : Fragment() {
                     Glide.with(requireContext()).load(path).into(imageView)
                     true
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 videoView.visibility = View.GONE
                 imageView.visibility = View.VISIBLE
                 Glide.with(requireContext()).load(path).into(imageView)
@@ -993,7 +994,7 @@ class AddInspectionFragment : Fragment() {
 
     private fun getUriSizeInBytes(context: Context, uriString: String): Long {
         return try {
-            val uri = Uri.parse(uriString)
+            val uri = uriString.toUri()
             if (uri.scheme == "content" || uri.scheme == "android.resource") {
                 context.contentResolver.openAssetFileDescriptor(uri, "r")?.use {
                     it.length
@@ -1002,7 +1003,7 @@ class AddInspectionFragment : Fragment() {
                 val file = java.io.File(uri.path ?: "")
                 if (file.exists()) file.length() else 0L
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             0L
         }
     }
@@ -1010,8 +1011,9 @@ class AddInspectionFragment : Fragment() {
     private fun setupTouchClearFocus(view: View) {
         // Set up touch listener for non-textbox views to hide keyboard and clear focus
         if (view !is android.widget.EditText) {
-            view.setOnTouchListener { _, _ ->
+            view.setOnTouchListener { v, _ ->
                 hideKeyboard()
+                v.performClick()
                 false
             }
         }

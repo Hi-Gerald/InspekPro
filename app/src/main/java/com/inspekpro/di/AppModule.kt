@@ -60,7 +60,7 @@ object AppModule {
     fun provideFirestore(): FirebaseFirestore? = try {
         // Coba ambil instance default, jika gagal (misal: config missing) akan lempar IllegalStateException
         FirebaseFirestore.getInstance()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
 
@@ -73,7 +73,7 @@ object AppModule {
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth? = try {
         FirebaseAuth.getInstance()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
 
