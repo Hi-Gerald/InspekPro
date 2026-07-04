@@ -452,8 +452,7 @@
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileScrollView"
-        app:layout_constraintVertical_bias="1.0"
-        tools:ignore="NotSibling">
+        app:layout_constraintVertical_bias="1.0">
 
         <View
             android:id="@+id/bottomNavDivider"
@@ -467,7 +466,9 @@
             android:layout_width="match_parent"
             android:layout_height="72dp"
             android:orientation="horizontal"
-            android:weightSum="5">
+            android:weightSum="5"
+            app:layout_constraintTop_toBottomOf="@id/bottomNavDivider"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <!-- Tab 1: Dashboard -->
             <LinearLayout

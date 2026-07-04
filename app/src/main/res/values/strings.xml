@@ -130,6 +130,18 @@
     <string name="terms_prefix">Saya menyetujui </string>
     <string name="terms_link">syarat dan ketentuan</string>
     <string name="btn_register">Daftar</string>
+    <string name="btn_register_loading">Mendaftarkan…</string>
+    <string name="toast_register_success">Pendaftaran berhasil! Silakan masuk.</string>
+    <string name="error_terms_required">Anda harus menyetujui syarat &amp; ketentuan</string>
     <string name="already_have_account">Sudah punya akun? </string>
     <string name="login_link">Masuk</string>
+
+    <!-- Validation Errors -->
+    <string name="error_name_empty">Nama Lengkap tidak boleh kosong</string>
+    <string name="error_email_empty">Email tidak boleh kosong</string>
+    <string name="error_email_invalid">Format email tidak valid</string>
+    <string name="error_company_empty">Nama Perusahaan tidak boleh kosong</string>
+    <string name="error_password_empty">Password tidak boleh kosong</string>
+    <string name="error_confirm_password_empty">Konfirmasi Password tidak boleh kosong</string>
+    <string name="error_password_mismatch">Password tidak cocok</string>
 </resources>
