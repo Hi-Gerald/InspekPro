@@ -110,6 +110,8 @@ object PdfGenerator {
             return localY
         }
 
+        var logoHeightUsed = 0f
+        
         // Draw Company Logo if exists
         val logoFile = File(context.filesDir, "company_logo_${userId}.jpg")
         if (logoFile.exists()) {
@@ -129,17 +131,25 @@ object PdfGenerator {
                         logoWidth = (maxLogoHeight * ratio).toInt()
                     }
                     val scaled = Bitmap.createScaledBitmap(bitmap, logoWidth, logoHeight, true)
-                    canvas.drawBitmap(scaled, MARGIN, currentY, null)
-                    currentY += logoHeight + 12
+                    
+                    // Draw logo in the top-right corner
+                    val logoX = PAGE_WIDTH - MARGIN - logoWidth
+                    canvas.drawBitmap(scaled, logoX, currentY, null)
+                    logoHeightUsed = logoHeight.toFloat()
                 }
             } catch (e: Exception) {
                 // Ignore if logo loading fails
             }
         }
 
-        // Document Title
-        canvas.drawText("LAPORAN INSPEKSI TEKNIS", MARGIN, currentY + 16, paintTitle)
-        currentY += 28f
+        // Document Title on the left side, vertically centered relative to the logo if logo exists
+        val titleY = if (logoHeightUsed > 0f) {
+            currentY + (logoHeightUsed / 2f) + (paintTitle.textSize / 3f)
+        } else {
+            currentY + 16f
+        }
+        canvas.drawText("LAPORAN INSPEKSI TEKNIS", MARGIN, titleY, paintTitle)
+        currentY += Math.max(logoHeightUsed, 28f) + 12f
 
         // Draw Metadata Info Card
         canvas.drawText("NOMOR LAPORAN: $reportNo", MARGIN, currentY, paintBold)

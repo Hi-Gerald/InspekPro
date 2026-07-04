@@ -73,6 +73,14 @@
         <action
             android:id="@+id/action_dashboardFragment_to_reportFragment"
             app:destination="@id/reportFragment" />
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -185,6 +193,14 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
+            android:id="@+id/action_inspectionListFragment_to_scheduleFragment"
+            app:destination="@id/scheduleFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
             android:id="@+id/action_inspectionListFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
         <action
@@ -234,4 +250,15 @@
             app:argType="long" />
     </fragment>
 
+    <fragment
+        android:id="@+id/scheduleFragment"
+        android:name="com.inspekpro.ui.ScheduleFragment"
+        android:label="Jadwal Inspeksi"
+        tools:layout="@layout/fragment_schedule" />
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.inspekpro.ui.NotificationFragment"
+        android:label="Notifikasi"
+        tools:layout="@layout/fragment_notification" />
 </navigation>

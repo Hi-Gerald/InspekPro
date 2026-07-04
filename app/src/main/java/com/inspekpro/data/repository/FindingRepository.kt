@@ -29,6 +29,11 @@ class FindingRepository(
         sessionRepository.refreshSummary(sessionId)
     }
 
+    suspend fun deleteFindingsForSession(sessionId: Long) {
+        findingDao.deleteFindingsBySession(sessionId)
+        sessionRepository.refreshSummary(sessionId)
+    }
+
     fun getFindingsBySession(sessionId: Long): Flow<List<InspectionFindingEntity>> =
         findingDao.getFindingsBySession(sessionId)
 

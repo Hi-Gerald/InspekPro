@@ -171,8 +171,9 @@ class ReportDetailFragment : Fragment() {
                         binding.ivCover.setImageResource(R.drawable.ic_report)
                     }
 
-                    // Display priority
+                    // Display priority if findings exist, otherwise hide it
                     if (findings.isNotEmpty()) {
+                        binding.layoutPriority.visibility = View.VISIBLE
                         val highestPriority = findings.maxByOrNull { it.severity.ordinal }?.severity?.name ?: "MINOR"
                         binding.tvPriority.text = when (highestPriority) {
                             "CRITICAL" -> "Kritis"
@@ -181,7 +182,7 @@ class ReportDetailFragment : Fragment() {
                             else -> "Observasi"
                         }
                     } else {
-                        binding.tvPriority.text = "Normal"
+                        binding.layoutPriority.visibility = View.GONE
                     }
                 }
             }

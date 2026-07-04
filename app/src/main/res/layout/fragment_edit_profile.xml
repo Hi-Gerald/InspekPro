@@ -355,10 +355,7 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
-                app:backgroundTint="@color/primary"
-                app:icon="@drawable/ic_check"
-                app:iconTint="@color/white"
-                app:iconGravity="textStart" />
+                app:backgroundTint="@color/primary" />
 
             <ProgressBar
                 android:id="@+id/progressBar"

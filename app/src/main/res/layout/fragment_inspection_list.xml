@@ -251,48 +251,14 @@
                                 app:drawableStartCompat="@drawable/ic_calendar"
                                 app:drawableTint="@color/primary" />
 
-                            <LinearLayout
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvScheduleToday"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:orientation="horizontal">
-
-                                <com.google.android.material.card.MaterialCardView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginEnd="4dp"
-                                    app:cardCornerRadius="8dp"
-                                    app:cardElevation="0dp"
-                                    app:cardBackgroundColor="@color/white">
-                                    <androidx.constraintlayout.widget.ConstraintLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:padding="8dp">
-                                        <TextView android:id="@+id/tvSch1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Turbin Uap #1" android:textSize="11sp" android:textStyle="bold" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Area Boiler - Plant B" android:textSize="9sp" android:textColor="@color/text_secondary" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/tvSch1"/>
-                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="08.00" android:textSize="9sp" android:textStyle="bold" android:textColor="@color/text_primary" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-                                    </androidx.constraintlayout.widget.ConstraintLayout>
-                                </com.google.android.material.card.MaterialCardView>
-
-                                <com.google.android.material.card.MaterialCardView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="4dp"
-                                    app:cardCornerRadius="8dp"
-                                    app:cardElevation="0dp"
-                                    app:cardBackgroundColor="@color/white">
-                                    <androidx.constraintlayout.widget.ConstraintLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:padding="8dp">
-                                        <TextView android:id="@+id/tvSch2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Turbin Uap #2" android:textSize="11sp" android:textStyle="bold" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Area Boiler - Plant C" android:textSize="9sp" android:textColor="@color/text_secondary" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/tvSch2"/>
-                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10.00" android:textSize="9sp" android:textStyle="bold" android:textColor="@color/text_primary" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-                                    </androidx.constraintlayout.widget.ConstraintLayout>
-                                </com.google.android.material.card.MaterialCardView>
-                            </LinearLayout>
+                                android:orientation="horizontal"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:listitem="@layout/item_schedule_card" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 

@@ -175,6 +175,7 @@ class ReportFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.filteredReports.collectLatest { reports ->
+                    binding.tvTotalReports.text = "Total ${reports.size} Laporan"
                     if (reports.isEmpty()) {
                         binding.rvReports.visibility = View.GONE
                         binding.emptyStateContainer.visibility = View.VISIBLE
@@ -183,6 +184,14 @@ class ReportFragment : Fragment() {
                         binding.rvReports.visibility = View.VISIBLE
                         reportAdapter.submitList(reports)
                     }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.sortOption.collectLatest { sort ->
+                    binding.tvCurrentSort.text = if (sort == "newest") "Terbaru" else "Terlama"
                 }
             }
         }
