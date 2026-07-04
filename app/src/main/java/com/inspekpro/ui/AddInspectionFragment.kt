@@ -39,6 +39,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.inspekpro.R
 import com.inspekpro.data.local.entity.SessionStatus
+import com.inspekpro.data.local.entity.FindingSeverity
+import com.inspekpro.data.local.entity.InspectionFindingEntity
 import com.inspekpro.databinding.FragmentAddInspectionBinding
 import com.inspekpro.ui.viewmodel.CreateSessionResult
 import com.inspekpro.ui.viewmodel.CreateSessionViewModel
@@ -72,6 +74,7 @@ class AddInspectionFragment : Fragment() {
     private val photos = mutableListOf<String>()
     private val findingPhotos = mutableListOf<String>()
     private var videoPath: String? = null
+    private val localToOriginalUriMap = mutableMapOf<String, String>()
     private val calendar = Calendar.getInstance()
 
     // Temp URIs for Camera Capture
@@ -99,37 +102,80 @@ class AddInspectionFragment : Fragment() {
     // Activity Results for Media
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
-            val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 100 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            val originalUri = it.toString()
+            if (localToOriginalUriMap.values.contains(originalUri)) {
+                Toast.makeText(requireContext(), "Foto ini sudah ditambahkan", Toast.LENGTH_SHORT).show()
+                return@let
+            }
+            val size = getUriSizeInBytes(requireContext(), originalUri)
+            if (size > 4 * 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
-                addPhotoToList(it.toString(), isFinding = false) 
+                val localPath = copyUriToLocalFiles(originalUri, "inspekpro_photo", "jpg")
+                if (localPath != null) {
+                    addPhotoToList(localPath, isFinding = false) 
+                } else {
+                    Toast.makeText(requireContext(), "Gagal menyalin foto", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
     
     private val pickFindingImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
-            val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 100 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran foto temuan maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+            val originalUri = it.toString()
+            if (localToOriginalUriMap.values.contains(originalUri)) {
+                Toast.makeText(requireContext(), "Foto temuan ini sudah ditambahkan", Toast.LENGTH_SHORT).show()
+                return@let
+            }
+            val size = getUriSizeInBytes(requireContext(), originalUri)
+            if (size > 4 * 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran foto temuan maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
             } else {
-                addPhotoToList(it.toString(), isFinding = true) 
+                val localPath = copyUriToLocalFiles(originalUri, "inspekpro_photo_finding", "jpg")
+                if (localPath != null) {
+                    addPhotoToList(localPath, isFinding = true) 
+                } else {
+                    Toast.makeText(requireContext(), "Gagal menyalin foto temuan", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     private val pickVideo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { 
-            val size = getUriSizeInBytes(requireContext(), it.toString())
-            if (size > 1024 * 1024) {
-                Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+            val originalUri = it.toString()
+            if (videoPath != null && localToOriginalUriMap[videoPath!!] == originalUri) {
+                Toast.makeText(requireContext(), "Video ini sudah dilampirkan", Toast.LENGTH_SHORT).show()
+                return@let
+            }
+            val size = getUriSizeInBytes(requireContext(), originalUri)
+            if (size > 5L * 1024 * 1024 * 1024) {
+                Toast.makeText(requireContext(), "Ukuran video maksimal 5 GB (.mp4)", Toast.LENGTH_SHORT).show()
             } else {
-                videoPath = it.toString()
-                binding.tvVideoPath.text = "Video dilampirkan"
-                binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
-                binding.btnVideoDelete.visibility = View.VISIBLE
-                updateProgress()
+                // Delete previous video file if exists
+                videoPath?.let { oldPath ->
+                    deleteLocalFile(oldPath)
+                }
+
+                val localPath = copyUriToLocalFiles(originalUri, "inspekpro_video", "mp4")
+                if (localPath != null) {
+                    videoPath = localPath
+                    binding.tvVideoPath.text = "Video dilampirkan"
+                    binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    binding.btnVideoDelete.visibility = View.VISIBLE
+                    
+                    // Show video preview immediately
+                    binding.cardVideoPreview.visibility = View.VISIBLE
+                    Glide.with(requireContext())
+                        .load(localPath)
+                        .frame(1000000)
+                        .into(binding.ivVideoThumbnail)
+
+                    updateProgress()
+                } else {
+                    Toast.makeText(requireContext(), "Gagal menyalin video", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -160,9 +206,7 @@ class AddInspectionFragment : Fragment() {
         observeViewModel()
         setupFragmentResultListeners()
         updateProgress()
-        setupTouchClearFocus(binding.root)
-        setupKeyboardDismissOnScroll()
-
+        
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 handleBackNavigation()
@@ -206,22 +250,49 @@ class AddInspectionFragment : Fragment() {
             val isFinding = bundle.getBoolean("isFinding")
             val isVideo = bundle.getBoolean("isVideo")
 
-            uri?.let {
-                val size = getUriSizeInBytes(requireContext(), it)
+            uri?.let { originalUri ->
+                if (localToOriginalUriMap.values.contains(originalUri)) {
+                    Toast.makeText(requireContext(), "Media ini sudah ditambahkan", Toast.LENGTH_SHORT).show()
+                    return@let
+                }
+                val size = getUriSizeInBytes(requireContext(), originalUri)
                 if (isVideo) {
-                    if (size > 1024 * 1024) {
-                        Toast.makeText(requireContext(), "Ukuran video maksimal 1 MB (.mp4)", Toast.LENGTH_SHORT).show()
+                    if (size > 5L * 1024 * 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran video maksimal 5 GB (.mp4)", Toast.LENGTH_SHORT).show()
                     } else {
-                        videoPath = it
-                        binding.tvVideoPath.text = "Video direkam"
-                        binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
-                        binding.btnVideoDelete.visibility = View.VISIBLE
+                        // Delete previous video file if exists
+                        videoPath?.let { oldPath ->
+                            deleteLocalFile(oldPath)
+                        }
+
+                        val localPath = copyUriToLocalFiles(originalUri, "inspekpro_video_rec", "mp4")
+                        if (localPath != null) {
+                            videoPath = localPath
+                            binding.tvVideoPath.text = "Video direkam"
+                            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                            binding.btnVideoDelete.visibility = View.VISIBLE
+
+                            // Show video preview immediately
+                            binding.cardVideoPreview.visibility = View.VISIBLE
+                            Glide.with(requireContext())
+                                .load(localPath)
+                                .frame(1000000)
+                                .into(binding.ivVideoThumbnail)
+                        } else {
+                            Toast.makeText(requireContext(), "Gagal menyalin video rekaman", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } else {
-                    if (size > 100 * 1024) {
-                        Toast.makeText(requireContext(), "Ukuran foto maksimal 100 KB (.jpg/.png)", Toast.LENGTH_SHORT).show()
+                    if (size > 4 * 1024 * 1024) {
+                        Toast.makeText(requireContext(), "Ukuran foto maksimal 4 MB (.jpg/.png)", Toast.LENGTH_SHORT).show()
                     } else {
-                        addPhotoToList(it, isFinding = isFinding)
+                        val prefix = if (isFinding) "inspekpro_photo_cam_finding" else "inspekpro_photo_cam"
+                        val localPath = copyUriToLocalFiles(originalUri, prefix, "jpg")
+                        if (localPath != null) {
+                            addPhotoToList(localPath, isFinding = isFinding)
+                        } else {
+                            Toast.makeText(requireContext(), "Gagal menyalin foto kamera", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 updateProgress()
@@ -229,16 +300,32 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
-    private fun setupFormDefaults() {
+private fun setupFormDefaults() {
         if (inspectionId == -1L) {
             binding.etDate.setText("")
             binding.etTime.setText("")
             binding.etInspector.setText("")
         }
         
+        // Restore video preview if it is already selected/recorded
+        if (videoPath != null) {
+            binding.tvVideoPath.text = if (videoPath!!.contains("video_rec")) "Video direkam" else "Video dilampirkan"
+            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+            binding.btnVideoDelete.visibility = View.VISIBLE
+            binding.cardVideoPreview.visibility = View.VISIBLE
+            Glide.with(requireContext())
+                .load(videoPath)
+                .frame(1000000)
+                .into(binding.ivVideoThumbnail)
+        } else {
+            binding.tvVideoPath.text = "Belum ada video dipilih"
+            binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
+            binding.btnVideoDelete.visibility = View.GONE
+            binding.cardVideoPreview.visibility = View.GONE
+        }
+        
         binding.rbNoFindings.isChecked = true
         binding.findingDetailsContainer.visibility = View.GONE
-        binding.btnVideoDelete.visibility = View.GONE
     }
 
     private fun setupRecyclerViews() {
@@ -261,11 +348,8 @@ class AddInspectionFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = checklistAdapter
         }
-        checklistAdapter.submitList(checklistItems.toList())
 
-        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
-            0, ItemTouchHelper.LEFT
-        ) {
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -275,8 +359,7 @@ class AddInspectionFragment : Fragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 if (position >= 0 && position < checklistItems.size) {
-                    val deletedItem = checklistItems[position]
-                    checklistItems.removeAt(position)
+                    val deletedItem = checklistItems.removeAt(position)
                     checklistAdapter.submitList(checklistItems.toList())
                     updateProgress()
 
@@ -360,9 +443,12 @@ class AddInspectionFragment : Fragment() {
 
         photoAdapter = PhotoAdapter(
             onRemoveClick = { position ->
-                photos.removeAt(position)
-                photoAdapter.submitList(photos.toList())
-                updateProgress()
+                if (position >= 0 && position < photos.size) {
+                    val path = photos.removeAt(position)
+                    deleteLocalFile(path)
+                    photoAdapter.submitList(photos.toList())
+                    updateProgress()
+                }
             },
             onItemClick = { path -> showMediaPreview(path) }
         )
@@ -373,9 +459,12 @@ class AddInspectionFragment : Fragment() {
         
         findingPhotoAdapter = PhotoAdapter(
             onRemoveClick = { position ->
-                findingPhotos.removeAt(position)
-                findingPhotoAdapter.submitList(findingPhotos.toList())
-                updateProgress()
+                if (position >= 0 && position < findingPhotos.size) {
+                    val path = findingPhotos.removeAt(position)
+                    deleteLocalFile(path)
+                    findingPhotoAdapter.submitList(findingPhotos.toList())
+                    updateProgress()
+                }
             },
             onItemClick = { path -> showMediaPreview(path) }
         )
@@ -383,11 +472,15 @@ class AddInspectionFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = findingPhotoAdapter
         }
+
+        // Submit the existing lists immediately so they are shown when the view is recreated
+        photoAdapter.submitList(photos.toList())
+        findingPhotoAdapter.submitList(findingPhotos.toList())
+        checklistAdapter.submitList(checklistItems.toList())
     }
 
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener { handleBackNavigation() }
-
         binding.locationInputLayout.setEndIconOnClickListener {
             checkLocationPermissionAndGet()
         }
@@ -435,11 +528,20 @@ class AddInspectionFragment : Fragment() {
             saveInspection(SessionStatus.COMPLETED)
         }
         binding.btnVideoDelete.setOnClickListener {
+            videoPath?.let { oldPath ->
+                deleteLocalFile(oldPath)
+            }
             videoPath = null
             binding.tvVideoPath.text = "Belum ada video dipilih"
             binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
             binding.btnVideoDelete.visibility = View.GONE
+            binding.cardVideoPreview.visibility = View.GONE
             updateProgress()
+        }
+        binding.cardVideoPreview.setOnClickListener {
+            videoPath?.let { path ->
+                showMediaPreview(path)
+            }
         }
     }
 
@@ -691,6 +793,11 @@ class AddInspectionFragment : Fragment() {
             val locationText = binding.etLocation.text.toString().trim()
             val inspectorText = binding.etInspector.text.toString().trim()
             val conclusionText = binding.etConclusion.text.toString().trim()
+
+            val hasFindings = binding.rbHasFindings.isChecked
+            val findingCategory = binding.etFindingCategory.text.toString().trim()
+            val findingPriority = binding.etPriority.text.toString().trim()
+            val findingDescription = binding.etFindingDescription.text.toString().trim()
             
             // Pass all data directly to avoid StateFlow propagation delays
             viewModel.createSession(
@@ -701,7 +808,12 @@ class AddInspectionFragment : Fragment() {
                 manualInspector = inspectorText,
                 manualConclusion = conclusionText,
                 manualPhotos = photos.toList(),
-                manualVideo = videoPath
+                manualVideo = videoPath,
+                hasFindings = hasFindings,
+                findingCategory = if (hasFindings) findingCategory else null,
+                findingPriority = if (hasFindings) findingPriority else null,
+                findingDescription = if (hasFindings) findingDescription else null,
+                findingPhotos = if (hasFindings) findingPhotos.toList() else emptyList()
             )
         }
     }
@@ -793,15 +905,94 @@ class AddInspectionFragment : Fragment() {
                                 binding.etTime.setText("")
                             }
                             
+                            // Restore video preview immediately
                             it.reportVideoPath?.let { path ->
                                 videoPath = path
                                 binding.tvVideoPath.text = "Video dilampirkan"
                                 binding.tvVideoPath.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
                                 binding.btnVideoDelete.visibility = View.VISIBLE
+                                
+                                binding.cardVideoPreview.visibility = View.VISIBLE
+                                Glide.with(requireContext())
+                                    .load(path)
+                                    .frame(1000000)
+                                    .into(binding.ivVideoThumbnail)
+
+                                // Keep track of the file to prevent duplicate addition
+                                localToOriginalUriMap[path] = path
+                            }
+
+                            // Restore general photos immediately
+                            // TODO: Storing serialized photos JSON inside the description column is a temporary workaround to avoid database schema migrations.
+                            // In the next database version, this should be normalized into a separate InspectionSessionPhoto table.
+                            if (!it.description.isNullOrBlank()) {
+                                try {
+                                    val gson = com.google.gson.Gson()
+                                    val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                                    val parsedPhotos: List<String> = gson.fromJson(it.description, type)
+                                    photos.clear()
+                                    photos.addAll(parsedPhotos)
+                                    photoAdapter.submitList(photos.toList())
+
+                                    // Keep track of these files to prevent duplicates
+                                    parsedPhotos.forEach { path ->
+                                        localToOriginalUriMap[path] = path
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                             }
                             
                             updateProgress()
                         }
+                    }
+                }
+
+                launch {
+                    viewModel.existingFindings.collectLatest { findings ->
+                        if (findings.isNotEmpty()) {
+                            val finding = findings.first()
+                            binding.rbHasFindings.isChecked = true
+                            binding.findingDetailsContainer.visibility = View.VISIBLE
+                            binding.etFindingCategory.setText(finding.category)
+                            
+                            val priorityStr = when (finding.severity) {
+                                FindingSeverity.CRITICAL -> "Kritis"
+                                FindingSeverity.MAJOR -> "Mayor"
+                                FindingSeverity.MINOR -> "Minor"
+                                else -> "Observasi"
+                            }
+                            binding.etPriority.setText(priorityStr)
+                            binding.etFindingDescription.setText(finding.description)
+                            
+                            // Restore finding photos immediately
+                            if (!finding.photoPaths.isNullOrBlank()) {
+                                try {
+                                    val gson = com.google.gson.Gson()
+                                    val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                                    val parsedFindingPhotos: List<String> = gson.fromJson(finding.photoPaths, type)
+                                    findingPhotos.clear()
+                                    findingPhotos.addAll(parsedFindingPhotos)
+                                    findingPhotoAdapter.submitList(findingPhotos.toList())
+                                    
+                                    // Add to localToOriginalUriMap to avoid duplicate addition
+                                    parsedFindingPhotos.forEach { path ->
+                                        localToOriginalUriMap[path] = path
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        } else {
+                            binding.rbNoFindings.isChecked = true
+                            binding.findingDetailsContainer.visibility = View.GONE
+                            binding.etFindingCategory.setText("")
+                            binding.etPriority.setText("")
+                            binding.etFindingDescription.setText("")
+                            findingPhotos.clear()
+                            findingPhotoAdapter.submitList(emptyList())
+                        }
+                        updateProgress()
                     }
                 }
 
@@ -956,36 +1147,42 @@ class AddInspectionFragment : Fragment() {
         }
     }
 
-    private fun setupTouchClearFocus(view: View) {
-        // Set up touch listener for non-textbox views to hide keyboard and clear focus
-        if (view !is android.widget.EditText) {
-            view.setOnTouchListener { _, _ ->
-                hideKeyboard()
-                false
-            }
-        }
-
-        // If a view group, iterate over children
-        if (view is ViewGroup) {
-            for (i in 0 until view.childCount) {
-                val child = view.getChildAt(i)
-                setupTouchClearFocus(child)
-            }
-        }
-    }
-
-    private fun setupKeyboardDismissOnScroll() {
-        binding.nestedScrollView.setOnScrollChangeListener { _, _, _, _, _ ->
-            hideKeyboard()
-        }
-    }
-
     private fun hideKeyboard() {
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         val currentFocus = activity?.currentFocus
         if (currentFocus != null) {
             imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
             currentFocus.clearFocus()
+        }
+    }
+
+    private fun copyUriToLocalFiles(uriString: String, prefix: String, extension: String): String? {
+        return try {
+            val uri = Uri.parse(uriString)
+            val inputStream = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val filesDir = requireContext().filesDir
+            val destFile = java.io.File(filesDir, "${prefix}_${System.currentTimeMillis()}.${extension}")
+            java.io.FileOutputStream(destFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            val localPath = destFile.absolutePath
+            localToOriginalUriMap[localPath] = uriString
+            localPath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun deleteLocalFile(path: String) {
+        try {
+            val file = java.io.File(path)
+            if (file.exists()) {
+                file.delete()
+            }
+            localToOriginalUriMap.remove(path)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

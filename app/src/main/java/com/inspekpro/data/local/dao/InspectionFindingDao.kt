@@ -24,6 +24,9 @@ interface InspectionFindingDao {
     @Query("DELETE FROM inspection_findings WHERE finding_id = :findingId")
     suspend fun deleteFindingById(findingId: Long)
 
+    @Query("DELETE FROM inspection_findings WHERE session_id = :sessionId")
+    suspend fun deleteFindingsBySession(sessionId: Long)
+
     // ─── QUERIES ──────────────────────────────────────────────────────────────
 
     @Query("SELECT * FROM inspection_findings WHERE session_id = :sessionId ORDER BY created_at ASC")

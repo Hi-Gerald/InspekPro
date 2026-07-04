@@ -49,20 +49,28 @@ class ReportAdapter(
             binding.tvLocation.text = session.locationName
             
             val formattedDate = dateFormat.format(Date(session.scheduledDate))
-            binding.tvDateAndInspector.text = "$formattedDate • Oleh ${session.inspectorName}"
+            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val formattedTime = timeFormat.format(Date(session.scheduledDate))
+            binding.tvDate.text = "$formattedDate, $formattedTime"
+            binding.tvInspector.text = session.inspectorName
 
             // Setup cover image loading asynchronously using lifecycle scope of ViewTree
             binding.ivCover.setImageResource(R.drawable.ic_report)
+            binding.ivCover.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#64748B"))
+            
             itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                 val path = loadCoverPhoto(session.sessionId)
                 if (path != null) {
+                    binding.ivCover.imageTintList = null
                     Glide.with(context)
                         .load(path)
                         .placeholder(R.drawable.ic_report)
                         .error(R.drawable.ic_report)
+                        .centerCrop()
                         .into(binding.ivCover)
                 } else {
                     binding.ivCover.setImageResource(R.drawable.ic_report)
+                    binding.ivCover.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#64748B"))
                 }
             }
 

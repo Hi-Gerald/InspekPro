@@ -100,24 +100,6 @@ class DashboardViewModel @Inject constructor(
                 )
             )
 
-            val s3Id = sessionRepo.createSession(
-                InspectionSessionEntity(
-                    sessionId = 3,
-                    sessionCode = "INS-2026-003",
-                    title = "Cooling Tower System",
-                    locationName = "Plant A - Section 5",
-                    inspectorName = "Sofia",
-                    inspectorId = "INS-001",
-                    status = SessionStatus.COMPLETED,
-                    scheduledDate = System.currentTimeMillis() - 172800000,
-                    totalItems = 5,
-                    passedItems = 5,
-                    failedItems = 0,
-                    weatherCondition = "Berawan Sebagian",
-                    weatherTempCelsius = 28.0
-                )
-            )
-
             findingRepo.addFinding(
                 InspectionFindingEntity(
                     findingId = 1,
@@ -159,20 +141,6 @@ class DashboardViewModel @Inject constructor(
                     createdAt = System.currentTimeMillis() - 10800000
                 )
             )
-
-            findingRepo.addFinding(
-                InspectionFindingEntity(
-                    findingId = 4,
-                    sessionId = s3Id,
-                    findingCode = "F-004",
-                    category = "Structural",
-                    title = "Deformasi Ringan pada Support Beam",
-                    description = "Deformasi kecil terdeteksi pada kaki penyangga tower.",
-                    severity = FindingSeverity.OBSERVATION,
-                    status = FindingStatus.RESOLVED,
-                    createdAt = System.currentTimeMillis() - 14400000
-                )
-            )
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -210,7 +178,8 @@ class DashboardViewModel @Inject constructor(
 class CreateSessionViewModel @Inject constructor(
     private val sessionRepo: InspectionSessionRepository,
     private val alarmScheduler: AlarmScheduler,
-    private val firestoreSyncRepo: FirestoreSyncRepository
+    private val firestoreSyncRepo: FirestoreSyncRepository,
+    private val findingRepo: FindingRepository
 ) : ViewModel() {
 
     val title = MutableStateFlow("")
@@ -226,6 +195,9 @@ class CreateSessionViewModel @Inject constructor(
 
     private val _existingSession = MutableStateFlow<InspectionSessionEntity?>(null)
     val existingSession: StateFlow<InspectionSessionEntity?> = _existingSession.asStateFlow()
+
+    private val _existingFindings = MutableStateFlow<List<InspectionFindingEntity>>(emptyList())
+    val existingFindings: StateFlow<List<InspectionFindingEntity>> = _existingFindings.asStateFlow()
 
     val isFormValid: StateFlow<Boolean> = combine(title, locationName, inspectorName) { t, l, i ->
         t.isNotBlank() && l.isNotBlank() && i.isNotBlank()
@@ -249,6 +221,11 @@ class CreateSessionViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            findingRepo.getFindingsBySession(sessionId).collectLatest { list ->
+                _existingFindings.value = list
+            }
+        }
     }
 
     fun createSession(
@@ -259,7 +236,12 @@ class CreateSessionViewModel @Inject constructor(
         manualInspector: String? = null,
         manualConclusion: String? = null,
         manualPhotos: List<String> = emptyList(),
-        manualVideo: String? = null
+        manualVideo: String? = null,
+        hasFindings: Boolean = false,
+        findingCategory: String? = null,
+        findingPriority: String? = null,
+        findingDescription: String? = null,
+        findingPhotos: List<String> = emptyList()
     ) {
         // Bagian Billy: Cek langsung dari nilai field (menghindari delay stateIn)
         val finalTitle = manualTitle ?: title.value
@@ -292,6 +274,11 @@ class CreateSessionViewModel @Inject constructor(
                     scheduledDate.value
                 }
 
+                // TODO: Storing serialized photos JSON inside the description column is a temporary workaround to avoid database schema migrations.
+                // In the next database version, this should be normalized into a separate InspectionSessionPhoto table.
+                val gson = com.google.gson.Gson()
+                val photosJson = gson.toJson(manualPhotos)
+
                 if (currentExisting != null) {
                     // Update existing
                     val updatedSession = currentExisting.copy(
@@ -300,6 +287,7 @@ class CreateSessionViewModel @Inject constructor(
                         inspectorName = finalInspector.trim(),
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
+                        description   = photosJson,
                         reportVideoPath = manualVideo ?: videoPath.value,
                         status        = status,
                         updatedAt     = System.currentTimeMillis()
@@ -319,12 +307,39 @@ class CreateSessionViewModel @Inject constructor(
                         inspectorId   = inspectorId,
                         scheduledDate = finalScheduledDate,
                         notes         = manualConclusion ?: notes.value.trim(),
+                        description   = photosJson,
                         reportVideoPath = manualVideo ?: videoPath.value,
                         totalItems    = 0,
                         passedItems   = 0,
                         status        = status
                     )
                     sessionId = sessionRepo.createSession(newSession)
+                }
+
+                // Save or delete findings
+                if (hasFindings) {
+                    findingRepo.deleteFindingsForSession(sessionId)
+                    val severity = when (findingPriority) {
+                        "Kritis" -> com.inspekpro.data.local.entity.FindingSeverity.CRITICAL
+                        "Mayor" -> com.inspekpro.data.local.entity.FindingSeverity.MAJOR
+                        "Minor" -> com.inspekpro.data.local.entity.FindingSeverity.MINOR
+                        else -> com.inspekpro.data.local.entity.FindingSeverity.OBSERVATION
+                    }
+                    val findingPhotosJson = gson.toJson(findingPhotos)
+                    val finding = com.inspekpro.data.local.entity.InspectionFindingEntity(
+                        sessionId = sessionId,
+                        findingCode = "F-${System.currentTimeMillis() % 100000}",
+                        category = findingCategory ?: "Lainnya",
+                        title = findingCategory ?: "Temuan Sesi",
+                        description = findingDescription ?: "",
+                        severity = severity,
+                        status = com.inspekpro.data.local.entity.FindingStatus.OPEN,
+                        result = com.inspekpro.data.local.entity.FindingResult.FAIL,
+                        photoPaths = findingPhotosJson
+                    )
+                    findingRepo.addFinding(finding)
+                } else {
+                    findingRepo.deleteFindingsForSession(sessionId)
                 }
 
                 _createResult.value = CreateSessionResult.Success(sessionId)
@@ -340,6 +355,7 @@ class CreateSessionViewModel @Inject constructor(
 
     fun resetForm() {
         _existingSession.value = null
+        _existingFindings.value = emptyList()
         title.value = ""
         locationName.value = ""
         inspectorName.value = ""

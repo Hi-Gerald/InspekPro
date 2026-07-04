@@ -169,6 +169,7 @@ class EditProfileFragment : Fragment() {
                                  binding.ivEditAvatar.imageTintList = null
                                  Glide.with(this@EditProfileFragment)
                                      .load(photoFile)
+                                     .signature(com.bumptech.glide.signature.ObjectKey(photoFile.lastModified().toString()))
                                      .circleCrop()
                                      .into(binding.ivEditAvatar)
                              } else {
@@ -180,9 +181,10 @@ class EditProfileFragment : Fragment() {
                             // Load Existing Company Logo from filesDir
                             val logoFile = File(requireContext().filesDir, "company_logo_${user.userId}.jpg")
                             if (logoFile.exists()) {
-                                binding.ivLogoPreview.colorFilter = null
+                                binding.ivLogoPreview.imageTintList = null
                                 Glide.with(this@EditProfileFragment)
                                     .load(logoFile)
+                                    .signature(com.bumptech.glide.signature.ObjectKey(logoFile.lastModified().toString()))
                                     .fitCenter()
                                     .into(binding.ivLogoPreview)
                             }
@@ -338,7 +340,7 @@ class EditProfileFragment : Fragment() {
 
         // Set Preview
         selectedLogoUri = uri
-        binding.ivLogoPreview.colorFilter = null
+        binding.ivLogoPreview.imageTintList = null
         Glide.with(this)
             .load(uri)
             .fitCenter()
