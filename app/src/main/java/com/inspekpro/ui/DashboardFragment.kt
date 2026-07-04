@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -92,7 +91,7 @@ class DashboardFragment : Fragment() {
             
             insets
         }
-        androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupRecyclerViews() {
@@ -128,10 +127,10 @@ class DashboardFragment : Fragment() {
     private fun getGreetingText(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         return when (hour) {
-            in 0..10 -> "Selamat Pagi"
-            in 11..14 -> "Selamat Siang"
-            in 15..17 -> "Selamat Sore"
-            else -> "Selamat Malam"
+            in 0..10 -> getString(R.string.greeting_morning)
+            in 11..14 -> getString(R.string.greeting_noon)
+            in 15..17 -> getString(R.string.greeting_afternoon)
+            else -> getString(R.string.greeting_evening)
         }
     }
 
@@ -171,9 +170,9 @@ class DashboardFragment : Fragment() {
         binding.btnNotification.setOnClickListener {
             val resId = resources.getIdentifier("action_dashboardFragment_to_notificationFragment", "id", requireContext().packageName)
             if (resId != 0) {
-                navigateSafely(resId, "In Progress")
+                navigateSafely(resId)
             } else {
-                Toast.makeText(requireContext(), "In Progress", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.nav_report, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -263,17 +262,14 @@ class DashboardFragment : Fragment() {
         currentSelectedTabId = newTabId
     }
 
-    private fun navigateSafely(actionId: Int, fallbackText: String) {
+    private fun navigateSafely(actionId: Int) {
         try {
             val navController = findNavController()
             val currentDest = navController.currentDestination
             if (currentDest != null && currentDest.getAction(actionId) != null) {
                 navController.navigate(actionId)
-            } else {
-                Toast.makeText(requireContext(), fallbackText, Toast.LENGTH_SHORT).show()
             }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), fallbackText, Toast.LENGTH_SHORT).show()
+        } catch (_: Exception) {
         }
     }
 
@@ -292,7 +288,7 @@ class DashboardFragment : Fragment() {
                             }
                         } else {
                             val greeting = getGreetingText()
-                            binding.tvUserGreeting.text = "$greeting, ${user.fullName}"
+                            binding.tvUserGreeting.text = getString(R.string.greeting_template, greeting, user.fullName)
                         }
                     }
                 }
@@ -316,12 +312,12 @@ class DashboardFragment : Fragment() {
                         if (result.isSuccess) {
                             val count = result.getOrDefault(0)
                             if (count > 0) {
-                                Toast.makeText(requireContext(), "Sinkronisasi selesai! $count data di-upload.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(requireContext(), getString(R.string.toast_sync_complete, count), Toast.LENGTH_LONG).show()
                             } else {
-                                Toast.makeText(requireContext(), "Semua data sudah sinkron.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(requireContext(), R.string.toast_already_synced, Toast.LENGTH_SHORT).show()
                             }
                         } else {
-                            Toast.makeText(requireContext(), "Gagal sinkronisasi: ${result.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(requireContext(), getString(R.string.toast_sync_failed, result.exceptionOrNull()?.message), Toast.LENGTH_LONG).show()
                         }
                     }
                 }

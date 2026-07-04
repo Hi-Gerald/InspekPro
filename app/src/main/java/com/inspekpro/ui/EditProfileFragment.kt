@@ -2,18 +2,13 @@ package com.inspekpro.ui
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -26,6 +21,7 @@ import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -33,7 +29,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.google.android.material.button.MaterialButton
 import com.inspekpro.R
 import com.inspekpro.data.local.entity.UserEntity
 import com.inspekpro.databinding.FragmentEditProfileBinding
@@ -45,7 +40,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
-@Suppress("SpellCheckingInspection")
 @AndroidEntryPoint
 class EditProfileFragment : Fragment() {
 
@@ -87,7 +81,7 @@ class EditProfileFragment : Fragment() {
         if (isGranted) {
             takeAvatarLauncher.launch(null)
         } else {
-            Toast.makeText(requireContext(), "Izin kamera ditolak. Tidak dapat mengambil foto.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.error_camera_permission, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -163,7 +157,7 @@ class EditProfileFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe User Session Info
+                // Observe User session Info
                 launch {
                     viewModel.activeUser.collectLatest { user ->
                         if (user != null && originalUserEntity == null) {
@@ -263,8 +257,8 @@ class EditProfileFragment : Fragment() {
             ).apply {
                 setMargins(48, 16, 48, 16)
             }
-            text = "Ubah Foto Profil"
-            setTextColor(Color.parseColor("#1D2939"))
+            text = getString(R.string.btn_change_avatar_desc)
+            setTextColor("#1D2939".toColorInt())
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         }
@@ -288,9 +282,9 @@ class EditProfileFragment : Fragment() {
                 text = option
                 setTextColor(
                     when (option) {
-                        "Hapus Foto" -> Color.parseColor("#D92D20")
-                        "Batal" -> Color.parseColor("#98A2B3")
-                        else -> Color.parseColor("#344054")
+                        "Hapus Foto" -> "#D92D20".toColorInt()
+                        "Batal" -> "#98A2B3".toColorInt()
+                        else -> "#344054".toColorInt()
                     }
                 )
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
@@ -534,7 +528,7 @@ class EditProfileFragment : Fragment() {
                 addRule(RelativeLayout.ALIGN_PARENT_START)
                 addRule(RelativeLayout.CENTER_VERTICAL)
             }
-            text = "Batal"
+            text = getString(R.string.btn_cancel)
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
@@ -577,7 +571,7 @@ class EditProfileFragment : Fragment() {
                 addRule(RelativeLayout.ALIGN_PARENT_END)
                 addRule(RelativeLayout.CENTER_VERTICAL)
             }
-            text = "Selesai"
+            text = getString(R.string.btn_view)
             setTextColor(ContextCompat.getColor(context, R.color.primary))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD

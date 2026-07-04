@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 
         val isFirebaseLoggedIn = try {
             firebaseAuth?.currentUser != null
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
 

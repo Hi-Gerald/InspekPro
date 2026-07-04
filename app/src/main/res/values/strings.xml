@@ -81,4 +81,55 @@
     <string name="btn_pdf">PDF</string>
     <string name="btn_print">Cetak</string>
     <string name="btn_download_pdf">Download PDF</string>
+
+    <!-- Profile Fragment Strings -->
+    <string name="profile_title">Profil Saya</string>
+    <string name="btn_logout_desc">Keluar Akun</string>
+    <string name="label_account_info">Informasi Akun</string>
+    <string name="label_full_name">Nama Lengkap</string>
+    <string name="label_email">Email</string>
+    <string name="label_job_title">Jabatan</string>
+    <string name="label_company">Perusahaan</string>
+    <string name="label_joined_since">Bergabung Sejak</string>
+    <string name="dialog_logout_title">Keluar dari Akun?</string>
+    <string name="dialog_logout_message">Anda harus login kembali untuk menggunakan aplikasi.</string>
+    <string name="btn_logout">Keluar</string>
+
+    <!-- Dashboard Fragment Strings -->
+    <string name="greeting_template">Selamat %s, %s</string>
+    <string name="greeting_morning">Pagi</string>
+    <string name="greeting_noon">Siang</string>
+    <string name="greeting_afternoon">Sore</string>
+    <string name="greeting_evening">Malam</string>
+    <string name="label_weather_today">Cuaca Hari Ini</string>
+    <string name="label_total_inspection">Total Inspeksi</string>
+    <string name="label_completed">Selesai</string>
+    <string name="label_critical_finding">Temuan Kritis</string>
+    <string name="label_report">Laporan</string>
+    <string name="label_active_inspection">Inspeksi Aktif</string>
+    <string name="label_no_active_inspection">Tidak ada inspeksi aktif</string>
+    <string name="label_new_finding">Temuan Baru</string>
+    <string name="label_view_all">Lihat Semua</string>
+
+    <!-- Bottom Navigation Strings -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_inspection">Inspeksi</string>
+    <string name="nav_report">Laporan</string>
+    <string name="nav_account">Akun</string>
+
+    <!-- Validation Strings -->
+    <string name="error_camera_permission">Izin kamera ditolak. Tidak dapat mengambil foto.</string>
+    <string name="error_password_security">Password belum memenuhi syarat keamanan</string>
+    <string name="toast_sync_complete">Sinkronisasi selesai! %1$d data di-upload.</string>
+    <string name="toast_already_synced">Semua data sudah sinkron.</string>
+    <string name="toast_sync_failed">Gagal sinkronisasi: %s</string>
+
+    <!-- Register Strings -->
+    <string name="register_title">Buat Akun Baru</string>
+    <string name="register_subtitle">Lengkapi data dibawah ini untuk mendaftar</string>
+    <string name="terms_prefix">Saya menyetujui </string>
+    <string name="terms_link">syarat dan ketentuan</string>
+    <string name="btn_register">Daftar</string>
+    <string name="already_have_account">Sudah punya akun? </string>
+    <string name="login_link">Masuk</string>
 </resources>

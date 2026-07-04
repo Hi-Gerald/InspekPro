@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Profil Saya"
+            android:text="@string/profile_title"
             android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -45,7 +45,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_edit"
             app:tint="@color/primary"
-            android:contentDescription="Edit Profil"
+            android:contentDescription="@string/btn_save_changes"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/tvHeaderTitle"
             app:layout_constraintEnd_toStartOf="@id/btnLogout"
@@ -59,7 +59,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_logout"
             app:tint="#D92D20"
-            android:contentDescription="Keluar Akun"
+            android:contentDescription="@string/btn_logout_desc"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/tvHeaderTitle"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -104,6 +104,7 @@
                             android:src="@drawable/ic_person"
                             android:background="@color/primary"
                             android:padding="16dp"
+                            android:contentDescription="@string/btn_change_avatar_desc"
                             app:tint="@color/white" />
                     </com.google.android.material.card.MaterialCardView>
 
@@ -126,7 +127,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Inspector"
+                    android:text="@string/job_title_inspector"
                     android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -181,7 +182,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:text="Informasi Akun"
+                    android:text="@string/label_account_info"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -215,7 +216,7 @@
                         android:layout_toEndOf="@id/iconCardName"
                         android:layout_marginStart="12dp"
                         android:layout_centerVertical="true"
-                        android:text="Nama Lengkap"
+                        android:text="@string/label_full_name"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -226,6 +227,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/iconCardName"
+                        android:layout_marginStart="120dp"
+                        android:gravity="end"
                         android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
@@ -265,7 +269,7 @@
                         android:layout_toEndOf="@id/iconCardEmail"
                         android:layout_marginStart="12dp"
                         android:layout_centerVertical="true"
-                        android:text="Email"
+                        android:text="@string/label_email"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -276,6 +280,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/iconCardEmail"
+                        android:layout_marginStart="80dp"
+                        android:gravity="end"
                         android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
@@ -315,7 +322,7 @@
                         android:layout_toEndOf="@id/iconCardJob"
                         android:layout_marginStart="12dp"
                         android:layout_centerVertical="true"
-                        android:text="Jabatan"
+                        android:text="@string/label_job_title"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -326,7 +333,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="Inspector"
+                        android:text="@string/job_title_inspector"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </RelativeLayout>
@@ -365,7 +372,7 @@
                         android:layout_toEndOf="@id/iconCardCompany"
                         android:layout_marginStart="12dp"
                         android:layout_centerVertical="true"
-                        android:text="Perusahaan"
+                        android:text="@string/label_company"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -376,6 +383,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/iconCardCompany"
+                        android:layout_marginStart="100dp"
+                        android:gravity="end"
                         android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
@@ -415,7 +425,7 @@
                         android:layout_toEndOf="@id/iconCardJoined"
                         android:layout_marginStart="12dp"
                         android:layout_centerVertical="true"
-                        android:text="Bergabung Sejak"
+                        android:text="@string/label_joined_since"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -426,6 +436,9 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_toEndOf="@id/iconCardJoined"
+                        android:layout_marginStart="120dp"
+                        android:gravity="end"
                         android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
@@ -445,7 +458,9 @@
         android:layout_height="wrap_content"
         android:minHeight="72dp"
         android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profileScrollView"
+        app:layout_constraintVertical_bias="1.0">
 
         <View
             android:id="@+id/bottomNavDivider"
@@ -486,9 +501,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Dashboard"
+                    android:text="@string/nav_dashboard"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <!-- Tab 2: Inspeksi -->
@@ -516,9 +531,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Inspeksi"
+                    android:text="@string/nav_inspection"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <!-- Spacer for floating FAB -->
@@ -552,9 +567,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Laporan"
+                    android:text="@string/nav_report"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <!-- Tab 4: Akun -->
@@ -582,9 +597,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Akun"
+                    android:text="@string/nav_account"
                     android:textColor="@color/primary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>

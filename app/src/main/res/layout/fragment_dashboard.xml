@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="24dp"
-                android:text="InspekPro"
+                android:text="@string/app_name"
                 android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold"
@@ -160,7 +160,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:text="Cuaca Hari Ini"
+                        android:text="@string/label_weather_today"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         app:layout_constraintStart_toEndOf="@id/weatherIconBg"
@@ -265,7 +265,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total Inspeksi"
+                            android:text="@string/label_total_inspection"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -309,7 +309,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Selesai"
+                            android:text="@string/label_completed"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -353,7 +353,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Temuan Kritis"
+                            android:text="@string/label_critical_finding"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -397,7 +397,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Laporan"
+                            android:text="@string/label_report"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -411,7 +411,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="28dp"
-                android:text="Inspeksi Aktif"
+                android:text="@string/label_active_inspection"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -443,7 +443,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"
-                    android:text="Tidak ada inspeksi aktif"
+                    android:text="@string/label_no_active_inspection"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:visibility="gone" />
@@ -456,7 +456,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="28dp"
-                android:text="Temuan Baru"
+                android:text="@string/label_new_finding"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -468,7 +468,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
-                android:text="Lihat Semua"
+                android:text="@string/label_view_all"
                 android:textColor="@color/primary"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -501,7 +501,9 @@
         android:layout_height="wrap_content"
         android:minHeight="72dp"
         android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <View
             android:id="@+id/bottomNavDivider"
@@ -542,9 +544,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Dashboard"
+                    android:text="@string/nav_dashboard"
                     android:textColor="@color/primary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -573,9 +575,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Inspeksi"
+                    android:text="@string/nav_inspection"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <!-- Spacer for floating FAB -->
@@ -609,9 +611,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Laporan"
+                    android:text="@string/nav_report"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <!-- Tab 4: Akun -->
@@ -639,9 +641,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Akun"
+                    android:text="@string/nav_account"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 

@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Buat Akun Baru"
+            android:text="@string/register_title"
             android:textColor="@color/text_primary"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Lengkapi data dibawah ini untuk mendaftar"
+            android:text="@string/register_subtitle"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -85,7 +85,7 @@
                 android:id="@+id/nameEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nama Lengkap"
+                android:hint="@string/hint_full_name"
                 android:inputType="textPersonName"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
@@ -118,7 +118,7 @@
                 android:id="@+id/emailEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email"
+                android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
@@ -151,7 +151,7 @@
                 android:id="@+id/companyEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nama Perusahaan"
+                android:hint="@string/hint_company"
                 android:inputType="text"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
@@ -186,7 +186,7 @@
                 android:id="@+id/passwordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Password"
+                android:hint="@string/hint_new_password"
                 android:inputType="textPassword"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
@@ -243,7 +243,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Minimal 8 karakter"
+                    android:text="@string/req_char_count"
                     android:textColor="#8E8E93"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -284,7 +284,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Mengandung minimal satu huruf besar"
+                    android:text="@string/req_uppercase"
                     android:textColor="#8E8E93"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -325,7 +325,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Mengandung minimal satu huruf kecil"
+                    android:text="@string/req_lowercase"
                     android:textColor="#8E8E93"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -366,7 +366,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Mengandung minimal satu angka"
+                    android:text="@string/req_number"
                     android:textColor="#8E8E93"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -399,7 +399,7 @@
                 android:id="@+id/confirmPasswordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Konfirmasi Password"
+                android:hint="@string/hint_confirm_new_password"
                 android:inputType="textPassword"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
@@ -435,7 +435,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Saya menyetujui "
+                    android:text="@string/terms_prefix"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
 
@@ -443,7 +443,7 @@
                     android:id="@+id/termsText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="syarat dan ketentuan"
+                    android:text="@string/terms_link"
                     android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -459,7 +459,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="28dp"
-            android:text="Daftar"
+            android:text="@string/btn_register"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -485,7 +485,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sudah punya akun? "
+                android:text="@string/already_have_account"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -493,7 +493,7 @@
                 android:id="@+id/loginLinkText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Masuk"
+                android:text="@string/login_link"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold"
