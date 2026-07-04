@@ -340,14 +340,6 @@ class AddInspectionFragment : Fragment() {
         }
 
         binding.etTime.setOnClickListener {
-<<<<<<< HEAD
-            TimePickerDialog(requireContext(), { _, h, m ->
-                calendar.set(Calendar.HOUR_OF_DAY, h)
-                calendar.set(Calendar.MINUTE, m)
-                binding.etTime.setText(SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time))
-                updateProgress()
-            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
-=======
             TimePickerDialog(
                 requireContext(),
                 { _, hourOfDay, minute ->
@@ -356,12 +348,12 @@ class AddInspectionFragment : Fragment() {
                     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
                     binding.etTime.setText(timeFormat.format(calendar.time))
                     viewModel.scheduledDate.value = calendar.timeInMillis
+                    updateProgress()
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
                 true
             ).show()
->>>>>>> 6c06a0071e45db51a139cc6ea6d0fc08e72385d2
         }
 
         binding.btnChecklistAdd.setOnClickListener {
@@ -370,7 +362,6 @@ class AddInspectionFragment : Fragment() {
             updateProgress()
         }
 
-<<<<<<< HEAD
         binding.btnPhotoAdd.setOnClickListener { showMediaOptions(isFinding = false) }
         binding.btnFindingPhotoAdd.setOnClickListener { showMediaOptions(isFinding = true) }
         binding.btnVideoAdd.setOnClickListener { showVideoOptions() }
@@ -381,8 +372,8 @@ class AddInspectionFragment : Fragment() {
             updateProgress()
         }
 
-        binding.btnSaveDraft.setOnClickListener { saveInspection(SessionStatus.DRAFT) }
-        binding.btnFinishInspection.setOnClickListener { saveInspection(SessionStatus.COMPLETED) }
+        binding.btnSaveDraft.setOnClickListener { injectGpsAndSave(SessionStatus.DRAFT) }
+        binding.btnFinishInspection.setOnClickListener { injectGpsAndSave(SessionStatus.COMPLETED) }
     }
 
     private fun checkLocationPermissionAndGet() {
