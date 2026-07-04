@@ -4,6 +4,8 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.inspekpro.data.local.dao.UserDao
 import com.inspekpro.data.local.entity.UserEntity
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
@@ -60,40 +62,45 @@ class AuthRepository(
 
     suspend fun loginUser(email: String, password: String): Result<UserEntity> {
         return try {
-            Log.d("AUTH_DEBUG", "Memulai login untuk: $email")
+            Log.d("AUTH_DEBUG", "Memulai login paralel untuk: $email")
             
-            var user = userDao.getUserByEmail(email)
-
-            // Firebase Auth Login
-            if (firebaseAuth != null) {
-                val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-                if (authResult.user == null) {
-                    return Result.failure(Exception("Gagal masuk via Firebase"))
+            coroutineScope {
+                val userDeferred = async { userDao.getUserByEmail(email) }
+                
+                val firebaseDeferred = firebaseAuth?.let { auth ->
+                    async { auth.signInWithEmailAndPassword(email, password).await() }
                 }
+
+                // Tunggu kedua proses selesai
+                val authResult = firebaseDeferred?.await()
+                var user = userDeferred.await()
+
+                if (firebaseAuth != null && authResult?.user == null) {
+                    return@coroutineScope Result.failure(Exception("Gagal masuk via Firebase"))
+                }
+
+                // Sinkronisasi otomatis ke lokal jika login Firebase berhasil namun data lokal hilang
+                if (user == null) {
+                    val newUser = UserEntity(
+                        fullName = email.substringBefore("@"),
+                        email = email,
+                        companyName = "Synced from Firebase",
+                        passwordHash = hashPassword(password)
+                    )
+                    userDao.insertUser(newUser)
+                    user = userDao.getUserByEmail(email)
+                }
+
+                if (user == null) {
+                    return@coroutineScope Result.failure(Exception("Gagal mengambil data akun"))
+                }
+
+                userDao.clearAllLogins()
+                userDao.updateLoginStatus(user.userId, true)
+
+                Log.d("AUTH_DEBUG", "LOGIN SUCCESS FOR ${user.userId}")
+                Result.success(user.copy(isLoggedIn = true))
             }
-            
-            // Sinkronisasi otomatis ke lokal jika login Firebase berhasil namun data lokal hilang
-            if (user == null) {
-                val newUser = UserEntity(
-                    fullName = email.substringBefore("@"),
-                    email = email,
-                    companyName = "Synced from Firebase",
-                    passwordHash = hashPassword(password)
-                )
-                userDao.insertUser(newUser)
-                user = userDao.getUserByEmail(email)
-            }
-
-            if (user == null) {
-                return Result.failure(Exception("Gagal mengambil data akun"))
-            }
-
-            userDao.clearAllLogins()
-            userDao.updateLoginStatus(user.userId, true)
-
-            Log.d("AUTH_DEBUG", "LOGIN STATUS UPDATED FOR ${user.userId}")
-            Result.success(user.copy(isLoggedIn = true))
-
         } catch (e: Exception) {
             Log.e("AUTH_DEBUG", "ERROR LOGIN", e)
             Result.failure(e)

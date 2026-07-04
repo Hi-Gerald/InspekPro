@@ -122,7 +122,7 @@ class DashboardFragment : Fragment() {
         val idLocale = Locale("id", "ID")
         val sdf = SimpleDateFormat("EEEE, d MMMM yyyy", idLocale)
         binding.tvDate.text = sdf.format(Date())
-        binding.tvUserGreeting.text = "${getGreetingText()}, Budi"
+        binding.tvUserGreeting.text = getGreetingText()
     }
 
     private fun getGreetingText(): String {

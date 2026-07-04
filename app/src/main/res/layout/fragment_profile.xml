@@ -115,7 +115,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Budi Santoso"
+                    android:text=""
                     android:textColor="@color/text_primary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -151,7 +151,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="PT. Pertamina (persero)"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -226,7 +226,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="Budi Santoso"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </RelativeLayout>
@@ -276,7 +276,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="budisantoso450@gmail.com"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </RelativeLayout>
@@ -376,7 +376,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="PT. Pertamina (persero)"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </RelativeLayout>
@@ -426,7 +426,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="3 Mei 2024"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </RelativeLayout>

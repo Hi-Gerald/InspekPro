@@ -94,8 +94,8 @@ class RegisterFragment : Fragment() {
             if (password.isEmpty()) {
                 binding.passwordInputLayout.error = "Password tidak boleh kosong"
                 return@setOnClickListener
-            } else if (password.length < 6) {
-                binding.passwordInputLayout.error = "Password minimal 6 karakter"
+            } else if (!isCharCountValid || !isUppercaseValid || !isLowercaseValid || !isNumberValid) {
+                binding.passwordInputLayout.error = "Password belum memenuhi syarat keamanan"
                 return@setOnClickListener
             } else {
                 binding.passwordInputLayout.error = null
